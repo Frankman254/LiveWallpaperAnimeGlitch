@@ -3,7 +3,7 @@ import type { AudioSnapshot } from '@/lib/audio/audioChannels';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
 import { resetSpectrum } from '@/components/audio/CircularSpectrum';
-import { resetLogo } from '@/components/audio/ReactiveLogo';
+import { resetLogo } from '@/features/logo';
 import { formatTrackTitle } from '@/lib/audio/trackTitle';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {

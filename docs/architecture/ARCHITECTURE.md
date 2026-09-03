@@ -148,7 +148,7 @@ features/<dominio>/
 
 Dos consecuencias que hoy no se cumplen:
 
-1. **Toda feature necesita `index.ts`.** Hoy son **0 de 18**. Sin fachada, todo
+1. **Toda feature necesita `index.ts`.** Hoy es **1 de 18** (`logo`). Sin fachada, todo
    el mundo importa internals y cualquier movimiento interno rompe medio repo.
 2. **La UI del dominio se muda al dominio.** `features/X` puede contener React;
    lo que no puede es importar `components/`.
@@ -157,14 +157,14 @@ Dos consecuencias que hoy no se cumplen:
 
 Medido el 2026-09-02. La columna que importa es la última:
 
-| Dominio        |  Motor (`features/`) |   UI (`components/controls/`) | Extra disperso                             | ¿Motor = dominio? |
-| -------------- | -------------------: | ----------------------------: | ------------------------------------------ | ----------------- |
-| **background** |     2 arch · 896 LOC |   28 arch · 5.453 LOC (`bg/`) | 9 en `wallpaper/`, 4 en `lib/background*`  | **10 %**          |
-| **spectrum**   | 58 arch · 14.381 LOC |           17 arch · 3.736 LOC | 4 en `wallpaper/`, `lib/featureProfiles`   | ~70 %             |
-| **lyrics**     |  10 arch · 2.882 LOC | 4 arch (`LyricsTabBody` 1.2k) | 2 en `components/audio/` (overlay 1.3k)    | ~60 %             |
-| **logo**       |     2 arch · 273 LOC |    1 arch (`LogoTab` 769 LOC) | 2 en `wallpaper/`, 1 en `components/audio` | **~20 %**         |
-| **export**     |  15 arch · 1.828 LOC |           13 arch · 2.229 LOC | —                                          | ~45 %             |
-| **motion**     |     1 arch · 159 LOC |    3 arch (`Particles*` 1.1k) | 2 en `wallpaper/`                          | **~10 %**         |
+| Dominio        |  Motor (`features/`) |   UI (`components/controls/`) | Extra disperso                            | ¿Motor = dominio? |
+| -------------- | -------------------: | ----------------------------: | ----------------------------------------- | ----------------- |
+| **background** |     2 arch · 896 LOC |   28 arch · 5.453 LOC (`bg/`) | 9 en `wallpaper/`, 4 en `lib/background*` | **10 %**          |
+| **spectrum**   | 58 arch · 14.381 LOC |           17 arch · 3.736 LOC | 4 en `wallpaper/`, `lib/featureProfiles`  | ~70 %             |
+| **lyrics**     |  10 arch · 2.882 LOC | 4 arch (`LyricsTabBody` 1.2k) | 2 en `components/audio/` (overlay 1.3k)   | ~60 %             |
+| **logo**       | 7 arch · ~900 LOC ✅ |    1 arch (`LogoTab` 769 LOC) | — (migrado, ver §6.1)                     | **~55 %**         |
+| **export**     |  15 arch · 1.828 LOC |           13 arch · 2.229 LOC | —                                         | ~45 %             |
+| **motion**     |     1 arch · 159 LOC |    3 arch (`Particles*` 1.1k) | 2 en `wallpaper/`                         | **~10 %**         |
 
 `components/controls/tabs/` acumula **31.640 LOC** que casi todo pertenece a
 algún dominio. Ése es el material a repartir.
@@ -207,8 +207,8 @@ el check también falla.
 | `ui/` → producto                 |       4 | `ConnectedColorInput` y `ProfileSlotsEditor` hablan con el store; `CollapsibleSection` con `workspace`.   |
 | `lib/` → `store` / `hooks`       |       6 | `projectSettings`, `i18n`, `wallpaperPersistenceCoordinator` son servicios de app, no librería.           |
 | `lib/` → `features/`             |      15 | `lib/constants.ts` y `lib/featureProfiles.ts` arman defaults tomándolos de los dominios.                  |
-| `features/export` → `components` |       9 | El render offline reusa `ReactiveLogo` / `CircularSpectrum` / `audioLayerFrameRenderer` de la UI viva.    |
-| **Total**                        |  **39** | 0,8 % de las aristas del grafo.                                                                           |
+| `features/export` → `components` |       7 | El render offline reusa `CircularSpectrum` / `audioLayerFrameRenderer` de la UI viva.                     |
+| **Total**                        |  **37** | 0,8 % de las aristas del grafo.                                                                           |
 
 **Ciclos de runtime conocidos: 2.**
 
@@ -228,15 +228,15 @@ el check también falla.
 
 Sin features nuevas mientras esto corre.
 
-| Fase                        | Qué                                                                                                                                     | Estado    |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| **1 · Arqueología**         | Grafo real, imports cruzados, ciclos, dispersión por dominio.                                                                           | ✅ hecho  |
-| **2 · Contrato**            | Este documento.                                                                                                                         | ✅ hecho  |
-| **3 · Guardrail**           | `scripts/check-architecture.mjs` + `pnpm architecture:check` con baseline congelado.                                                    | ✅ hecho  |
-| **4a · Quick wins**         | Bajar la deuda barata: sacar `store` de `ui/` (2 archivos), romper el ciclo del barrel, mover los defaults de dominio fuera de `lib/`.  | pendiente |
-| **4b · Fachadas**           | `index.ts` en las 18 features, empezando por las 3 más importadas. Luego prohibir importar internals entre features.                    | pendiente |
-| **4c · Migración vertical** | Un dominio completo por vez, empezando por **`logo`** (el más chico, 273 LOC de motor) como ensayo, luego **`lyrics`**, **`spectrum`**. | pendiente |
-| **5 · Simplificación**      | Retirar duplicados y conceptos repetidos que la migración deje a la vista.                                                              | pendiente |
+| Fase                        | Qué                                                                                                                                    | Estado    |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| **1 · Arqueología**         | Grafo real, imports cruzados, ciclos, dispersión por dominio.                                                                          | ✅ hecho  |
+| **2 · Contrato**            | Este documento.                                                                                                                        | ✅ hecho  |
+| **3 · Guardrail**           | `scripts/check-architecture.mjs` + `pnpm architecture:check` con baseline congelado.                                                   | ✅ hecho  |
+| **4a · Quick wins**         | Bajar la deuda barata: sacar `store` de `ui/` (2 archivos), romper el ciclo del barrel, mover los defaults de dominio fuera de `lib/`. | pendiente |
+| **4b · Fachadas**           | `index.ts` en las 18 features, empezando por las 3 más importadas. Luego prohibir importar internals entre features.                   | pendiente |
+| **4c · Migración vertical** | Un dominio por vez. **`logo` ✅ hecho** — es la plantilla (§6.1). Siguen `lyrics`, `spectrum`, `background`.                           | en curso  |
+| **5 · Simplificación**      | Retirar duplicados y conceptos repetidos que la migración deje a la vista.                                                             | pendiente |
 
 **Reglas de la migración**
 
@@ -246,12 +246,69 @@ Sin features nuevas mientras esto corre.
 - `pnpm architecture:check` verde antes y después de cada paso.
 - Cada dominio migrado tacha sus líneas del baseline.
 
-### Por qué `logo` primero y no `spectrum`
+### 6.1 · La plantilla: cómo se migró `logo`
 
-`spectrum` es 14k LOC y el dominio del que más depende todo lo demás; si el
-ensayo sale mal ahí, el costo es enorme. `logo` tiene 273 LOC de motor, 769 de
-UI y 4 archivos dispersos: alcanza para probar el patrón completo (fachada +
-mudanza de UI + selectors) en una tarde, y deja una plantilla que copiar.
+Se eligió `logo` de ensayo y no `spectrum` porque `spectrum` son 14k LOC de las
+que depende todo lo demás: si el patrón falla ahí, el costo es enorme.
+
+**Antes** — 6 archivos en 4 zonas distintas:
+
+```
+features/logo/logoPositionGrid.ts                       (132 LOC)
+components/audio/ReactiveLogo.ts                        (242)  ← el motor
+components/wallpaper/LogoDiagnosticsHud.tsx             (155)
+components/wallpaper/quickActions/QuickActionsLogo…tsx  (209)
+lib/debug/logoDiagnosticsTelemetry.ts                    (65)
+features/presets/logoProfiles.ts                         (55)
+```
+
+**Después** — un dominio, una carpeta, una puerta:
+
+```
+features/logo/
+├── index.ts                                    ← la fachada
+├── domain/logoPositionGrid.ts (+ .test.ts)
+├── runtime/ReactiveLogo.ts
+├── presets/logoProfiles.ts
+├── diagnostics/logoDiagnosticsTelemetry.ts
+├── diagnostics/LogoDiagnosticsHud.tsx
+└── controls/QuickActionsLogoPositionGrid.tsx
+```
+
+**Los pasos, en este orden:**
+
+1. Inventariar el dominio (`find -iname '*logo*'`) y listar **todos** los
+   importadores antes de tocar nada.
+2. Revisar qué importa cada archivo. **El que importa `components/` no se puede
+   mover todavía** — moverlo crearía una violación nueva.
+3. `git mv` puro, sin editar contenido.
+4. Reescribir las rutas de import en los importadores.
+5. Escribir `index.ts` con la superficie pública real (mirar los `export` de
+   cada módulo, no adivinar).
+6. Redirigir a los importadores externos a la fachada; los internos usan rutas
+   relativas — un archivo del dominio **nunca** importa su propia fachada.
+7. `npx tsc -b`, después `pnpm architecture:check`, después el resto.
+8. Tachar del baseline las líneas que la migración eliminó.
+
+**Resultado:** 12 sitios de import actualizados, deuda 39 → 37 aristas (el
+render offline de `features/export` ya no baja a `components/audio` a buscar el
+logo), 0 violaciones nuevas, 982 tests verdes.
+
+**Trampas que aparecieron** (van a repetirse en los otros dominios):
+
+- Un `sed` masivo hizo que los archivos internos importaran su propia fachada
+  → ciclo. Excluir la carpeta del dominio al reescribir imports.
+- `LogoDiagnosticsHud` y `QuickActionsLogoPositionGrid` eran `export default`;
+  la fachada los expone como **named**. Hay que arreglar cada sitio de import.
+- Buscar por nombre da falsos positivos: `logoDiagnosticsHud` también es una key
+  del store. Filtrar por `from '...'`, no por el nombre suelto.
+
+**Lo que quedó fuera, a propósito:** `components/controls/tabs/main/LogoTab.tsx`
+(769 LOC). Depende de chrome compartido del editor — `UIMode`, `DialogProvider`,
+`advancedControls` — que usan ~20 tabs. Moverlo haría que `features/` importara
+`components/`, justo lo que el contrato prohíbe. **Ese chrome compartido es la
+fase 4a-bis**, y desbloquea la mudanza de la UI de todos los dominios a la vez.
+`store/slices/logoSlice.ts` se queda en `store/` — es correcto por §2.
 
 ---
 

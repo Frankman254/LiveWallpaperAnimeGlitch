@@ -5,7 +5,7 @@ import {
 	type AudioLayerFrameRenderState,
 	type RenderableAudioLayer
 } from '@/components/audio/layers/audioLayerFrameRenderer';
-import { resetLogo } from '@/components/audio/ReactiveLogo';
+import { resetLogo } from '@/features/logo';
 import { resetSpectrum } from '@/components/audio/CircularSpectrum';
 import type { RenderFrameContext } from '../renderFrameContext';
 import type { RenderSubsystem } from '../renderSubsystem';

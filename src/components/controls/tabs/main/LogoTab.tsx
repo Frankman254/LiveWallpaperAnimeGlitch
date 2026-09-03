@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Activity, ImageUp, Layout, RotateCcw, Sparkles } from 'lucide-react';
 import { FlashEdgeSection } from './motion/FlashEdgeSection';
 import { useShallow } from 'zustand/react/shallow';
-import { resetLogoRotation } from '@/components/audio/ReactiveLogo';
+import { resetLogoRotation } from '@/features/logo';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';
 import { loadImage, saveImage } from '@/lib/db/imageDb';
 import {
@@ -41,10 +41,7 @@ import {
 } from './advancedControls';
 import { useDialog } from '../../ui/DialogProvider';
 import { useIsSimple } from '../../UIMode';
-import {
-	LOGO_QUICK_PROFILES,
-	type LogoQuickProfile
-} from '@/features/presets/logoProfiles';
+import { LOGO_QUICK_PROFILES, type LogoQuickProfile } from '@/features/logo';
 
 function formatDecimal(value: number): string {
 	return value.toFixed(2);

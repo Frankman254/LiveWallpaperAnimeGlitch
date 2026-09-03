@@ -7,7 +7,7 @@ import {
 	clearSpectrumDiagnosticsClone,
 	clearSpectrumDiagnosticsPrimary
 } from '@/lib/debug/spectrumDiagnosticsTelemetry';
-import { publishLogoDiagnosticsTelemetry } from '@/lib/debug/logoDiagnosticsTelemetry';
+import { publishLogoDiagnosticsTelemetry } from '@/features/logo';
 import { applySpectrumPlacementToState } from '@/features/spectrum/runtime/spectrumPlacement';
 import {
 	createDefaultSpectrumInstanceSettings,
@@ -40,7 +40,7 @@ import {
 	getLogoRenderState,
 	getCachedLogoImage,
 	getLogoRotation
-} from '@/components/audio/ReactiveLogo';
+} from '@/features/logo';
 import { drawLogoFlashEdge } from '@/features/edgeGlow/flashEdgeRenderer';
 import {
 	getFlashEdgeDrive,

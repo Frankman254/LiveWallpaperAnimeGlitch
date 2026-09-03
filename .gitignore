@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local working notes (audits, session progress) — not part of the repo
 /.work/
+
+# Claude Code worktrees (full repo copies)
+.claude/worktrees/

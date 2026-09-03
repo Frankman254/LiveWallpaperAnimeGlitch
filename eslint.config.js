@@ -12,7 +12,15 @@ import tseslint from 'typescript-eslint';
  */
 export default tseslint.config(
 	{
-		ignores: ['dist/**', 'node_modules/**', 'build/**', 'coverage/**']
+		ignores: [
+			'dist/**',
+			'node_modules/**',
+			'build/**',
+			'coverage/**',
+			// Claude Code worktrees are full copies of the repo; linting them
+			// double-reports every file and can explode into thousands of errors.
+			'.claude/worktrees/**'
+		]
 	},
 	eslint.configs.recommended,
 	...tseslint.configs.recommended,

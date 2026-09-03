@@ -4,7 +4,7 @@ import {
 	getEditorThemePalette,
 	type BackgroundPalette
 } from '@/lib/backgroundPalette';
-import { resetLogo } from '@/components/audio/ReactiveLogo';
+import { resetLogo } from '@/features/logo';
 import { resetSpectrum } from '@/components/audio/CircularSpectrum';
 import {
 	createAudioLayerFrameRenderState,

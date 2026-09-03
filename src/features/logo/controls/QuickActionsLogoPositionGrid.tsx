@@ -14,7 +14,7 @@ import {
 	resolveLogoGridDims,
 	LOGO_POSITION_CENTER,
 	type LogoNudgeDirection
-} from '@/features/logo/logoPositionGrid';
+} from '../domain/logoPositionGrid';
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));

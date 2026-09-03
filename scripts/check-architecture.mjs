@@ -95,7 +95,8 @@ const FORBIDDEN = {
  * exist today and are tolerated; the list may not grow. When you remove one,
  * delete its line here too.
  *
- * Last recount: 2026-09-02 (48 edges → see ARCHITECTURE.md "Deuda congelada").
+ * Last recount: 2026-09-02 — 37 edges after the logo migration (was 39).
+ * See ARCHITECTURE.md "Deuda congelada".
  */
 const BASELINE = [
 	// types/ still borrows domain vocabulary instead of owning it. All of these
@@ -142,11 +143,9 @@ const BASELINE = [
 	'features/edgeGlow/edgeGlowRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
 	'features/edgeGlow/flashEdgeRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
 	'features/export/offlineAudioLayerRenderer.ts -> components/audio/CircularSpectrum.ts',
-	'features/export/offlineAudioLayerRenderer.ts -> components/audio/ReactiveLogo.ts',
 	'features/export/offlineAudioLayerRenderer.ts -> components/audio/layers/audioLayerFrameRenderer.ts',
 	'features/export/projectExportSelection.ts -> components/controls/controlPanelResetKeys.ts',
 	'features/export/renderSubsystems/audioLayers.ts -> components/audio/CircularSpectrum.ts',
-	'features/export/renderSubsystems/audioLayers.ts -> components/audio/ReactiveLogo.ts',
 	'features/export/renderSubsystems/audioLayers.ts -> components/audio/layers/audioLayerFrameRenderer.ts'
 ];
 

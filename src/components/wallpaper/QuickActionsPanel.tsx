@@ -24,7 +24,7 @@ import {
 	QuickActionsThemePanel
 } from '@/components/wallpaper/quickActions/QuickActionsPanels';
 import QuickActionsPerImagePanel from '@/components/wallpaper/quickActions/QuickActionsPerImagePanel';
-import QuickActionsLogoPositionGrid from '@/components/wallpaper/quickActions/QuickActionsLogoPositionGrid';
+import { QuickActionsLogoPositionGrid } from '@/features/logo';
 import QuickActionsShell from '@/components/wallpaper/quickActions/QuickActionsShell';
 import MediaDock from '@/components/controls/MediaDock';
 import {

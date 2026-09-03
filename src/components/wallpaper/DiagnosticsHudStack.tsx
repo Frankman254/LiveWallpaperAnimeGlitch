@@ -2,7 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import BackgroundScaleMeter from '@/components/wallpaper/BackgroundScaleMeter';
 import SpectrumDiagnosticsHud from '@/components/wallpaper/SpectrumDiagnosticsHud';
 import SpectrumManualHud from '@/components/wallpaper/SpectrumManualHud';
-import LogoDiagnosticsHud from '@/components/wallpaper/LogoDiagnosticsHud';
+import { LogoDiagnosticsHud } from '@/features/logo';
 import SetlistHud from '@/components/wallpaper/SetlistHud';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {

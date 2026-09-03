@@ -46,6 +46,9 @@ The editor's tab UI lives under `src/components/controls/`:
 - Spectrum effects (glow, neon, rgb split, echo…): `src/features/spectrum/effects/`
 - Spectrum runtime/profiles: `src/features/spectrum/runtime/`, `src/lib/featureProfiles.ts`
 - Pixel Art: `src/features/spectrum/pixelArtHelpers.ts` (+ `renderers/linear/`)
+- Logo (motor, presets, diagnostics, grid): `src/features/logo/` — **importar
+  siempre por `@/features/logo`**, nunca por un archivo interno. Es el dominio
+  migrado de referencia (ver [ARCHITECTURE.md](ARCHITECTURE.md) §6.1).
 - Audio runtime / media-session / playlist: `src/context/audioData/`
 - Output render quality / debug overlay: `src/runtime/`
 

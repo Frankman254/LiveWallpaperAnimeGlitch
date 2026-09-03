@@ -3,7 +3,7 @@ import {
 	getLogoDiagnosticsSnapshot,
 	resetLogoDiagnosticsTelemetry,
 	subscribeLogoDiagnosticsTelemetry
-} from '@/lib/debug/logoDiagnosticsTelemetry';
+} from './logoDiagnosticsTelemetry';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 

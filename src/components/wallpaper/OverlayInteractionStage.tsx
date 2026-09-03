@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
-import { getLogoRenderState } from '@/components/audio/ReactiveLogo';
+import { getLogoRenderState } from '@/features/logo';
 import {
 	resolveResponsiveLogoSettings,
 	resolveResponsiveSpectrumSettings,
