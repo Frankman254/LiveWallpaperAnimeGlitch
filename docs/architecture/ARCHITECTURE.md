@@ -8,7 +8,8 @@
 > [CODEBASE_STRUCTURE.md](CODEBASE_STRUCTURE.md) — ése es el mapa descriptivo.
 > Para "¿dónde va lo nuevo?" y "¿qué puede importar qué?", usá éste.
 >
-> Verificado contra el árbol el **2026-09-03**: 595 archivos, ~135k LOC.
+> Verificado contra el árbol el **2026-09-03**: 604 archivos, ~135k LOC,
+> 2.484 imports, **22 aristas de deuda y 0 ciclos de runtime**.
 > Lo verifica `pnpm architecture:check` en CI.
 
 ---
@@ -202,24 +203,54 @@ verifica igual que todo lo demás — el ciclo de runtime hace fallar
 
 Corolario incómodo pero honesto: `lib/constants.ts`, `lib/featureProfiles.ts` y
 `features/scenes/sceneSlot.ts` importan módulos **profundos** de spectrum a
-propósito, saltándose la fachada. Están en el baseline con esa explicación. La
-causa raíz es que la porción spectrum de `DEFAULT_STATE` vive en `lib/` en vez
-de en el dominio; mientras siga ahí, pasarlos por el barrel vuelve a romper la
-inicialización.
+propósito, saltándose la fachada.
+
+**Resuelto (2026-09-03).** La causa raíz era que la porción spectrum de
+`DEFAULT_STATE` vivía en `lib/` en vez de en el dominio. Ahora el dominio es
+dueño de sus defaults (`features/spectrum/domain/spectrumDefaults.ts`),
+`lib/constants` los compone en una sola dirección, y los siete imports profundos
+son dos aristas normales de fachada. El ciclo desapareció.
+
+Nota: `./render` **no** se fundió de vuelta en `./index`, aunque el ciclo que lo
+originó ya no existe. La razón que sobrevive es el peso: `renderers/`,
+`geometry/` y `effects/` son ~6.800 LOC que necesitan 7 call sites, mientras
+`./index` lo importan 21 — incluido `lib/constants`, que importa medio proyecto.
+Fundirlos haría que todo consumidor de `DEFAULT_STATE` cargue el renderer, que
+es exactamente el barrel gordo que rompió 18 suites. El split es **por
+consumidor**, no por accidente.
 
 ### El estado hoy (2026-09-03)
 
-| Dominio        | Motor + UI en su carpeta | Fachada | Estado                                          |
-| -------------- | -----------------------: | :-----: | ----------------------------------------------- |
-| **spectrum**   |       80 arch · ~18k LOC |  ✅ ×3  | **migrado** — index + render + ui               |
-| **lyrics**     |      16 arch · ~3,9k LOC |  ✅ ×2  | **migrado** — index + ui                        |
-| **logo**       |      10 arch · ~1,7k LOC |  ✅ ×2  | **migrado** — index + ui                        |
-| **background** |         2 arch · 896 LOC |    —    | 5.453 LOC de UI todavía en `tabs/bg/`           |
-| **motion**     |         1 arch · 159 LOC |    —    | `tabs/main/motion/` mezcla 4 dominios distintos |
-| **export**     |      15 arch · 1.828 LOC |    —    | 13 arch de UI en `tabs/export/`                 |
+| Dominio        | Motor + UI en su carpeta | Fachada | Estado                                         |
+| -------------- | -----------------------: | :-----: | ---------------------------------------------- |
+| **spectrum**   |       80 arch · ~18k LOC |  ✅ ×3  | **migrado** — index + render + ui              |
+| **background** |      37 arch · ~8,4k LOC |  ✅ ×2  | **migrado** — index + ui                       |
+| **lyrics**     |      16 arch · ~3,9k LOC |  ✅ ×2  | **migrado** — index + ui                       |
+| **stageFx**    |      12 arch · ~2,7k LOC |  ✅ ×1  | **migrado** — sólo ui (ver abajo)              |
+| **logo**       |      10 arch · ~1,7k LOC |  ✅ ×2  | **migrado** — index + ui                       |
+| **particles**  |       4 arch · ~1,4k LOC |  ✅ ×2  | **migrado** — index + ui                       |
+| **rain**       |        2 arch · ~340 LOC |  ✅ ×1  | **migrado** — sólo ui (no tiene modelo propio) |
+| **export**     |      16 arch · ~2,0k LOC |    —    | 12 arch de UI todavía en `tabs/export/`        |
 
-`components/controls/tabs/` bajó de **31.640 a 24.333 LOC**. Lo que queda ahí
-pertenece casi todo a `background`, `motion` y `export`.
+`components/controls/tabs/` bajó de **31.640 a 15.119 LOC** — menos de la mitad.
+Lo que queda ahí es `export` y los _shells_ de composición (`MotionTab`,
+`LayersTab`, `SceneTab`…), que sí pertenecen al editor.
+
+**`features/motion/` ya no existe.** Nunca fue un dominio: era el nombre de una
+pestaña que apilaba cuatro cosas distintas. Se repartió en `particles`, `rain`
+y `stageFx` (§6.4).
+
+**Por qué `stageFx` y `rain` no tienen `index.ts`:**
+
+- `rain` no tiene todavía nada de modelo puro — lo que no es UI es estado del
+  store o `components/wallpaper/RainLayer`, que es una capa registrada del motor
+  de escena. Cuando aparezca lógica pura, se agrega el `index.ts` y se deja React
+  afuera.
+- `stageFx` sí tiene modelo (`stageFxConfig.ts`), pero lo importan **~80
+  posiciones de tipo inline** `import('...')` desde `types/wallpaper.ts` y
+  `store/wallpaperStoreTypes.ts`. Pasarlas por una fachada sería churn sobre
+  declaraciones que se borran en build, y tener dos caminos para el mismo
+  vocabulario es peor que uno solo claro. Queda deep-import a propósito.
 
 ---
 
@@ -256,22 +287,27 @@ el check también falla.
 | Grupo                            | Aristas | Qué la causa                                                                                              |
 | -------------------------------- | ------: | --------------------------------------------------------------------------------------------------------- |
 | `types/` → dominios              |       5 | `types/wallpaper.ts` usa `import('...').Foo` inline. Sólo tipos: **se borra en build**, no es ciclo real. |
-| `lib/` → `store` / `hooks`       |       6 | `projectSettings`, `i18n`, `wallpaperPersistenceCoordinator` son servicios de app, no librería.           |
-| `lib/` → `features/`             |      11 | `lib/constants.ts` y `lib/featureProfiles.ts` arman defaults tomándolos de los dominios (§3.1).           |
-| `features/export` → `components` |       7 | El render offline reusa `audioLayerFrameRenderer` de la UI viva.                                          |
-| `editor/` → `features/stageFx`   |       1 | `MotionSharedControls` lleva un control de stageFx dentro. Prueba de que está mal ubicado.                |
-| **Total**                        |  **30** | 0,6 % de las aristas del grafo.                                                                           |
+| `lib/` → `store` / `hooks`       |       5 | `projectSettings`, `i18n`, `wallpaperPersistenceCoordinator` son servicios de app, no librería.           |
+| `lib/` → `features/`             |       6 | `lib/constants.ts` y `lib/featureProfiles.ts` arman `DEFAULT_STATE` a partir de los dominios.             |
+| `features/export` → `components` |       5 | El render offline reusa `audioLayerFrameRenderer` de la UI viva.                                          |
+| `editor/` → `features/stageFx`   |       1 | `MotionSharedControls` lleva un control de stageFx dentro — y **no lo importa nadie** (§7.2).             |
+| **Total**                        |  **22** | 0,9 % de las aristas del grafo.                                                                           |
 
-**Ciclo de runtime conocido: 1.**
+**Ciclos de runtime conocidos: 0.** ✅
 
-- `lib/constants.ts → lib/featureProfiles.ts → features/spectrum/runtime/spectrumProfileHydrate.ts → lib/constants.ts`
-  Se rompe cuando los defaults de spectrum vivan en el dominio y `constants` sólo los componga.
+El último (`lib/constants → lib/featureProfiles → spectrumProfileHydrate →
+lib/constants`) murió cuando el dominio spectrum se quedó con sus propios
+defaults. `KNOWN_CYCLES` está vacío en el script, y la idea es que siga así: si
+vas a agregar una entrada ahí, mové los valores compartidos al dominio en vez.
 
-Resueltos esta sesión: el ciclo del barrel `@/ui` (los tres widgets conectados
-se movieron a `editor/`), y las 4 aristas `ui/` → producto que lo causaban.
+Resueltos: el ciclo del barrel `@/ui` (los tres widgets conectados se movieron a
+`editor/`) y las 4 aristas `ui/` → producto que lo causaban; los 7 imports
+profundos de `lib/` a spectrum; las 3 aristas de background (dos se mudaron
+adentro del dominio, y `lib/backgroundTransform.ts` —un shim de 5 líneas que no
+importaba nadie— se borró).
 
-> **Lectura honesta:** la dirección de dependencias está **casi bien** — 30
-> aristas malas sobre 2.468 imports. El problema nunca fue acoplamiento
+> **Lectura honesta:** la dirección de dependencias está **casi bien** — 22
+> aristas malas sobre 2.484 imports. El problema nunca fue acoplamiento
 > descontrolado sino **dispersión de ownership** (§3). Por eso el plan no es
 > reconstruir: es mudar cada dominio a su carpeta.
 
@@ -385,16 +421,67 @@ TrackTitle (`trackTextTreatment`, `textRenderCache`, `trackFonts`,
   codemod los arregla: hay que editar los literales a mano.
 - La partición de fachadas de §3.1 se descubrió acá, a los golpes.
 
-### 6.3 · Lo que sigue, en orden
+### 6.3 · Cierre de spectrum (2026-09-03)
 
-1. **`background`** — el peor caso: 5.453 LOC de UI en `tabs/bg/`, 896 en el
-   dominio. Ya no hay bloqueantes de chrome.
-2. **`motion`** — `tabs/main/motion/` mezcla cuatro dominios (partículas, rain,
-   stage lights, camera fx). Hay que **repartirlo**, no moverlo entero.
-3. **Sacar los defaults de spectrum de `lib/constants`** → mata el último ciclo
-   y 11 aristas de deuda, y permite que `lib/` use la fachada.
-4. **Pasar `performanceMode` como argumento a `drawSpectrum`** → permite que
-   `render.ts` se funda de nuevo en `index.ts`.
+Los dos ítems que quedaban del dominio más grande, hechos antes de las mudanzas
+grandes — a propósito: **primero se aprieta el guardrail, después se mueve**.
+
+**Defaults al dominio.** `DEFAULT_SPECTRUM_STATE` ahora vive en
+`features/spectrum/domain/spectrumDefaults.ts` y `lib/constants` lo _compone_ en
+una sola dirección. Eso mató el último ciclo de runtime y colapsó 7 imports
+profundos en 2 aristas de fachada.
+
+> Hallazgo del camino: **ocho keys de rotación de spectrum estaban tiradas al
+> final de `DEFAULT_STATE`**, bajo un título "Task 1", a ~140 líneas del
+> `spectrumRotationSpeed` que modifican. Nadie las iba a encontrar ahí. Ahora
+> están con el resto.
+
+**El renderer ya no lee el store.** `drawSpectrum` recibe un
+`SpectrumRenderPolicy` en vez de llamar a `useWallpaperStore.getState()`. Nada
+bajo el camino de dibujo importa `store/`, así que el renderer es una función
+pura de sus argumentos y el exportador offline puede elegir su propia calidad sin
+tocar el estado vivo.
+
+**`render.ts` se queda igual.** El plan decía fundirlo de vuelta en `index.ts`,
+pero al hacer el trabajo quedó claro que el ciclo era sólo _una_ de sus dos
+razones. La otra —el peso— sigue viva. Ver §3.1.
+
+### 6.4 · `background` y `motion` (2026-09-03)
+
+**`background`** siguió la plantilla de §6.1 sin sorpresas: 36 archivos, con
+`domain/` (la matemática de encuadre), `slideshow/` (playback + el controlador
+montado) y `controls/` (las 28 pantallas de `tabs/bg/`). Tres aristas de deuda
+desaparecieron en vez de mudarse.
+
+Lo interesante fue **lo que decidí no mover**, porque es la parte que se olvida:
+
+| Candidato                                       | Por qué se queda afuera                                                                                                                                                                              |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wallpaper/layers/imageCanvasBackground*`       | Dibujan el fondo, pero son _plugins_ del motor de capas (`imageCanvasShared`), que también sirve a los overlays. Moverlos cambia una arista `components → features` por una `features → components`. |
+| `lib/backgroundPalette`, `useBackgroundPalette` | Se llaman "background" pero 18 y 10 módulos los usan como **fuente de color**, desde stageFx hasta lyrics. Infraestructura compartida, no estado del dominio.                                        |
+| `lib/backgroundImages`                          | Sí pertenece al dominio, pero cuatro de sus consumidores cuelgan de `lib/projectSettings`, que ganaría una arista nueva. Bloqueado hasta que ese módulo salga de `lib/`.                             |
+
+**`motion` se repartió, no se movió.** Nunca fue un dominio: era el nombre de una
+pestaña que apilaba partículas, rain, stage lights y camera fx. Cada sección se
+fue a su dueño real y `features/motion/` dejó de existir. Su único archivo,
+`motionRandomizer.ts`, era en realidad un randomizador de **partículas** — su
+propio comentario dice que rain y stage FX quedan intactos.
+
+`MotionTab.tsx` se queda en `tabs/main/`: una pestaña que compone tres dominios
+es un _shell_, no un dominio, y ahora trae cada sección por la fachada de su
+dueño. Esa es la regla general para las pestañas que quedan ahí.
+
+### 6.5 · Lo que sigue
+
+1. **`export`** — último dominio grande sin fachada: 12 archivos de UI en
+   `tabs/export/` y 5 aristas `features/export → components`.
+2. **Sacar `projectSettings` y `wallpaperPersistenceCoordinator` de `lib/`** —
+   son servicios de aplicación, no librería. Desbloquea mudar
+   `lib/backgroundImages` al dominio y limpia 5 aristas más.
+3. **`DEFAULT_STATE` fuera de `lib/`** — la última causa de `lib/ → features/`.
+   `lib/constants` y `lib/featureProfiles` son "el estado por defecto de la app
+   entera", que es rol de `config/` o `store/`, no de una librería pura.
+4. **Decidir sobre §7** — hay ~2.200 LOC muertas confirmadas esperando el OK.
 
 ---
 
@@ -430,25 +517,37 @@ que no existe.
 
 Verificados uno por uno contra todo el repo:
 
-| Archivo                                                                                      | LOC |
-| -------------------------------------------------------------------------------------------- | --: |
-| `components/controls/tabs/bg/TimestampTimeline.tsx`                                          | 411 |
-| `features/edgeGlow/controls/EdgeGlowSection.tsx`                                             | 357 |
-| `features/edgeGlow/edgeGlowRenderer.ts`                                                      | 317 |
-| `components/controls/PresetSelector.tsx`                                                     | 204 |
-| `lib/sync/remoteSyncRepository.ts`                                                           | 174 |
-| `features/export/offlineAudioLayerRenderer.ts`                                               | 163 |
-| `components/audio/AudioOverlay.tsx`                                                          | 125 |
-| `features/export/runOfflineRenderTest.ts`                                                    |  98 |
-| `lib/textures.ts`                                                                            |  75 |
-| `components/controls/ImageUploader.tsx`                                                      |  43 |
-| `components/controls/tabs/audio/AudioTabSections.tsx`                                        |  36 |
-| `features/spectrum/effects/spectrumDrawOrder.ts`                                             |  26 |
-| + `discovery/constants`, `discovery/recentIds`, `spectrumFxTypes`, `lib/backgroundTransform` | ~23 |
+| Archivo                                                           | LOC |
+| ----------------------------------------------------------------- | --: |
+| `features/background/controls/TimestampTimeline.tsx`              | 411 |
+| `features/edgeGlow/controls/EdgeGlowSection.tsx`                  | 357 |
+| `features/edgeGlow/edgeGlowRenderer.ts`                           | 317 |
+| `components/controls/PresetSelector.tsx`                          | 204 |
+| `lib/sync/remoteSyncRepository.ts`                                | 174 |
+| `features/export/offlineAudioLayerRenderer.ts`                    | 163 |
+| `components/audio/AudioOverlay.tsx`                               | 125 |
+| `features/export/runOfflineRenderTest.ts`                         |  98 |
+| `lib/textures.ts`                                                 |  75 |
+| `components/controls/ImageUploader.tsx`                           |  43 |
+| `components/controls/tabs/audio/AudioTabSections.tsx`             |  36 |
+| `features/spectrum/effects/spectrumDrawOrder.ts`                  |  26 |
+| + `discovery/constants`, `discovery/recentIds`, `spectrumFxTypes` | ~18 |
+| **`editor/MotionSharedControls.tsx`** ← nuevo, confirmado         | 225 |
 
 Ojo con dos: `offlineAudioLayerRenderer` y `runOfflineRenderTest` son del
 exportador offline — puede ser andamiaje a medio terminar y no basura. Decidir
 antes de borrar.
+
+**`lib/backgroundTransform.ts` ya no está en la lista: se borró** durante la
+mudanza de `background` (§6.4). Eran 5 líneas de re-export con cero importadores.
+
+**`editor/MotionSharedControls.tsx` (225 LOC) es el caso más claro de todos.**
+Ya estaba marcado como duplicado de `editor/advancedControls`; ahora está
+confirmado con **cero importadores en todo el repo**, ni directos ni por la
+fachada `@/editor`. Además es la **única causa** de la arista de deuda
+`editor/ → features/stageFx` (§5): borrarlo la elimina sola. No lo toqué porque
+§7 es material para que decidas vos, pero de la lista entera éste es el que
+menos riesgo tiene.
 
 ### 7.3 · Estado persistido que nadie usa
 
@@ -472,7 +571,10 @@ Keys en `DEFAULT_STATE` que **ni la UI escribe ni ningún renderer lee**:
    saberlo, y el store hace contabilidad para una UI que no existe.
 2. **`editor/advancedControls` y `editor/MotionSharedControls` exportan los
    mismos controles** — `OptionButtonGroup`, `SwitchRow`, `ProfileSlotsGrid`,
-   dos veces. Unos tabs usan una versión y otros la otra, y no se ven iguales.
+   dos veces. **Resuelto a medias por accidente:** al medirlo esta sesión resultó
+   que `MotionSharedControls` no lo importa nadie (§7.2), así que no hay tabs
+   usando dos versiones distintas — hay una versión viva y una copia muerta.
+   Borrarla cierra el punto.
 3. **167 de 1.750 keys de i18n sin referencia directa.** Incluye `ai_btn_cancel`
    (el botón de cancelar del AI Director que nunca se cableó), los 7
    `sfx_edge_glow_*` de §7.1 y 12 `spectrum_clone_*` del refactor clone→instancia.
@@ -480,6 +582,13 @@ Keys en `DEFAULT_STATE` que **ni la UI escribe ni ningún renderer lee**:
 4. **`pnpm lint` está rojo** por 2 errores previos en `AiDirectorPanel.tsx`: el
    icono `X` y `handleCancelAsk()` existen pero el botón nunca se renderizó. La
    cancelación de una petición al modelo está implementada y es inalcanzable.
+
+5. **`stageFxConfig.ts` es dueño de vocabulario que no es suyo.**
+   `SpectrumRotationDrive`, `SpectrumRotationChannel` y `RotationDirection` son
+   de spectrum, pero viven en la config de stage FX y los importan `types/`,
+   `store/`, spectrum y edgeGlow. No es urgente —son tipos, se borran en build—
+   pero explica por qué `stageFx` no tiene `index.ts`: ese módulo es vocabulario
+   compartido disfrazado de dominio.
 
 Bueno: **`en.ts` y `es.ts` tienen paridad exacta** (1.750 keys cada uno).
 

@@ -151,15 +151,19 @@ WebGL (proyecto grande). **Ninguna es "de pasada".**
 
 El top de la zona de interfaz (líneas reales):
 
-| Archivo                                               | Líneas | Nota                                            |
-| ----------------------------------------------------- | ------ | ----------------------------------------------- |
-| `controls/ControlPanel.tsx`                           | 1.235  | El shell del editor entero                      |
-| `wallpaper/quickActions/useQuickActionsViewModel.tsx` | 1.171  | El "cerebro" del panel de acciones rápidas      |
-| `tabs/spectrum/SpectrumCloneSection.tsx`              | 1.125  | La UI del clon (reexpone casi todo el spectrum) |
-| `tabs/main/LyricsTabBody.tsx`                         | 1.041  | La pestaña de letras                            |
-| `quickActions/quickActionConfigs.tsx`                 | 963    | Configuración de acciones rápidas               |
-| `tabs/main/SceneTab.tsx`                              | 944    | La pestaña de escenas                           |
-| `tabs/main/motion/ParticlesAppearanceSection.tsx`     | 938    | Apariencia de partículas                        |
+| Archivo                                                  | Líneas | Nota                                       |
+| -------------------------------------------------------- | ------ | ------------------------------------------ |
+| `components/controls/tabs/main/TrackTitleTab.tsx`        | 1.459  | La pestaña del widget Now Playing          |
+| `components/controls/ControlPanel.tsx`                   | 1.356  | El shell del editor entero                 |
+| `components/wallpaper/quickActions/…ViewModel.tsx`       | 1.336  | El "cerebro" del panel de acciones rápidas |
+| `features/lyrics/controls/LyricsTabBody.tsx`             | 1.231  | La pestaña de letras                       |
+| `features/particles/controls/ParticlesAppearanceSection` | 1.077  | Apariencia de partículas                   |
+| `components/wallpaper/ParticleField.tsx`                 | 975    | El dibujante GPU de partículas             |
+| `components/controls/tabs/main/SceneTab.tsx`             | 970    | La pestaña de escenas                      |
+| `components/wallpaper/quickActions/…Configs.tsx`         | 962    | Configuración de acciones rápidas          |
+
+(La vieja `SpectrumCloneSection.tsx` — 1.125 líneas — ya no está en esta
+lista: desapareció cuando el clon se convirtió en instancias de spectrum.)
 
 No es deuda crítica (no rompe a usuarios), pero sí fricción diaria: revisar
 un cambio de 30 líneas dentro de un archivo de 1.200 cuesta; y los archivos

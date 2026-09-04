@@ -29,15 +29,16 @@ humans and agents — when something here disagrees with the tree, the tree wins
 The editor's tab UI lives under `src/components/controls/`:
 
 - `ControlPanel.tsx` / `EditorOverlay.tsx` — the two editor shells that mount the tabs.
-- `tabs/main/` — **the current editor tab entry-points**, one component per tab
-  (`SpectrumTab`, `BackgroundTab`, `MotionTab`, `AudioTab`, `OutputTab`,
-  `SceneTab`, `LooksTab`, `LayersTab`, `DiagnosticsTab`, `PerformanceTab`,
-  `TrackTitleTab`, `EditorTab`, `LyricsTab`, `LogoTab`, `LegacyTabAdapter`).
+- `tabs/main/` — the editor tab entry-points that have **not** moved to a domain
+  yet, plus the _composition shells_ (`MotionTab`, `LayersTab`, `SceneTab`…),
+  which stack sections owned by several domains and belong here by design.
   Formerly `tabs/modern/` (renamed 2026-06; "modern" had come to mean
   "current"). The historical `Modern*` naming has been fully removed from the
   live UI.
-- `tabs/spectrum/`, `tabs/bg/`, `tabs/audio/`, `tabs/export/` — the **feature
-  sections** each tab composes.
+- Tabs that now live with their domain: `SpectrumTab`, `LyricsTab`, `LogoTab`,
+  `BackgroundTab`, and the particles / rain / stage-FX sections. Import them via
+  the domain facade (`@/features/<domain>/ui`), never by file path.
+- `tabs/audio/`, `tabs/export/` — the feature sections still composed from here.
 - `tabs/CalibrationTab.tsx` — calibration controls.
 
 ## Where renderers and engines live
@@ -49,6 +50,11 @@ The editor's tab UI lives under `src/components/controls/`:
 - Logo (motor, presets, diagnostics, grid): `src/features/logo/` — **importar
   siempre por `@/features/logo`**, nunca por un archivo interno. Es el dominio
   migrado de referencia (ver [ARCHITECTURE.md](ARCHITECTURE.md) §6.1).
+- Background (encuadre, slideshow, UI): `src/features/background/`
+- Particles / Rain / Stage FX: `src/features/particles/`, `src/features/rain/`,
+  `src/features/stageFx/`
+- Spectrum draw path: `@/features/spectrum/render` (el modelo es
+  `@/features/spectrum`; están separados a propósito, ver ARCHITECTURE.md §3.1).
 - Audio runtime / media-session / playlist: `src/context/audioData/`
 - Output render quality / debug overlay: `src/runtime/`
 
@@ -56,14 +62,14 @@ The editor's tab UI lives under `src/components/controls/`:
 
 | Want to change…    | Edit here                                                                         |
 | ------------------ | --------------------------------------------------------------------------------- |
-| Background UI      | `src/components/controls/tabs/main/BackgroundTab.tsx` + `tabs/bg/`                |
-| Spectrum UI        | `src/components/controls/tabs/main/SpectrumTab.tsx` + `tabs/spectrum/`            |
+| Background UI      | `src/features/background/controls/` (fachada: `@/features/background/ui`)         |
+| Spectrum UI        | `src/features/spectrum/controls/` (fachada: `@/features/spectrum/ui`)             |
 | Spectrum renderers | `src/features/spectrum/renderers/`                                                |
 | Pixel Art          | `src/features/spectrum/pixelArtHelpers.ts`                                        |
 | Audio / media keys | `src/context/audioData/` (e.g. `mediaTrackKeys.ts`, `useAudioPlaybackEffects.ts`) |
 | Import/Export      | `src/features/export/`, `src/lib/featureProfiles.ts`                              |
-| Stage FX           | `src/features/` (stage FX) + `tabs/main/MotionTab.tsx`                            |
-| Particles / Rain   | `tabs/main/MotionTab.tsx` (motion controls)                                       |
+| Stage FX           | `src/features/stageFx/` (fachada: `@/features/stageFx/ui`)                        |
+| Particles / Rain   | `src/features/particles/`, `src/features/rain/`                                   |
 | Output / Recording | `tabs/main/OutputTab.tsx` + `src/runtime/` + `src/features/recording/`            |
 
 ## Tests & docs

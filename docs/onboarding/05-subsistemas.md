@@ -91,10 +91,17 @@ features, y las escenas pueden referenciarlos (sección 4).
 
 ## 3. Motion: partículas y lluvia
 
-**Dónde:** los dibujantes GPU `ParticleField.tsx` (895 líneas),
+**Dónde:** los dibujantes GPU `ParticleField.tsx` (975 líneas),
 `ParticlesBackground/Foreground.tsx` y `RainLayer.tsx` en
-`components/wallpaper/`; shaders en `src/shaders/`; el randomizador en
-`features/motion/`; estado en `particlesRainSlice`.
+`components/wallpaper/`; shaders en `src/shaders/`; los controles del editor
+en `features/particles/controls/` y `features/rain/controls/`; el randomizador
+en `features/particles/presets/`; estado en `particlesRainSlice`.
+
+> Ojo con el nombre: **no existe una carpeta `features/motion/`**. "Motion" es
+> el nombre de una **pestaña** del editor (`tabs/main/MotionTab.tsx`) que
+> apila secciones de tres dominios distintos — partículas, lluvia y Stage FX —
+> no el nombre de un dominio. Si buscas el código de las partículas, la
+> carpeta es `features/particles/`.
 
 ### Partículas (`ParticleField`)
 
@@ -124,7 +131,8 @@ Lo configurable (todo audio-reactivo si quieres):
   los bordes, el centro, arriba, abajo) más influencia de viento.
 - Rotación, color (sólido/degradado/arcoíris/RGB rotativo), filtros propios.
 
-`features/motion/motionRandomizer.ts` genera perfiles aleatorios coherentes
+`features/particles/presets/particlesRandomizer.ts` genera perfiles
+aleatorios coherentes
 (el botón de "sorpréndeme").
 
 ### Lluvia (`RainLayer`)
