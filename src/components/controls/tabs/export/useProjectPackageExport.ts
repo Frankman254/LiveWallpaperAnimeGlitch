@@ -14,7 +14,7 @@ import {
 	formatProgressLabel,
 	saveBlobWithPicker,
 	type ExportNamingState
-} from './exportFileUtils';
+} from '@/features/export/exportFileUtils';
 
 export type ProjectStatus = 'idle' | 'saved' | 'imported' | 'warning' | 'error';
 export type ProjectBusyMode = 'idle' | 'exporting' | 'importing';

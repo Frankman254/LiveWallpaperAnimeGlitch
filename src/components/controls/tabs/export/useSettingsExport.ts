@@ -6,7 +6,7 @@ import {
 	downloadBlobFallback,
 	saveBlobWithPicker,
 	type ExportNamingState
-} from './exportFileUtils';
+} from '@/features/export/exportFileUtils';
 
 export type SettingsStatus =
 	| 'idle'

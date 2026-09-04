@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ImageFitMode } from '@/types/wallpaper';
 import { IMAGE_RANGES } from '@/config/ranges';
-import { loadImageDimensions } from '@/lib/backgroundAutoFit';
-import { resolveImageTransform } from '@/features/background/resolveImageTransform';
+import { loadImageDimensions } from '@/features/background/domain/backgroundAutoFit';
+import { resolveImageTransform } from '@/features/background/domain/resolveImageTransform';
 
 type SliderRange = {
 	min: number;

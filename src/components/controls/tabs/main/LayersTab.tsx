@@ -5,13 +5,13 @@ import {
 	RotateCcw,
 	SlidersHorizontal
 } from 'lucide-react';
-import BackgroundTab from './BackgroundTab';
-import { BackgroundViewTabs } from '../bg/backgroundViewTabs';
 import {
+	BackgroundTab,
+	BackgroundViewTabs,
 	readPersistedBgView,
 	writePersistedBgView,
 	type BgView
-} from '../bg/backgroundViewState';
+} from '@/features/background/ui';
 import { useIsSimple } from '@/editor/UIMode';
 import { useT } from '@/lib/i18n';
 import {

@@ -2,7 +2,7 @@ import type { ImageFitMode } from '@/types/wallpaper';
 import {
 	getRotatedHalfExtents,
 	resolveMinimumCoverScale
-} from '@/features/background/resolveImageTransform';
+} from './resolveImageTransform';
 
 export type AutoFitResult = {
 	fitMode: ImageFitMode;

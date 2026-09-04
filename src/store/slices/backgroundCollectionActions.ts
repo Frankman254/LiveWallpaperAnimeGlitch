@@ -2,7 +2,7 @@ import { DEFAULT_STATE } from '@/lib/constants';
 import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
-} from '@/lib/backgroundAutoFit';
+} from '@/features/background';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import {
 	buildSceneSlotActivationPatch,

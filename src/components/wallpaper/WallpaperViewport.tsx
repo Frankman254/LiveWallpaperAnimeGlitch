@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { buildOverlayLayers, buildSceneLayers } from '@/lib/layers';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import SlideshowManager from '@/components/SlideshowManager';
+import { SlideshowManager } from '@/features/background/ui';
 import OverlayInteractionStage from '@/components/wallpaper/OverlayInteractionStage';
 import SceneLayerCanvas from '@/components/wallpaper/layers/SceneLayerCanvas';
 import BackgroundImageLayerView from '@/components/wallpaper/layers/BackgroundImageLayerView';

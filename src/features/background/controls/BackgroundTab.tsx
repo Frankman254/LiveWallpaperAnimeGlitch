@@ -2,27 +2,27 @@ import { useEffect, useRef, useState } from 'react';
 import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
-} from '@/lib/backgroundAutoFit';
+} from '@/features/background/domain/backgroundAutoFit';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import { useT } from '@/lib/i18n';
 import { useAudioContext } from '@/context/useAudioContext';
 import { UI_COLORS } from '@/ui';
-import ActiveWallpaperSection from '../bg/ActiveWallpaperSection';
-import GlobalBackgroundSection from '../bg/GlobalBackgroundSection';
-import SlideshowPoolSection from '../bg/SlideshowPoolSection';
-import BgZoomAudioSection from '../bg/BgZoomAudioSection';
+import ActiveWallpaperSection from './ActiveWallpaperSection';
+import GlobalBackgroundSection from './GlobalBackgroundSection';
+import SlideshowPoolSection from './SlideshowPoolSection';
+import BgZoomAudioSection from './BgZoomAudioSection';
 import { FlashEdgeSection } from '@/features/edgeGlow/controls/FlashEdgeSection';
-import { useBackgroundPositionRanges } from '../bg/useBackgroundPositionRanges';
-import { useCoverageLockedImageTransform } from '../bg/useCoverageLockedImageTransform';
-import { useBackgroundImageActions } from '../bg/useBackgroundImageActions';
-import { BackgroundViewTabs } from '../bg/backgroundViewTabs';
+import { useBackgroundPositionRanges } from './useBackgroundPositionRanges';
+import { useCoverageLockedImageTransform } from './useCoverageLockedImageTransform';
+import { useBackgroundImageActions } from './useBackgroundImageActions';
+import { BackgroundViewTabs } from './backgroundViewTabs';
 import {
 	readPersistedBgView,
 	writePersistedBgView,
 	type BgView
-} from '../bg/backgroundViewState';
-import { moveIdToIndex, shuffleIds } from '../bg/backgroundImageOrder';
-import { useBackgroundStore } from '../bg/useBackgroundStore';
+} from './backgroundViewState';
+import { moveIdToIndex, shuffleIds } from './backgroundImageOrder';
+import { useBackgroundStore } from './useBackgroundStore';
 import { useIsSimple } from '@/editor/UIMode';
 import {
 	filterImageIdsBySetlist,

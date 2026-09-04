@@ -24,7 +24,7 @@ import VirtualFoldersSection from '../export/VirtualFoldersSection';
 import {
 	formatDuration,
 	type ExportNamingState
-} from '../export/exportFileUtils';
+} from '@/features/export/exportFileUtils';
 import {
 	RECORDING_FPS_OPTIONS,
 	useRecordingExport

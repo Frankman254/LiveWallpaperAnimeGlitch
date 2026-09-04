@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { createOfflineAudioAnalysisSource } from '@/features/export/offlineAudioAnalysis';
 import type { OfflineExportAudioAssetRef } from '@/features/export/offlineExportPlanner';
 import { loadImageBlob } from '@/lib/db/imageDb';
-import { formatBytes, formatDuration } from './exportFileUtils';
+import { formatBytes, formatDuration } from '@/features/export/exportFileUtils';
 
 export type OfflineAnalysisStatus = 'idle' | 'running' | 'ready' | 'error';
 

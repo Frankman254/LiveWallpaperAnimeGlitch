@@ -142,12 +142,12 @@ const BASELINE = [
 	'lib/i18n/index.tsx -> store/wallpaperStore.ts',
 	'lib/projectSettings.ts -> store/wallpaperStore.ts',
 	'lib/projectSettings.ts -> store/wallpaperStoreMigrations.ts',
-	'lib/slideshowPlayback.ts -> store/slices/setlistsSlice.ts',
 	'lib/wallpaperPersistenceCoordinator.ts -> store/wallpaperStore.ts',
 
-	// lib/ pulling domain defaults out of features/.
-	'lib/backgroundAutoFit.ts -> features/background/resolveImageTransform.ts',
-	'lib/backgroundTransform.ts -> features/background/resolveImageTransform.ts',
+	// lib/ pulling domain defaults out of features/. The three background
+	// entries that used to head this list are gone: backgroundAutoFit and
+	// slideshowPlayback moved into features/background, and backgroundTransform
+	// (a five-line re-export shim with no importers at all) was deleted.
 	'lib/constants.ts -> features/calibration/calibrationConfig.ts',
 	'lib/constants.ts -> features/layout/viewportMetrics.ts',
 	'lib/constants.ts -> features/presets/imageBassZoomProfiles.ts',

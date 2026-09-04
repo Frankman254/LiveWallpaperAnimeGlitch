@@ -4,7 +4,7 @@ import {
 	useState,
 	type PointerEvent as ReactPointerEvent
 } from 'react';
-import { resolveImageTransform } from '@/features/background/resolveImageTransform';
+import { resolveImageTransform } from '@/features/background/domain/resolveImageTransform';
 import { useT } from '@/lib/i18n';
 import type BgFitModeSelector from './BgFitModeSelector';
 

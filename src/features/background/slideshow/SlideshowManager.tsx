@@ -6,7 +6,7 @@ import {
 	filterImageIdsBySetlist,
 	getActiveSetlist
 } from '@/store/slices/setlistsSlice';
-import { resolveEffectiveImageForPlayback } from '@/lib/slideshowPlayback';
+import { resolveEffectiveImageForPlayback } from './slideshowPlayback';
 
 // Set window.__SLIDESHOW_DEBUG__ = true in the browser console to enable.
 const isDebug = () =>

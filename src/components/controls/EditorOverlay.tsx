@@ -43,7 +43,7 @@ import EditorTab from './tabs/main/EditorTab';
 import DiagnosticsTab from './tabs/main/DiagnosticsTab';
 import ExportTab from './tabs/main/OutputTab';
 import PerfTab from './tabs/main/PerformanceTab';
-import BackgroundPanel from './tabs/main/BackgroundTab';
+import { BackgroundTab as BackgroundPanel } from '@/features/background/ui';
 import LayersTab from './tabs/main/layers/LayerStackPanel';
 import OverlaysTab from './tabs/main/layers/OverlaysPanel';
 import EditorOverlayInsightsPane from './tabs/main/editor/EditorOverlayInsightsPane';
