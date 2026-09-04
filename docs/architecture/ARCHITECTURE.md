@@ -611,6 +611,7 @@ paridad exacta, ahora 1.730 cada uno): el conteo no cubre accesos dinámicos
 ## 8. Cómo se verifica
 
 ```bash
+pnpm dead:check           # módulos que nada alcanza (grafo, no grep)
 pnpm architecture:check   # límites de zona + ciclos de runtime
 pnpm structure:check      # naming legacy (no vuelve "modern"/"v2")
 pnpm docs:check           # drift de documentación
