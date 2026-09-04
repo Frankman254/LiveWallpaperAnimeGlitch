@@ -41,7 +41,7 @@ import {
 	getCachedLogoImage,
 	getLogoRotation
 } from '@/features/logo';
-import { drawLogoFlashEdge } from '@/features/edgeGlow/flashEdgeRenderer';
+import { drawLogoFlashEdge } from '@/features/flashEdge/flashEdgeRenderer';
 import {
 	getFlashEdgeDrive,
 	getFlashEdgeColor

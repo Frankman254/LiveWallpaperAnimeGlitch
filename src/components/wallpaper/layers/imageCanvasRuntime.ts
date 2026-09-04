@@ -26,7 +26,7 @@ import {
 import { resolveImageCanvasAudioState } from './imageCanvasAudioState';
 import { publishImageCanvasBackgroundDebugState } from './imageCanvasDebugState';
 import { resolveImagePostProcessQuality } from '@/lib/visual/performanceQuality';
-import { drawBgFlashEdge } from '@/features/edgeGlow/flashEdgeRenderer';
+import { drawBgFlashEdge } from '@/features/flashEdge/flashEdgeRenderer';
 import {
 	getFlashEdgeDrive,
 	getFlashEdgeColor

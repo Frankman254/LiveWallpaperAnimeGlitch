@@ -288,6 +288,38 @@ describe('per-version specifics', () => {
 		expect(typeof byVersion(106).hudLiquidGlassEnabled).toBe('boolean');
 	});
 
+	it('v108: drops every Edge Glow key from saved stores', () => {
+		// The fixtures predate the removal but never carried these keys, so
+		// inject a realistic pair and prove the strip actually runs. Without
+		// this the 28 dead keys would ride along in saved projects forever.
+		const fixture = MIGRATION_FIXTURES.find(f => f.version === 106)!;
+		const withEdgeGlow = {
+			...structuredClone(fixture.state),
+			logoEdgeGlowEnabled: true,
+			logoEdgeGlowIntensity: 1.2,
+			logoEdgeGlowColor: '#00eeff',
+			bgEdgeGlowEnabled: true,
+			bgEdgeGlowRadius: 32,
+			bgEdgeGlowBlendMode: 'lighter'
+		};
+		const migrated = migrateWallpaperStore(
+			withEdgeGlow as never,
+			fixture.version
+		) as unknown as Record<string, unknown>;
+
+		expect(
+			Object.keys(migrated).filter(
+				k => k.startsWith('logoEdgeGlow') || k.startsWith('bgEdgeGlow')
+			)
+		).toEqual([]);
+	});
+
+	it('v108: keeps Flash Edge, which replaced Edge Glow and is NOT removed', () => {
+		const migrated = byVersion(106) as unknown as Record<string, unknown>;
+		expect(typeof migrated.logoFlashEdgeEnabled).toBe('boolean');
+		expect(typeof migrated.bgFlashEdgeEnabled).toBe('boolean');
+	});
+
 	it('v104+: id bindings pass through without being re-minted', () => {
 		for (const version of [104, 105, 106]) {
 			const migrated = byVersion(version);

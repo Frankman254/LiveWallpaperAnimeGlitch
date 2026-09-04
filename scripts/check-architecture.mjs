@@ -170,8 +170,7 @@ const BASELINE = [
 	'editor/MotionSharedControls.tsx -> features/stageFx/stageFxConfig.ts',
 
 	// features/export renders through the live editor components.
-	'features/edgeGlow/edgeGlowRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
-	'features/edgeGlow/flashEdgeRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
+	'features/flashEdge/flashEdgeRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
 	'features/export/offlineAudioLayerRenderer.ts -> components/audio/layers/audioLayerFrameRenderer.ts',
 	'features/export/projectExportSelection.ts -> components/controls/controlPanelResetKeys.ts',
 	'features/export/renderSubsystems/audioLayers.ts -> components/audio/layers/audioLayerFrameRenderer.ts'

@@ -42,11 +42,6 @@ export function createParticlesRainSlice(
 		setParticleFilterSaturation: v => set({ particleFilterSaturation: v }),
 		setParticleFilterBlur: v => set({ particleFilterBlur: v }),
 		setParticleFilterHueRotate: v => set({ particleFilterHueRotate: v }),
-		setParticleScanlineIntensity: v =>
-			set({ particleScanlineIntensity: v }),
-		setParticleScanlineSpacing: v => set({ particleScanlineSpacing: v }),
-		setParticleScanlineThickness: v =>
-			set({ particleScanlineThickness: v }),
 		setParticleRotationIntensity: v =>
 			set({ particleRotationIntensity: v }),
 		setParticleRotationDirection: v =>

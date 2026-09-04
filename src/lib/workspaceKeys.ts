@@ -52,7 +52,6 @@ export const WORKSPACE_ONLY_KEYS = [
 	'controlPanelActiveTab',
 
 	// Quick Actions HUD — editor chrome, never rendered in output mode
-	'quickEditHudEnabled',
 	'quickEditCaptureMode',
 	'quickActionsEnabled',
 	'quickActionsPositionX',

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Activity, ImageUp, Layout, RotateCcw, Sparkles } from 'lucide-react';
-import { FlashEdgeSection } from '@/features/edgeGlow/controls/FlashEdgeSection';
+import { FlashEdgeSection } from '@/features/flashEdge/controls/FlashEdgeSection';
 import { useShallow } from 'zustand/react/shallow';
 import { resetLogoRotation } from '@/features/logo';
 import { AUDIO_REACTIVE_CHANNELS } from '@/lib/audio/audioChannels';

@@ -481,116 +481,130 @@ dueño. Esa es la regla general para las pestañas que quedan ahí.
 3. **`DEFAULT_STATE` fuera de `lib/`** — la última causa de `lib/ → features/`.
    `lib/constants` y `lib/featureProfiles` son "el estado por defecto de la app
    entera", que es rol de `config/` o `store/`, no de una librería pura.
-4. **Decidir sobre §7** — hay ~2.200 LOC muertas confirmadas esperando el OK.
+4. **§7 ya está resuelto en su mayor parte** — Edge Glow y los huérfanos
+   superseded se borraron (~1.500 LOC + 33 keys persistidas). Queda una sola
+   decisión de producto: el sistema de presets globales (§7.5).
 
 ---
 
-## 7. Hallazgos: UI desconectada y ambigua
+## 7. Hallazgos: código muerto — resueltos y pendientes
 
-Auditoría del 2026-09-03 sobre el grafo real. **Nada de esto se tocó** — es
-material para decidir despierto.
+Auditoría re-medida el 2026-09-04 con **alcance real desde los puntos de
+entrada** (`src/main.tsx` + los 78 tests), no por coincidencia de nombres. Ese
+cambio de método corrigió un error de la pasada anterior — ver 7.4.
 
-### 7.1 · Edge Glow: un subsistema entero inalcanzable
+### 7.1 · Edge Glow: BORRADO ✅
 
-Lo más serio que apareció. Existe un "Edge Glow" completo que **nada puede
-alcanzar**, reemplazado en su momento por "Flash Edge":
+Un subsistema completo que nada podía alcanzar, reemplazado en su día por
+"Flash Edge" y nunca retirado. Se eliminó entero:
 
-| Pieza                                            |     LOC | Estado                           |
-| ------------------------------------------------ | ------: | -------------------------------- |
-| `features/edgeGlow/controls/EdgeGlowSection.tsx` |     357 | nadie la monta                   |
-| `features/edgeGlow/edgeGlowRenderer.ts`          |     317 | nadie la llama                   |
-| `bgEdgeGlow*` / `logoEdgeGlow*`                  | 28 keys | **persistidas** en cada proyecto |
-| setters correspondientes                         |      56 | nadie los invoca                 |
-| `sfx_edge_glow_*` en i18n                        |  7 keys | sin referencia                   |
+| Pieza                              |     LOC | Destino                 |
+| ---------------------------------- | ------: | ----------------------- |
+| `EdgeGlowSection.tsx`              |     360 | borrado                 |
+| `edgeGlowRenderer.ts`              |     317 | borrado                 |
+| `edgeGlowDefaults.ts` / `Types.ts` |      90 | borrado                 |
+| `bgEdgeGlow*` / `logoEdgeGlow*`    | 28 keys | borradas + migración    |
+| setters                            |      28 | borrados                |
+| bloque de migración                |     116 | borrado                 |
+| `sfx_edge_glow_*` + ruta de audio  | 20 keys | borradas de `en` y `es` |
 
-Lo que sí vive: `flashEdgeRenderer` + `FlashEdgeSection` (otra cosa), y
-`layer.edgeGlow`, un número por capa que `OverlayImageLayerView` sí lee. No
-confundirlos.
+**La fila que mentía también se fue.** `AudioRoutingSection` —panel vivo—
+listaba "BG Edge Glow" con estado sacado de `bgEdgeGlowEnabled` y mandaba al
+usuario al tab Presets. Ninguna UI podía encender ese flag y ningún renderer lo
+leía: la fila estaba **siempre** apagada y apuntaba a un control inexistente.
 
-**Y hay un control que miente al usuario.** `AudioRoutingSection` —panel vivo—
-lista una fila "BG Edge Glow" cuyo estado activo sale de `bgEdgeGlowEnabled`, y
-manda al usuario al tab Presets. Ese flag no lo puede encender ninguna UI viva y
-ningún renderer lo lee: la fila **siempre** está inactiva y apunta a un control
-que no existe.
+**Lo que NO se tocó, a propósito:** `flashEdgeRenderer` + `FlashEdgeSection`
+(vivos, montados en Background y Logo → Finish) y `layer.edgeGlow`, el número
+por capa que `OverlayInspector` sí lee. Sus etiquetas `sfx_edge_glow` y
+`label_edge_glow` se conservan.
 
-### 7.2 · Archivos que nadie importa (~2.000 LOC)
+`features/edgeGlow/` pasó a llamarse **`features/flashEdge/`**: con Edge Glow
+fuera, la carpeta sólo contiene Flash Edge.
 
-Verificados uno por uno contra todo el repo:
+### 7.2 · Otros huérfanos borrados ✅
 
-| Archivo                                                           | LOC |
-| ----------------------------------------------------------------- | --: |
-| `features/background/controls/TimestampTimeline.tsx`              | 411 |
-| `features/edgeGlow/controls/EdgeGlowSection.tsx`                  | 357 |
-| `features/edgeGlow/edgeGlowRenderer.ts`                           | 317 |
-| `components/controls/PresetSelector.tsx`                          | 204 |
-| `lib/sync/remoteSyncRepository.ts`                                | 174 |
-| `features/export/offlineAudioLayerRenderer.ts`                    | 163 |
-| `components/audio/AudioOverlay.tsx`                               | 125 |
-| `features/export/runOfflineRenderTest.ts`                         |  98 |
-| `lib/textures.ts`                                                 |  75 |
-| `components/controls/ImageUploader.tsx`                           |  43 |
-| `components/controls/tabs/audio/AudioTabSections.tsx`             |  36 |
-| `features/spectrum/effects/spectrumDrawOrder.ts`                  |  26 |
-| + `discovery/constants`, `discovery/recentIds`, `spectrumFxTypes` | ~18 |
-| **`editor/MotionSharedControls.tsx`** ← nuevo, confirmado         | 225 |
+Superseded por algo vivo, verificado caso por caso:
 
-Ojo con dos: `offlineAudioLayerRenderer` y `runOfflineRenderTest` son del
-exportador offline — puede ser andamiaje a medio terminar y no basura. Decidir
-antes de borrar.
+| Archivo                             | LOC | Lo reemplazó                        |
+| ----------------------------------- | --: | ----------------------------------- |
+| `TimestampTimeline.tsx`             | 412 | `ActiveWallpaperSection` (inline)   |
+| `AudioOverlay.tsx`                  | 126 | `WallpaperViewport` + registry      |
+| `lib/textures.ts`                   |  76 | nada carga texturas THREE           |
+| `ImageUploader.tsx`                 |  44 | el pool de imágenes                 |
+| `AudioTabSections.tsx`              |  37 | envoltorios de `TabSection` sin uso |
+| `discovery/recentIds` + `constants` |  15 | nunca se cablearon                  |
+| `spectrumFxTypes.ts`                |   6 | alias de tipo sin uso               |
+| `scanlineFragment.glsl`             |   — | shader huérfano (Looks usa canvas)  |
+| `rgbSplitFragment.glsl`             |   — | shader huérfano                     |
 
-**`lib/backgroundTransform.ts` ya no está en la lista: se borró** durante la
-mudanza de `background` (§6.4). Eran 5 líneas de re-export con cero importadores.
+**Keys persistidas borradas** (setter sin lector, viajaban en cada proyecto):
+`particleScanlineIntensity` / `Spacing` / `Thickness` — `ParticleField` nunca
+supo qué es una scanline; las de _Looks_ (`scanlineIntensity`, sin prefijo) son
+otra cosa y siguen vivas —, `audioSelectedChannelSmoothing` y
+`quickEditHudEnabled`.
 
-**`editor/MotionSharedControls.tsx` (225 LOC) es el caso más claro de todos.**
-Ya estaba marcado como duplicado de `editor/advancedControls`; ahora está
-confirmado con **cero importadores en todo el repo**, ni directos ni por la
-fachada `@/editor`. Además es la **única causa** de la arista de deuda
-`editor/ → features/stageFx` (§5): borrarlo la elimina sola. No lo toqué porque
-§7 es material para que decidas vos, pero de la lista entera éste es el que
-menos riesgo tiene.
+Todo eso se limpia de los proyectos guardados en la migración **v107 → v108**,
+verificada en navegador sembrando un blob v107 real, no sólo en unit test.
 
-### 7.3 · Estado persistido que nadie usa
+### 7.3 · Se QUEDA: andamiaje de backend y exportador (~890 LOC)
 
-Keys en `DEFAULT_STATE` que **ni la UI escribe ni ningún renderer lee**:
+Inalcanzable hoy, pero **no es basura**: es trabajo a medio terminar que el
+proyecto va a necesitar. No borrar.
 
-- `particleScanlineIntensity` / `Spacing` / `Thickness` — el efecto scanline
-  **sobre partículas** no existe; `ParticleField.tsx` no menciona scanlines.
-  Sí existen las scanlines de _Looks_ (`scanlineIntensity` sin prefijo), que
-  están vivas y son otra cosa. Estas 3 viajan en cada preset guardado.
-- `performanceModeBeforeSafe` — sólo en los defaults de fábrica.
-- `audioSelectedChannelSmoothing` — sólo aparece en un comentario.
-- `quickEditHudEnabled` — sólo listada en `workspaceKeys`. (`quickEditCaptureMode`
-  sí se usa.)
+- **`lib/sync/remoteSyncRepository.ts` (175 LOC)** — la mitad remota del
+  contrato `SyncRepository`. Tiene backend real detrás: `backend/schema/001_init.sql`
+  (Postgres), `backend/server/` (Express) y `docker-compose.yml`. El adaptador
+  local de IndexedDB ya mueve la librería de proyectos; falta cablear el remoto.
+- **La isla del exportador offline (~715 LOC)** — `runOfflineRenderTest`,
+  `renderFrame`, `renderSubsystem(s)/`, `buildRenderContext`,
+  `offlineAudioLayerRenderer`, `getRenderStateSnapshot`, `debugRenderSync`. El
+  **planificador** sí está vivo (`OfflineExportSection` usa `offlineExportPlanner`);
+  lo que falta cablear es la mitad que dibuja los cuadros.
+- **`utils/debug.ts` (98 LOC)** — logger dev-only con coste cero en producción.
+  Herramienta, no producto: se queda hasta que alguien decida que no la quiere.
+- **`spectrum/effects/spectrumDrawOrder.ts` (27 LOC)** — es **documentación con
+  forma de código**: define el contrato de orden de pasadas de Classic Wave y
+  `echoTrace` lo cita por nombre. Borrarlo por métrica de LOC sería tirar
+  conocimiento.
+- `vite-env.d.ts` — tipos ambientales; nunca se importa por diseño.
 
-### 7.4 · Ambigüedades
+### 7.4 · Corrección de la auditoría anterior
 
-1. **`imageBassZoomPresetId` es de sólo escritura.** El store lo mantiene con
-   cuidado —lo pone en `null` en cuanto tocás cualquier knob relacionado, lo
-   setea al aplicar un preset— pero **nadie lo lee nunca**. `BgZoomAudioSection`
-   no marca cuál de los 3 presets está activo. El usuario no tiene forma de
-   saberlo, y el store hace contabilidad para una UI que no existe.
-2. **`editor/advancedControls` y `editor/MotionSharedControls` exportan los
-   mismos controles** — `OptionButtonGroup`, `SwitchRow`, `ProfileSlotsGrid`,
-   dos veces. **Resuelto a medias por accidente:** al medirlo esta sesión resultó
-   que `MotionSharedControls` no lo importa nadie (§7.2), así que no hay tabs
-   usando dos versiones distintas — hay una versión viva y una copia muerta.
-   Borrarla cierra el punto.
-3. **167 de 1.750 keys de i18n sin referencia directa.** Incluye `ai_btn_cancel`
-   (el botón de cancelar del AI Director que nunca se cableó), los 7
-   `sfx_edge_glow_*` de §7.1 y 12 `spectrum_clone_*` del refactor clone→instancia.
-   Caveat: no cubre accesos dinámicos tipo `t[variable]`; verificar antes de borrar.
-4. **`pnpm lint` está rojo** por 2 errores previos en `AiDirectorPanel.tsx`: el
-   icono `X` y `handleCancelAsk()` existen pero el botón nunca se renderizó. La
-   cancelación de una petición al modelo está implementada y es inalcanzable.
+**`editor/MotionSharedControls.tsx` NO está muerto.** La pasada anterior lo dio
+por "cero importadores en todo el repo" y lo señaló como el borrado más seguro
+de la lista. Es falso: **lo importan 13 archivos** —las secciones de particles,
+rain, stageFx y flashEdge— y es el proveedor vivo de `MotionSlider`,
+`SwitchRow`, `OptionButtonGroup` y `ProfileSlotsGrid`.
 
-5. **`stageFxConfig.ts` es dueño de vocabulario que no es suyo.**
-   `SpectrumRotationDrive`, `SpectrumRotationChannel` y `RotationDirection` son
-   de spectrum, pero viven en la config de stage FX y los importan `types/`,
-   `store/`, spectrum y edgeGlow. No es urgente —son tipos, se borran en build—
-   pero explica por qué `stageFx` no tiene `index.ts`: ese módulo es vocabulario
-   compartido disfrazado de dominio.
+El error vino del método: se buscó por nombre en vez de resolver el grafo de
+imports. Por eso esta pasada se hizo con alcance real desde los puntos de
+entrada. La lección vale más que el hallazgo: **una lista de código muerto que
+no se calcula sobre el grafo no es evidencia, es una corazonada**.
 
-Bueno: **`en.ts` y `es.ts` tienen paridad exacta** (1.750 keys cada uno).
+Con eso cae también el punto de "duplicación" del §7.4 viejo: `advancedControls`
+y `MotionSharedControls` no son una copia viva y otra muerta — son dos módulos
+vivos con solapamiento parcial. Unificarlos sigue valiendo la pena, pero es
+refactor, no limpieza.
+
+`performanceModeBeforeSafe` tampoco estaba muerto: `systemSlice` lo escribe al
+entrar en modo seguro y lo lee al salir.
+
+### 7.5 · Pendiente de decisión: el sistema de presets globales
+
+`components/controls/PresetSelector.tsx` (205 LOC) no lo monta nadie, **pero el
+sistema que hay debajo sigue vivo**: `usePresetDirtyTracker` corre, `systemSlice`
+mantiene `applyPreset` / `saveCustomPreset`, y `activePreset` / `isPresetDirty`
+se persisten y se resetean en `projectSettings`.
+
+Es la categoría opuesta a Edge Glow: allí no había ni UI ni renderer; aquí hay
+**motor vivo sin volante**. Borrar el selector dejaría el sistema inalcanzable
+para siempre — que es exactamente cómo nació Edge Glow. Las dos salidas honestas
+son montarlo otra vez o retirar el sistema entero a conciencia. Es decisión de
+producto, no de arquitectura.
+
+Igual con **167 keys i18n sin referencia directa** (`en.ts` y `es.ts` mantienen
+paridad exacta, ahora 1.730 cada uno): el conteo no cubre accesos dinámicos
+`t[variable]`, así que verificar antes de borrar.
 
 ---
 

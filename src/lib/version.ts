@@ -63,4 +63,4 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // the wallpaper, and it never produced the intended look. The keys are deleted
 // on rehydrate. `hudLiquidGlassEnabled` is a separate CSS-only HUD style and
 // is unaffected.
-export const STORE_PERSIST_VERSION = 107;
+export const STORE_PERSIST_VERSION = 108;

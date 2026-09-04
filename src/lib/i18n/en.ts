@@ -126,7 +126,6 @@ export const en = {
 	audio_route_bg_zoom: 'Background bass zoom',
 	audio_route_bg_opacity: 'Background opacity',
 	audio_route_bg_blur: 'Background blur',
-	audio_route_bg_edge_glow: 'Background edge glow',
 	audio_route_stage_lights: 'Stage lights',
 	audio_route_flash: 'Flash light',
 	audio_route_camera: 'Camera motion',
@@ -1749,30 +1748,6 @@ export const en = {
 	sfx_flash_edge_color: 'Edge color',
 	sfx_flash_edge_calibration_hint:
 		'Timing, sensitivity and color are set in Flash Light ↑',
-	sfx_edge_glow_title: 'Reactive Edge Glow',
-	sfx_edge_glow_subtitle:
-		'Adds an audio-reactive outline around this element',
-	sfx_edge_glow_logo_hint: 'Glowing outline around the logo on audio peaks',
-	sfx_edge_glow_bg_hint:
-		'Glowing outline around the background image on audio peaks',
-	sfx_edge_glow_enable: 'Enable edge glow',
-	sfx_edge_glow_intensity: 'Intensity',
-	sfx_edge_glow_thickness: 'Thickness',
-	sfx_edge_glow_thickness_hint: 'Width of the visible outline',
-	sfx_edge_glow_radius: 'Glow Radius',
-	sfx_edge_glow_radius_hint:
-		'Soft blur around the outline. Higher values cost more GPU',
-	sfx_edge_glow_expansion: 'Expansion',
-	sfx_edge_glow_expansion_hint: 'How far the glow expands outward on peaks',
-	sfx_edge_glow_opacity: 'Opacity',
-	sfx_edge_glow_color: 'Glow color',
-	sfx_edge_glow_threshold: 'Threshold',
-	sfx_edge_glow_threshold_hint:
-		'How loud the audio channel must be before the glow reacts',
-	sfx_edge_glow_attack: 'Attack',
-	sfx_edge_glow_release: 'Release',
-	sfx_edge_glow_sensitivity: 'Sensitivity',
-	// Camera Motion
 	sfx_camera_motion_title: 'Camera Motion',
 	sfx_camera_motion_subtitle:
 		'Continuous visual-layer movement; HUD stays fixed',

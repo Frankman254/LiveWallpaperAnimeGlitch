@@ -31,8 +31,6 @@ export function createAudioSlice(
 		setFftSize: v => set({ fftSize: v }),
 		setAudioSmoothing: v => set({ audioSmoothing: v }),
 		setAudioChannelSmoothing: v => set({ audioChannelSmoothing: v }),
-		setAudioSelectedChannelSmoothing: v =>
-			set({ audioSelectedChannelSmoothing: v }),
 		setAudioAutoKickThreshold: v => set({ audioAutoKickThreshold: v }),
 		setAudioAutoSwitchHoldMs: v => set({ audioAutoSwitchHoldMs: v }),
 		setTrackMetadataMode: v => set({ trackMetadataMode: v }),

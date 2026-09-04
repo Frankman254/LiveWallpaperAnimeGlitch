@@ -1047,6 +1047,25 @@ export function migrateWallpaperStore(
 			delete sanitizedState[key];
 		}
 	}
+	// v108: Edge Glow is gone. The subsystem was unreachable — no live UI could
+	// switch it on and no renderer read it — but its 28 keys still rode along in
+	// every saved project. "Flash Edge" replaced it and is unaffected; so is
+	// `layer.edgeGlow`, the per-layer number, which is a different thing.
+	for (const key of Object.keys(sanitizedState)) {
+		if (key.startsWith('logoEdgeGlow') || key.startsWith('bgEdgeGlow')) {
+			delete sanitizedState[key];
+		}
+	}
+	// v108: knobs that were persisted but wired to nothing. `particleScanline*`
+	// promised scanlines over particles — `ParticleField` has never known what a
+	// scanline is. (The *Looks* scanlines, `scanlineIntensity` with no prefix,
+	// are a different and very much live effect.) The other two had setters and
+	// no reader at all.
+	delete sanitizedState.particleScanlineIntensity;
+	delete sanitizedState.particleScanlineSpacing;
+	delete sanitizedState.particleScanlineThickness;
+	delete sanitizedState.audioSelectedChannelSmoothing;
+	delete sanitizedState.quickEditHudEnabled;
 	// Dropped: every subsystem owns its own smoothing slider now. The toggles
 	// previously gated a hidden value↔instantLevel branch; consumers always
 	// read the smoothed value and the slider at 0 means raw.
@@ -1794,15 +1813,6 @@ export function migrateWallpaperStore(
 		particleFilterHueRotate:
 			state.particleFilterHueRotate ??
 			DEFAULT_STATE.particleFilterHueRotate,
-		particleScanlineIntensity:
-			state.particleScanlineIntensity ??
-			DEFAULT_STATE.particleScanlineIntensity,
-		particleScanlineSpacing:
-			state.particleScanlineSpacing ??
-			DEFAULT_STATE.particleScanlineSpacing,
-		particleScanlineThickness:
-			state.particleScanlineThickness ??
-			DEFAULT_STATE.particleScanlineThickness,
 		particleRotationIntensity:
 			state.particleRotationIntensity ??
 			DEFAULT_STATE.particleRotationIntensity,
@@ -1838,9 +1848,6 @@ export function migrateWallpaperStore(
 		motionPaused: state.motionPaused ?? DEFAULT_STATE.motionPaused,
 		audioChannelSmoothing:
 			state.audioChannelSmoothing ?? DEFAULT_STATE.audioChannelSmoothing,
-		audioSelectedChannelSmoothing:
-			state.audioSelectedChannelSmoothing ??
-			DEFAULT_STATE.audioSelectedChannelSmoothing,
 		audioAutoKickThreshold:
 			state.audioAutoKickThreshold ??
 			DEFAULT_STATE.audioAutoKickThreshold,
@@ -2482,10 +2489,6 @@ export function migrateWallpaperStore(
 			state.controlPanelOffsetX ?? DEFAULT_STATE.controlPanelOffsetX,
 		controlPanelOffsetY:
 			state.controlPanelOffsetY ?? DEFAULT_STATE.controlPanelOffsetY,
-		quickEditHudEnabled:
-			typeof state.quickEditHudEnabled === 'boolean'
-				? state.quickEditHudEnabled
-				: DEFAULT_STATE.quickEditHudEnabled,
 		hudLiquidGlassEnabled:
 			typeof state.hudLiquidGlassEnabled === 'boolean'
 				? state.hudLiquidGlassEnabled
@@ -2877,122 +2880,6 @@ export function migrateWallpaperStore(
 		calibrationProfileSlots: Array.isArray(state.calibrationProfileSlots)
 			? state.calibrationProfileSlots
 			: DEFAULT_STATE.calibrationProfileSlots,
-
-		// Logo Edge Glow
-		logoEdgeGlowEnabled:
-			state.logoEdgeGlowEnabled ?? DEFAULT_STATE.logoEdgeGlowEnabled,
-		logoEdgeGlowIntensity: finiteOrDefault(
-			state.logoEdgeGlowIntensity,
-			DEFAULT_STATE.logoEdgeGlowIntensity
-		),
-		logoEdgeGlowThickness: finiteOrDefault(
-			state.logoEdgeGlowThickness,
-			DEFAULT_STATE.logoEdgeGlowThickness
-		),
-		logoEdgeGlowRadius: finiteOrDefault(
-			state.logoEdgeGlowRadius,
-			DEFAULT_STATE.logoEdgeGlowRadius
-		),
-		logoEdgeGlowExpansionRadius: finiteOrDefault(
-			state.logoEdgeGlowExpansionRadius,
-			DEFAULT_STATE.logoEdgeGlowExpansionRadius
-		),
-		logoEdgeGlowOpacity: finiteOrDefault(
-			state.logoEdgeGlowOpacity,
-			DEFAULT_STATE.logoEdgeGlowOpacity
-		),
-		logoEdgeGlowColorSource: normalizeColorSourceMode(
-			state.logoEdgeGlowColorSource,
-			DEFAULT_STATE.logoEdgeGlowColorSource
-		),
-		logoEdgeGlowColor:
-			typeof state.logoEdgeGlowColor === 'string'
-				? state.logoEdgeGlowColor
-				: DEFAULT_STATE.logoEdgeGlowColor,
-		logoEdgeGlowBlendMode:
-			state.logoEdgeGlowBlendMode === 'lighter' ||
-			state.logoEdgeGlowBlendMode === 'screen' ||
-			state.logoEdgeGlowBlendMode === 'source-over'
-				? state.logoEdgeGlowBlendMode
-				: DEFAULT_STATE.logoEdgeGlowBlendMode,
-		logoEdgeGlowAudioChannel: normalizeFxAudioChannel(
-			state.logoEdgeGlowAudioChannel,
-			DEFAULT_STATE.logoEdgeGlowAudioChannel
-		),
-		logoEdgeGlowThreshold: finiteOrDefault(
-			state.logoEdgeGlowThreshold,
-			DEFAULT_STATE.logoEdgeGlowThreshold
-		),
-		logoEdgeGlowAttack: finiteOrDefault(
-			state.logoEdgeGlowAttack,
-			DEFAULT_STATE.logoEdgeGlowAttack
-		),
-		logoEdgeGlowRelease: finiteOrDefault(
-			state.logoEdgeGlowRelease,
-			DEFAULT_STATE.logoEdgeGlowRelease
-		),
-		logoEdgeGlowSensitivity: finiteOrDefault(
-			state.logoEdgeGlowSensitivity,
-			DEFAULT_STATE.logoEdgeGlowSensitivity
-		),
-
-		// Background Edge Glow
-		bgEdgeGlowEnabled:
-			state.bgEdgeGlowEnabled ?? DEFAULT_STATE.bgEdgeGlowEnabled,
-		bgEdgeGlowIntensity: finiteOrDefault(
-			state.bgEdgeGlowIntensity,
-			DEFAULT_STATE.bgEdgeGlowIntensity
-		),
-		bgEdgeGlowThickness: finiteOrDefault(
-			state.bgEdgeGlowThickness,
-			DEFAULT_STATE.bgEdgeGlowThickness
-		),
-		bgEdgeGlowRadius: finiteOrDefault(
-			state.bgEdgeGlowRadius,
-			DEFAULT_STATE.bgEdgeGlowRadius
-		),
-		bgEdgeGlowExpansionRadius: finiteOrDefault(
-			state.bgEdgeGlowExpansionRadius,
-			DEFAULT_STATE.bgEdgeGlowExpansionRadius
-		),
-		bgEdgeGlowOpacity: finiteOrDefault(
-			state.bgEdgeGlowOpacity,
-			DEFAULT_STATE.bgEdgeGlowOpacity
-		),
-		bgEdgeGlowColorSource: normalizeColorSourceMode(
-			state.bgEdgeGlowColorSource,
-			DEFAULT_STATE.bgEdgeGlowColorSource
-		),
-		bgEdgeGlowColor:
-			typeof state.bgEdgeGlowColor === 'string'
-				? state.bgEdgeGlowColor
-				: DEFAULT_STATE.bgEdgeGlowColor,
-		bgEdgeGlowBlendMode:
-			state.bgEdgeGlowBlendMode === 'lighter' ||
-			state.bgEdgeGlowBlendMode === 'screen' ||
-			state.bgEdgeGlowBlendMode === 'source-over'
-				? state.bgEdgeGlowBlendMode
-				: DEFAULT_STATE.bgEdgeGlowBlendMode,
-		bgEdgeGlowAudioChannel: normalizeFxAudioChannel(
-			state.bgEdgeGlowAudioChannel,
-			DEFAULT_STATE.bgEdgeGlowAudioChannel
-		),
-		bgEdgeGlowThreshold: finiteOrDefault(
-			state.bgEdgeGlowThreshold,
-			DEFAULT_STATE.bgEdgeGlowThreshold
-		),
-		bgEdgeGlowAttack: finiteOrDefault(
-			state.bgEdgeGlowAttack,
-			DEFAULT_STATE.bgEdgeGlowAttack
-		),
-		bgEdgeGlowRelease: finiteOrDefault(
-			state.bgEdgeGlowRelease,
-			DEFAULT_STATE.bgEdgeGlowRelease
-		),
-		bgEdgeGlowSensitivity: finiteOrDefault(
-			state.bgEdgeGlowSensitivity,
-			DEFAULT_STATE.bgEdgeGlowSensitivity
-		),
 
 		// Logo Flash Edge
 		logoFlashEdgeEnabled:

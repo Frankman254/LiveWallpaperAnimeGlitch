@@ -131,7 +131,6 @@ export const es: Record<TranslationKey, string> = {
 	audio_route_bg_zoom: 'Zoom de graves del fondo',
 	audio_route_bg_opacity: 'Opacidad del fondo',
 	audio_route_bg_blur: 'Blur del fondo',
-	audio_route_bg_edge_glow: 'Glow de bordes del fondo',
 	audio_route_stage_lights: 'Luces de escenario',
 	audio_route_flash: 'Flash',
 	audio_route_camera: 'Movimiento de cámara',
@@ -1767,32 +1766,6 @@ export const es: Record<TranslationKey, string> = {
 	sfx_flash_edge_color: 'Color del borde',
 	sfx_flash_edge_calibration_hint:
 		'Timing, sensibilidad y color se configuran en Flash Light ↑',
-	sfx_edge_glow_title: 'Brillo de Borde Reactivo',
-	sfx_edge_glow_subtitle:
-		'Contorno luminoso reactivo al audio alrededor del elemento',
-	sfx_edge_glow_logo_hint:
-		'Contorno luminoso alrededor del logo en los picos de audio',
-	sfx_edge_glow_bg_hint:
-		'Contorno luminoso alrededor del fondo en los picos de audio',
-	sfx_edge_glow_enable: 'Activar brillo de borde',
-	sfx_edge_glow_intensity: 'Intensidad',
-	sfx_edge_glow_thickness: 'Grosor',
-	sfx_edge_glow_thickness_hint: 'Ancho del contorno visible',
-	sfx_edge_glow_radius: 'Radio de brillo',
-	sfx_edge_glow_radius_hint:
-		'Desenfoque suave alrededor del contorno. Valores altos consumen más GPU',
-	sfx_edge_glow_expansion: 'Expansión',
-	sfx_edge_glow_expansion_hint:
-		'Cuánto se expande el brillo hacia afuera en los picos',
-	sfx_edge_glow_opacity: 'Opacidad',
-	sfx_edge_glow_color: 'Color del brillo',
-	sfx_edge_glow_threshold: 'Umbral',
-	sfx_edge_glow_threshold_hint:
-		'Nivel de audio necesario para que el brillo reaccione',
-	sfx_edge_glow_attack: 'Ataque',
-	sfx_edge_glow_release: 'Liberación',
-	sfx_edge_glow_sensitivity: 'Sensibilidad',
-	// Movimiento de Cámara
 	sfx_camera_motion_title: 'Movimiento de Cámara',
 	sfx_camera_motion_subtitle:
 		'Movimiento continuo de capas visuales; el HUD permanece fijo',

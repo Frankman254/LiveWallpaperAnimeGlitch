@@ -11,7 +11,7 @@ import ActiveWallpaperSection from './ActiveWallpaperSection';
 import GlobalBackgroundSection from './GlobalBackgroundSection';
 import SlideshowPoolSection from './SlideshowPoolSection';
 import BgZoomAudioSection from './BgZoomAudioSection';
-import { FlashEdgeSection } from '@/features/edgeGlow/controls/FlashEdgeSection';
+import { FlashEdgeSection } from '@/features/flashEdge/controls/FlashEdgeSection';
 import { useBackgroundPositionRanges } from './useBackgroundPositionRanges';
 import { useCoverageLockedImageTransform } from './useCoverageLockedImageTransform';
 import { useBackgroundImageActions } from './useBackgroundImageActions';

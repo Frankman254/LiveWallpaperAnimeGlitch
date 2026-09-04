@@ -15,6 +15,55 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Borrado: el subsistema Edge Glow (store v107 → v108)
+
+- **Edge Glow era inalcanzable de punta a punta.** `EdgeGlowSection` (360 LOC)
+  no la montaba ninguna pestaña y `edgeGlowRenderer` (317 LOC) no lo llamaba
+  ningún pipeline — pero sus **28 claves persistidas** viajaban dentro de cada
+  proyecto guardado, con 28 setters y 116 líneas de migración manteniéndolas
+  vivas. Lo reemplazó **Flash Edge** en su momento y nunca se retiró.
+- **Había un control que mentía.** `AudioRoutingSection` —panel vivo— listaba
+  una fila "BG Edge Glow" cuyo estado salía de `bgEdgeGlowEnabled` y mandaba al
+  usuario a la pestaña Presets. Ese flag no lo podía encender ninguna UI y
+  ningún renderer lo leía: la fila estaba **siempre** apagada y apuntaba a un
+  control inexistente. Se eliminó la fila.
+- **No se toca lo que sí vive**: `flashEdgeRenderer` + `FlashEdgeSection` (que
+  es otra cosa) y `layer.edgeGlow`, el número por capa que `OverlayInspector`
+  lee. Sus etiquetas i18n (`sfx_edge_glow`, `label_edge_glow`) se conservan;
+  se borraron sólo las 20 claves `sfx_edge_glow_*` / `audio_route_bg_edge_glow`
+  del subsistema muerto. `en.ts` y `es.ts` mantienen paridad exacta.
+- **`features/edgeGlow/` pasó a llamarse `features/flashEdge/`**: con Edge Glow
+  fuera, la carpeta sólo contiene Flash Edge y el nombre viejo apuntaba a un
+  sistema que ya no existe.
+- **`STORE_PERSIST_VERSION` 107 → 108**: la migración borra toda clave
+  `logoEdgeGlow*` / `bgEdgeGlow*` para que no siga colándose en los proyectos
+  guardados. Verificado en navegador sembrando un blob v107 real, no sólo en
+  unit test.
+
+### Borrado: huérfanos superseded y knobs sin lector (store v107 → v108)
+
+Auditoría re-medida con **alcance real desde los puntos de entrada** (no por
+coincidencia de nombres). Se borró sólo lo que tiene un reemplazo vivo:
+
+- `TimestampTimeline.tsx` (412) — `ActiveWallpaperSection` ya pinta la UI de
+  timestamps manuales; `AudioOverlay.tsx` (126) — `WallpaperViewport` monta las
+  capas; `lib/textures.ts` (76); `ImageUploader.tsx` (44);
+  `AudioTabSections.tsx` (37); `discovery/recentIds` + `constants` (15);
+  `spectrumFxTypes.ts` (6); y dos shaders huérfanos (`scanlineFragment.glsl`,
+  `rgbSplitFragment.glsl`).
+- **5 keys persistidas con setter y sin lector**: `particleScanlineIntensity` /
+  `Spacing` / `Thickness` — `ParticleField` nunca supo qué es una scanline; las
+  de _Looks_ (`scanlineIntensity`, sin prefijo) son otra cosa y siguen vivas —,
+  `audioSelectedChannelSmoothing` y `quickEditHudEnabled`.
+
+**Se queda a propósito el andamiaje** de backend (`lib/sync/remoteSyncRepository`,
+con `backend/` Postgres + Express detrás) y del exportador offline (~715 LOC):
+está a medio cablear, no muerto.
+
+**Corrección de la auditoría anterior:** `editor/MotionSharedControls.tsx` NO
+está muerto — lo importan 13 archivos. El informe previo lo dio por huérfano
+porque buscó por nombre en vez de resolver el grafo de imports.
+
 ### Lyrics: backdrop, colores globales y reorganización de la pestaña (store v106 → v107)
 
 - **El backdrop ignoraba la animación del texto.** Se pintaba ANTES de resolver
@@ -338,7 +387,7 @@ edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
 - **`STORE_PERSIST_VERSION` 101 → 102**: backfills the new toggles/sliders and
   re-seeds the reworked glass tuning values onto older stores.
 
-`STORE_PERSIST_VERSION` is at **107**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **108**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

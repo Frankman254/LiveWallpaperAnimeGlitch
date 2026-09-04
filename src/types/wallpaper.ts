@@ -960,7 +960,6 @@ export type WallpaperState = {
 	fftSize: number;
 	audioSmoothing: number;
 	audioChannelSmoothing: number;
-	audioSelectedChannelSmoothing: number;
 	audioAutoKickThreshold: number;
 	audioAutoSwitchHoldMs: number;
 	// Playlist
@@ -1368,9 +1367,6 @@ export type WallpaperState = {
 	particleFilterSaturation: number;
 	particleFilterBlur: number;
 	particleFilterHueRotate: number;
-	particleScanlineIntensity: number;
-	particleScanlineSpacing: number;
-	particleScanlineThickness: number;
 	particleRotationIntensity: number;
 	particleRotationDirection: ParticleRotationDirection;
 	particleFadeInOut: boolean;
@@ -1581,38 +1577,6 @@ export type WallpaperState = {
 	flashLightShape: import('@/features/stageFx/stageFxConfig').FlashLightShape;
 	flashLightBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
 
-	// ── Logo Edge Glow ───────────────────────────────────────────────────────
-	logoEdgeGlowEnabled: boolean;
-	logoEdgeGlowIntensity: number;
-	logoEdgeGlowThickness: number;
-	logoEdgeGlowRadius: number;
-	logoEdgeGlowExpansionRadius: number;
-	logoEdgeGlowOpacity: number;
-	logoEdgeGlowColorSource: import('@/features/stageFx/stageFxConfig').StageLightsColorSource;
-	logoEdgeGlowColor: string;
-	logoEdgeGlowBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
-	logoEdgeGlowAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
-	logoEdgeGlowThreshold: number;
-	logoEdgeGlowAttack: number;
-	logoEdgeGlowRelease: number;
-	logoEdgeGlowSensitivity: number;
-
-	// ── Background Edge Glow ─────────────────────────────────────────────────
-	bgEdgeGlowEnabled: boolean;
-	bgEdgeGlowIntensity: number;
-	bgEdgeGlowThickness: number;
-	bgEdgeGlowRadius: number;
-	bgEdgeGlowExpansionRadius: number;
-	bgEdgeGlowOpacity: number;
-	bgEdgeGlowColorSource: import('@/features/stageFx/stageFxConfig').StageLightsColorSource;
-	bgEdgeGlowColor: string;
-	bgEdgeGlowBlendMode: import('@/features/stageFx/stageFxConfig').StageLightsBlendMode;
-	bgEdgeGlowAudioChannel: import('@/features/stageFx/stageFxConfig').FxAudioChannel;
-	bgEdgeGlowThreshold: number;
-	bgEdgeGlowAttack: number;
-	bgEdgeGlowRelease: number;
-	bgEdgeGlowSensitivity: number;
-
 	// ── Logo Flash Edge (Reactive Neon Edge — usa driver de Flash Light) ─────
 	logoFlashEdgeEnabled: boolean;
 	/** 0.1–3: multiplicador sobre el drive del Flash Light. */
@@ -1704,8 +1668,6 @@ export type WallpaperState = {
 	 *  header. Reset to 0 via the anchor selector or a context menu. */
 	controlPanelOffsetX: number;
 	controlPanelOffsetY: number;
-	/** Whether the floating Quick Edit per-image pill is visible on the canvas. */
-	quickEditHudEnabled: boolean;
 	/** macOS-style liquid-glass surface (frosted, translucent) for the floating
 	 *  media HUD instead of the default solid panel. */
 	hudLiquidGlassEnabled: boolean;

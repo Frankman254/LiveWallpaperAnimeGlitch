@@ -27,7 +27,6 @@ export default function AudioRoutingSection() {
 			imageBassReactive: state.imageBassReactive,
 			imageOpacityReactive: state.imageOpacityReactive,
 			imageBlurReactive: state.imageBlurReactive,
-			bgEdgeGlowEnabled: state.bgEdgeGlowEnabled,
 			particlesEnabled: state.particlesEnabled,
 			particleAudioReactive: state.particleAudioReactive,
 			stageLightsEnabled: state.stageLightsEnabled,
@@ -60,11 +59,6 @@ export default function AudioRoutingSection() {
 			label: t.audio_route_bg_blur,
 			tab: t.tab_presets,
 			active: s.imageBlurReactive
-		},
-		{
-			label: t.audio_route_bg_edge_glow,
-			tab: t.tab_presets,
-			active: s.bgEdgeGlowEnabled
 		},
 		{
 			label: t.tab_particles,
