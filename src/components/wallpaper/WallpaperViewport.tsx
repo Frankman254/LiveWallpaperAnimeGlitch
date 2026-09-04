@@ -3,6 +3,11 @@ import { useShallow } from 'zustand/react/shallow';
 import { buildOverlayLayers, buildSceneLayers } from '@/lib/layers';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { SlideshowManager } from '@/features/background/ui';
+import {
+	CameraFxStage,
+	FlashLightCanvas,
+	StageLightsCanvas
+} from '@/features/stageFx/ui';
 import OverlayInteractionStage from '@/components/wallpaper/OverlayInteractionStage';
 import SceneLayerCanvas from '@/components/wallpaper/layers/SceneLayerCanvas';
 import BackgroundImageLayerView from '@/components/wallpaper/layers/BackgroundImageLayerView';
@@ -10,9 +15,7 @@ import OverlayImageLayerView from '@/components/wallpaper/layers/OverlayImageLay
 import AudioLayerCanvas from '@/components/audio/layers/AudioLayerCanvas';
 import GlobalBackgroundView from '@/components/wallpaper/GlobalBackgroundView';
 import FirstRunEmptyState from '@/components/wallpaper/FirstRunEmptyState';
-import CameraFxStage from '@/features/stageFx/CameraFxStage';
-import StageLightsCanvas from '@/features/stageFx/StageLightsCanvas';
-import FlashLightCanvas from '@/features/stageFx/FlashLightCanvas';
+
 import CanvasFpsOverlay from '@/components/wallpaper/CanvasFpsOverlay';
 import DiagnosticsHudStack from '@/components/wallpaper/DiagnosticsHudStack';
 import QuickActionsPanel from '@/components/wallpaper/QuickActionsPanel';

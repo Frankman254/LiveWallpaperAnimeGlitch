@@ -10,7 +10,7 @@ import {
 	MAX_RAIN_SLOT_COUNT
 } from '@/lib/featureProfiles';
 import { DEFAULT_STATE } from '@/lib/constants';
-import { generateRandomMotionProfile } from '@/features/motion/motionRandomizer';
+import { generateRandomMotionProfile } from '@/features/particles';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];

@@ -37,17 +37,22 @@ import {
 	SegmentedControl,
 	ICON_SIZE
 } from '@/ui';
-import { ParticlesAppearanceSection } from './motion/ParticlesAppearanceSection';
-import { ParticlesProfilesSection } from './motion/ParticlesProfilesSection';
-import { ParticlesLayerSection } from './motion/ParticlesLayerSection';
-import { RainSection } from './motion/RainSection';
-import { RainProfilesSection } from './motion/RainProfilesSection';
-import { StageLightsSection } from './motion/StageLightsSection';
-import { FlashLightSection } from './motion/FlashLightSection';
-import { LightsProfilesSection } from './motion/LightsProfilesSection';
-import { CameraMotionSection } from './motion/CameraFxSection';
-import { ScreenShakeSection } from './motion/ScreenShakeSection';
-import { CameraFxProfilesSection } from './motion/CameraFxProfilesSection';
+// MotionTab is a composition shell, not a domain: it stacks sections owned by
+// three different features. Each one comes in through its own facade.
+import {
+	ParticlesAppearanceSection,
+	ParticlesLayerSection,
+	ParticlesProfilesSection
+} from '@/features/particles/ui';
+import { RainProfilesSection, RainSection } from '@/features/rain/ui';
+import {
+	CameraFxProfilesSection,
+	CameraMotionSection,
+	FlashLightSection,
+	LightsProfilesSection,
+	ScreenShakeSection,
+	StageLightsSection
+} from '@/features/stageFx/ui';
 import { useIsSimple } from '@/editor/UIMode';
 
 type MotionView = 'particles' | 'rain' | 'lights' | 'camera';
