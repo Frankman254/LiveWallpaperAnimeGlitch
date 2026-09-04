@@ -428,6 +428,18 @@ export default function AiDirectorPanel() {
 										? t.ai_btn_asking
 										: t.ai_btn_ask_model}
 								</Button>
+								{asking && (
+									<Button
+										type="button"
+										size="sm"
+										density="compact"
+										variant="ghost"
+										onClick={handleCancelAsk}
+										icon={<X size={ICON_SIZE.xs} />}
+									>
+										{t.ai_btn_cancel_ask}
+									</Button>
+								)}
 							</div>
 
 							<SectionDivider label={t.ai_section_tuning} />
