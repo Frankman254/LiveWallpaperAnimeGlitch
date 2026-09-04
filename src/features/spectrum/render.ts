@@ -1,27 +1,32 @@
 /**
  * Spectrum domain — canvas draw path.
  *
- * A third entry point alongside `./index` (pure model) and `./ui` (React),
- * and it exists for a concrete reason rather than tidiness:
- * `runtime/CircularSpectrum` reads render policy (`performanceMode`,
- * `showSpectrumDiagnosticsHud`) straight off the global store. That makes it
- * the one non-UI module in the domain that depends on `store/` — so exporting
- * it from `./index` put the store into a cycle with itself
- * (store → slice → spectrum barrel → CircularSpectrum → store).
+ * A third entry point alongside `./index` (pure model) and `./ui` (React).
  *
- * Consumers of the draw path (the live canvas layers and the offline exporter)
- * import from here. Consumers of the model (store slices, migrations, lib)
- * import from `./index` and never pull the renderer in.
+ * It originally existed because `runtime/CircularSpectrum` read render policy
+ * (`performanceMode`, `showSpectrumDiagnosticsHud`) straight off the global
+ * store, which put the store in a cycle with itself
+ * (store → slice → spectrum barrel → CircularSpectrum → store). That is fixed:
+ * policy is now passed in as `SpectrumRenderPolicy`, and nothing under the draw
+ * path imports `store/` any more.
  *
- * The deeper fix is to stop reading the store here and pass render policy into
- * `drawSpectrum` like every other input; then this file can fold back into
- * `./index`. See ARCHITECTURE.md §6.3.
+ * This file stays anyway, for the reason that outlived the cycle: weight.
+ * `renderers/`, `geometry/` and `effects/` are ~6.8k LOC of canvas code across
+ * 17 modules that only 7 call sites need, while `./index` is imported by 21 —
+ * `lib/constants.ts` among them, which in turn is imported by nearly the whole
+ * app. Folding the two would make every consumer of DEFAULT_STATE load the
+ * renderer. A fat barrel is exactly what crashed 18 test suites here before.
+ *
+ * So the split is by consumer, not by accident: model consumers (store slices,
+ * migrations, `lib/`) import `./index`; the live canvas layers and the offline
+ * exporter import this.
  */
 export {
 	drawSpectrum,
 	resetSpectrum,
 	resolveAmbientShadowBlur
 } from './runtime/CircularSpectrum';
+export type { SpectrumRenderPolicy } from './runtime/CircularSpectrum';
 export {
 	drawLinearBars,
 	drawLinearWave

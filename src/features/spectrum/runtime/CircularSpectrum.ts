@@ -1,3 +1,4 @@
+import type { WallpaperState } from '@/types/wallpaper';
 import {
 	resolveAudioChannelValue,
 	type AudioSnapshot
@@ -10,7 +11,6 @@ import {
 } from '@/lib/audio/spectrumBinSampling';
 import { normalizeSpectrumShape } from '@/features/spectrum/domain/spectrumControlConfig';
 import { rotationDirectionSign } from '@/features/stageFx/stageFxConfig';
-import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	type SpectrumSettings,
 	MODE_TRANSITION_DURATION,
@@ -101,12 +101,28 @@ export function resolveAmbientShadowBlur(
 	return computeClassicGlowBlur(settings, barCount) * shadowBlurScale;
 }
 
+/**
+ * Render policy the caller owns, not the renderer.
+ *
+ * This used to be read straight off the global store inside `drawSpectrum`,
+ * which made the renderer — the one non-UI module in the domain — depend on
+ * `store/`, and put the store in a cycle with itself
+ * (store → slice → spectrum barrel → CircularSpectrum → store). Passing it in
+ * keeps the draw path a pure function of its arguments and lets the offline
+ * exporter pick its own quality without touching live state.
+ */
+export interface SpectrumRenderPolicy {
+	performanceMode: WallpaperState['performanceMode'];
+	showDiagnosticsHud: boolean;
+}
+
 export function drawSpectrum(
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	audio: AudioSnapshot,
 	settingsInput: SpectrumSettings,
 	dt: number,
+	policy: SpectrumRenderPolicy,
 	instanceKey = 'primary'
 ): void {
 	if (canvas.width <= 0 || canvas.height <= 0) return;
@@ -433,8 +449,7 @@ export function drawSpectrum(
 	const cy =
 		canvas.height / 2 -
 		(settings.spectrumPositionY ?? 0) * canvas.height * 0.5;
-	const storeState = useWallpaperStore.getState();
-	const performanceMode = storeState.performanceMode;
+	const performanceMode = policy.performanceMode;
 	const renderQuality = resolveSpectrumRenderQuality(
 		performanceMode,
 		settings.spectrumFamily
@@ -453,7 +468,7 @@ export function drawSpectrum(
 		instance: instanceKey === 'primary' ? 'primary' : 'clone'
 	});
 
-	if (storeState.showSpectrumDiagnosticsHud) {
+	if (policy.showDiagnosticsHud) {
 		const followEffective = Boolean(
 			settings.spectrumMode === 'radial' &&
 			settings.spectrumFollowLogo &&

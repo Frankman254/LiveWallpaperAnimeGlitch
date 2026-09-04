@@ -499,6 +499,12 @@ export function drawOverlayLayer(
 		}
 
 		const logoScale = getLogoRenderState().scale;
+		// Render policy is the caller's to supply — the renderer no longer reads
+		// the store itself (see SpectrumRenderPolicy).
+		const spectrumRenderPolicy = {
+			performanceMode: context.state.performanceMode,
+			showDiagnosticsHud: context.state.showSpectrumDiagnosticsHud
+		};
 
 		if (willDrawMain) {
 			const primarySpectrumState = applySpectrumPlacementToState(
@@ -517,6 +523,7 @@ export function drawOverlayLayer(
 				context.audio,
 				resolvedPrimarySpectrumState,
 				context.dt,
+				spectrumRenderPolicy,
 				'primary'
 			);
 		}
@@ -555,6 +562,7 @@ export function drawOverlayLayer(
 					themePalette
 				),
 				context.dt,
+				spectrumRenderPolicy,
 				getSpectrumInstanceRuntimeKey(instance.id)
 			);
 		}

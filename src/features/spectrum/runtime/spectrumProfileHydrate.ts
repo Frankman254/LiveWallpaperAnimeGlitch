@@ -1,4 +1,4 @@
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_SPECTRUM_STATE } from '@/features/spectrum/domain/spectrumDefaults';
 import { normalizeSpectrumSettings } from '@/features/spectrum/domain/spectrumStateTransforms';
 import {
 	normalizeSpectrumFamily,
@@ -27,9 +27,10 @@ export function hydrateSpectrumProfileValues(
 		// spectrumInstances[].enabled).
 		spectrumEnabled: true,
 		spectrumMainVisible:
-			values.spectrumMainVisible ?? DEFAULT_STATE.spectrumMainVisible,
+			values.spectrumMainVisible ??
+			DEFAULT_SPECTRUM_STATE.spectrumMainVisible,
 		spectrumFamily: normalizeSpectrumFamily(
-			values.spectrumFamily ?? DEFAULT_STATE.spectrumFamily
+			values.spectrumFamily ?? DEFAULT_SPECTRUM_STATE.spectrumFamily
 		),
 		// Back-compat: slots/scenes saved before this enable flag existed have no
 		// `spectrumFrameMemoryEnabled`. Infer it from the intensity values so an
@@ -41,410 +42,455 @@ export function hydrateSpectrumProfileValues(
 				(values.spectrumGhostFrames ?? 0) > 0 ||
 				(values.spectrumMotionTrails ?? 0) > 0),
 		spectrumAfterglow:
-			values.spectrumAfterglow ?? DEFAULT_STATE.spectrumAfterglow,
+			values.spectrumAfterglow ??
+			DEFAULT_SPECTRUM_STATE.spectrumAfterglow,
 		spectrumMotionTrails:
-			values.spectrumMotionTrails ?? DEFAULT_STATE.spectrumMotionTrails,
+			values.spectrumMotionTrails ??
+			DEFAULT_SPECTRUM_STATE.spectrumMotionTrails,
 		spectrumGhostFrames:
-			values.spectrumGhostFrames ?? DEFAULT_STATE.spectrumGhostFrames,
+			values.spectrumGhostFrames ??
+			DEFAULT_SPECTRUM_STATE.spectrumGhostFrames,
 		spectrumFrameHistoryDepth:
 			values.spectrumFrameHistoryDepth ??
-			DEFAULT_STATE.spectrumFrameHistoryDepth,
+			DEFAULT_SPECTRUM_STATE.spectrumFrameHistoryDepth,
 		spectrumGainExpressiveness:
 			values.spectrumGainExpressiveness ??
-			DEFAULT_STATE.spectrumGainExpressiveness,
+			DEFAULT_SPECTRUM_STATE.spectrumGainExpressiveness,
 		spectrumEnvelopeAttack:
 			values.spectrumEnvelopeAttack ??
-			DEFAULT_STATE.spectrumEnvelopeAttack,
+			DEFAULT_SPECTRUM_STATE.spectrumEnvelopeAttack,
 		spectrumEnvelopeRelease:
 			values.spectrumEnvelopeRelease ??
-			DEFAULT_STATE.spectrumEnvelopeRelease,
+			DEFAULT_SPECTRUM_STATE.spectrumEnvelopeRelease,
 		spectrumEnvelopeReactivitySpeed:
 			values.spectrumEnvelopeReactivitySpeed ??
-			DEFAULT_STATE.spectrumEnvelopeReactivitySpeed,
+			DEFAULT_SPECTRUM_STATE.spectrumEnvelopeReactivitySpeed,
 		spectrumEnvelopePeakWindow:
 			values.spectrumEnvelopePeakWindow ??
-			DEFAULT_STATE.spectrumEnvelopePeakWindow,
+			DEFAULT_SPECTRUM_STATE.spectrumEnvelopePeakWindow,
 		spectrumEnvelopePeakFloor:
 			values.spectrumEnvelopePeakFloor ??
-			DEFAULT_STATE.spectrumEnvelopePeakFloor,
+			DEFAULT_SPECTRUM_STATE.spectrumEnvelopePeakFloor,
 		spectrumEnvelopePunch:
-			values.spectrumEnvelopePunch ?? DEFAULT_STATE.spectrumEnvelopePunch,
+			values.spectrumEnvelopePunch ??
+			DEFAULT_SPECTRUM_STATE.spectrumEnvelopePunch,
 		spectrumPeakRibbonsEnabled:
 			values.spectrumPeakRibbonsEnabled ??
 			(values.spectrumPeakRibbons ?? 0) > 0,
 		spectrumPeakRibbons:
-			values.spectrumPeakRibbons ?? DEFAULT_STATE.spectrumPeakRibbons,
+			values.spectrumPeakRibbons ??
+			DEFAULT_SPECTRUM_STATE.spectrumPeakRibbons,
 		spectrumBassShockwaveEnabled:
 			values.spectrumBassShockwaveEnabled ??
 			(values.spectrumBassShockwave ?? 0) > 0,
 		spectrumBassShockwave:
-			values.spectrumBassShockwave ?? DEFAULT_STATE.spectrumBassShockwave,
+			values.spectrumBassShockwave ??
+			DEFAULT_SPECTRUM_STATE.spectrumBassShockwave,
 		spectrumShockwaveBandMode:
 			values.spectrumShockwaveBandMode ??
-			DEFAULT_STATE.spectrumShockwaveBandMode,
+			DEFAULT_SPECTRUM_STATE.spectrumShockwaveBandMode,
 		spectrumShockwaveBandThresholds: {
-			...DEFAULT_STATE.spectrumShockwaveBandThresholds,
+			...DEFAULT_SPECTRUM_STATE.spectrumShockwaveBandThresholds,
 			...values.spectrumShockwaveBandThresholds
 		},
 		spectrumShockwaveThickness:
 			values.spectrumShockwaveThickness ??
-			DEFAULT_STATE.spectrumShockwaveThickness,
+			DEFAULT_SPECTRUM_STATE.spectrumShockwaveThickness,
 		spectrumShockwaveOpacity:
 			values.spectrumShockwaveOpacity ??
-			DEFAULT_STATE.spectrumShockwaveOpacity,
+			DEFAULT_SPECTRUM_STATE.spectrumShockwaveOpacity,
 		spectrumShockwaveBlur:
-			values.spectrumShockwaveBlur ?? DEFAULT_STATE.spectrumShockwaveBlur,
+			values.spectrumShockwaveBlur ??
+			DEFAULT_SPECTRUM_STATE.spectrumShockwaveBlur,
 		spectrumShockwaveColorMode:
 			values.spectrumShockwaveColorMode ??
-			DEFAULT_STATE.spectrumShockwaveColorMode,
+			DEFAULT_SPECTRUM_STATE.spectrumShockwaveColorMode,
 		spectrumEnergyBloomEnabled:
 			values.spectrumEnergyBloomEnabled ??
 			(values.spectrumEnergyBloom ?? 0) > 0,
 		spectrumEnergyBloom:
-			values.spectrumEnergyBloom ?? DEFAULT_STATE.spectrumEnergyBloom,
+			values.spectrumEnergyBloom ??
+			DEFAULT_SPECTRUM_STATE.spectrumEnergyBloom,
 		spectrumPeakRibbonAngle:
 			values.spectrumPeakRibbonAngle ??
-			DEFAULT_STATE.spectrumPeakRibbonAngle,
+			DEFAULT_SPECTRUM_STATE.spectrumPeakRibbonAngle,
 		spectrumFigureRotationSpeed:
 			values.spectrumFigureRotationSpeed ??
-			DEFAULT_STATE.spectrumFigureRotationSpeed,
+			DEFAULT_SPECTRUM_STATE.spectrumFigureRotationSpeed,
 		spectrumOscilloscopeLineWidth:
 			values.spectrumOscilloscopeLineWidth ??
-			DEFAULT_STATE.spectrumOscilloscopeLineWidth,
+			DEFAULT_SPECTRUM_STATE.spectrumOscilloscopeLineWidth,
 		spectrumTunnelRingCount:
 			values.spectrumTunnelRingCount ??
-			DEFAULT_STATE.spectrumTunnelRingCount,
+			DEFAULT_SPECTRUM_STATE.spectrumTunnelRingCount,
 		spectrumTunnelDepthFalloff:
 			values.spectrumTunnelDepthFalloff ??
-			DEFAULT_STATE.spectrumTunnelDepthFalloff,
+			DEFAULT_SPECTRUM_STATE.spectrumTunnelDepthFalloff,
 		spectrumTunnelRingSpacing:
 			values.spectrumTunnelRingSpacing ??
-			DEFAULT_STATE.spectrumTunnelRingSpacing,
+			DEFAULT_SPECTRUM_STATE.spectrumTunnelRingSpacing,
 		spectrumTunnelWallOpacity:
 			values.spectrumTunnelWallOpacity ??
-			DEFAULT_STATE.spectrumTunnelWallOpacity,
+			DEFAULT_SPECTRUM_STATE.spectrumTunnelWallOpacity,
 		spectrumTunnelPulseStrength:
 			values.spectrumTunnelPulseStrength ??
-			DEFAULT_STATE.spectrumTunnelPulseStrength,
+			DEFAULT_SPECTRUM_STATE.spectrumTunnelPulseStrength,
 		spectrumTunnelAlternateRotation:
 			values.spectrumTunnelAlternateRotation ??
-			DEFAULT_STATE.spectrumTunnelAlternateRotation,
+			DEFAULT_SPECTRUM_STATE.spectrumTunnelAlternateRotation,
 		spectrumLiquidLayer1Opacity:
 			values.spectrumLiquidLayer1Opacity ??
-			DEFAULT_STATE.spectrumLiquidLayer1Opacity,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1Opacity,
 		spectrumLiquidLayer2Opacity:
 			values.spectrumLiquidLayer2Opacity ??
-			DEFAULT_STATE.spectrumLiquidLayer2Opacity,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2Opacity,
 		spectrumLiquidLayer3Opacity:
 			values.spectrumLiquidLayer3Opacity ??
-			DEFAULT_STATE.spectrumLiquidLayer3Opacity,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3Opacity,
 		spectrumLiquidLayer1Amp:
 			values.spectrumLiquidLayer1Amp ??
-			DEFAULT_STATE.spectrumLiquidLayer1Amp,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1Amp,
 		spectrumLiquidLayer2Amp:
 			values.spectrumLiquidLayer2Amp ??
-			DEFAULT_STATE.spectrumLiquidLayer2Amp,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2Amp,
 		spectrumLiquidLayer3Amp:
 			values.spectrumLiquidLayer3Amp ??
-			DEFAULT_STATE.spectrumLiquidLayer3Amp,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3Amp,
 		spectrumLiquidLayer1Fill:
 			values.spectrumLiquidLayer1Fill ??
-			DEFAULT_STATE.spectrumLiquidLayer1Fill,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1Fill,
 		spectrumLiquidLayer2Fill:
 			values.spectrumLiquidLayer2Fill ??
-			DEFAULT_STATE.spectrumLiquidLayer2Fill,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2Fill,
 		spectrumLiquidLayer3Fill:
 			values.spectrumLiquidLayer3Fill ??
-			DEFAULT_STATE.spectrumLiquidLayer3Fill,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3Fill,
 		spectrumLiquidLayer1Speed:
 			values.spectrumLiquidLayer1Speed ??
-			DEFAULT_STATE.spectrumLiquidLayer1Speed,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1Speed,
 		spectrumLiquidLayer2Speed:
 			values.spectrumLiquidLayer2Speed ??
-			DEFAULT_STATE.spectrumLiquidLayer2Speed,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2Speed,
 		spectrumLiquidLayer3Speed:
 			values.spectrumLiquidLayer3Speed ??
-			DEFAULT_STATE.spectrumLiquidLayer3Speed,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3Speed,
 		spectrumLiquidLayer1RotationSpeed:
 			values.spectrumLiquidLayer1RotationSpeed ??
-			DEFAULT_STATE.spectrumLiquidLayer1RotationSpeed,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1RotationSpeed,
 		spectrumLiquidLayer2RotationSpeed:
 			values.spectrumLiquidLayer2RotationSpeed ??
-			DEFAULT_STATE.spectrumLiquidLayer2RotationSpeed,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2RotationSpeed,
 		spectrumLiquidLayer3RotationSpeed:
 			values.spectrumLiquidLayer3RotationSpeed ??
-			DEFAULT_STATE.spectrumLiquidLayer3RotationSpeed,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3RotationSpeed,
 		spectrumLiquidLayer1Shape:
 			values.spectrumLiquidLayer1Shape ??
-			DEFAULT_STATE.spectrumLiquidLayer1Shape,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1Shape,
 		spectrumLiquidLayer2Shape:
 			values.spectrumLiquidLayer2Shape ??
-			DEFAULT_STATE.spectrumLiquidLayer2Shape,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2Shape,
 		spectrumLiquidLayer3Shape:
 			values.spectrumLiquidLayer3Shape ??
-			DEFAULT_STATE.spectrumLiquidLayer3Shape,
+			DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3Shape,
 		spectrumLiquidLayer1RigidShape:
 			typeof values.spectrumLiquidLayer1RigidShape === 'boolean'
 				? values.spectrumLiquidLayer1RigidShape
-				: DEFAULT_STATE.spectrumLiquidLayer1RigidShape,
+				: DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1RigidShape,
 		spectrumLiquidLayer2RigidShape:
 			typeof values.spectrumLiquidLayer2RigidShape === 'boolean'
 				? values.spectrumLiquidLayer2RigidShape
-				: DEFAULT_STATE.spectrumLiquidLayer2RigidShape,
+				: DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2RigidShape,
 		spectrumLiquidLayer3RigidShape:
 			typeof values.spectrumLiquidLayer3RigidShape === 'boolean'
 				? values.spectrumLiquidLayer3RigidShape
-				: DEFAULT_STATE.spectrumLiquidLayer3RigidShape,
+				: DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3RigidShape,
 		spectrumLiquidLayer1Pixelate:
 			typeof values.spectrumLiquidLayer1Pixelate === 'boolean'
 				? values.spectrumLiquidLayer1Pixelate
-				: DEFAULT_STATE.spectrumLiquidLayer1Pixelate,
+				: DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer1Pixelate,
 		spectrumLiquidLayer2Pixelate:
 			typeof values.spectrumLiquidLayer2Pixelate === 'boolean'
 				? values.spectrumLiquidLayer2Pixelate
-				: DEFAULT_STATE.spectrumLiquidLayer2Pixelate,
+				: DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer2Pixelate,
 		spectrumLiquidLayer3Pixelate:
 			typeof values.spectrumLiquidLayer3Pixelate === 'boolean'
 				? values.spectrumLiquidLayer3Pixelate
-				: DEFAULT_STATE.spectrumLiquidLayer3Pixelate,
+				: DEFAULT_SPECTRUM_STATE.spectrumLiquidLayer3Pixelate,
 		spectrumSpiralTurns:
-			values.spectrumSpiralTurns ?? DEFAULT_STATE.spectrumSpiralTurns,
+			values.spectrumSpiralTurns ??
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralTurns,
 		spectrumSpiralOuterRadius:
 			values.spectrumSpiralOuterRadius ??
-			DEFAULT_STATE.spectrumSpiralOuterRadius,
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralOuterRadius,
 		spectrumSpiralTightness:
 			values.spectrumSpiralTightness ??
-			DEFAULT_STATE.spectrumSpiralTightness,
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralTightness,
 		spectrumSpiralShape:
-			values.spectrumSpiralShape ?? DEFAULT_STATE.spectrumSpiralShape,
+			values.spectrumSpiralShape ??
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralShape,
 		spectrumSpiralLogarithmic:
 			values.spectrumSpiralLogarithmic ??
-			DEFAULT_STATE.spectrumSpiralLogarithmic,
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralLogarithmic,
 		spectrumSpiralGradientStroke:
 			values.spectrumSpiralGradientStroke ??
-			DEFAULT_STATE.spectrumSpiralGradientStroke,
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralGradientStroke,
 		spectrumSpiralArms:
-			values.spectrumSpiralArms ?? DEFAULT_STATE.spectrumSpiralArms,
+			values.spectrumSpiralArms ??
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralArms,
 		spectrumSpiralAudioTurns:
 			values.spectrumSpiralAudioTurns ??
-			DEFAULT_STATE.spectrumSpiralAudioTurns,
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralAudioTurns,
 		spectrumSpiralDotShape:
 			values.spectrumSpiralDotShape ??
-			DEFAULT_STATE.spectrumSpiralDotShape,
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralDotShape,
 		spectrumSpiralStrokeWidth:
 			values.spectrumSpiralStrokeWidth ??
-			DEFAULT_STATE.spectrumSpiralStrokeWidth,
+			DEFAULT_SPECTRUM_STATE.spectrumSpiralStrokeWidth,
 		spectrumOscilloscopeScrollSpeed:
 			values.spectrumOscilloscopeScrollSpeed ??
-			DEFAULT_STATE.spectrumOscilloscopeScrollSpeed,
+			DEFAULT_SPECTRUM_STATE.spectrumOscilloscopeScrollSpeed,
 		spectrumOscilloscopeReactiveWidth:
 			typeof values.spectrumOscilloscopeReactiveWidth === 'boolean'
 				? values.spectrumOscilloscopeReactiveWidth
-				: DEFAULT_STATE.spectrumOscilloscopeReactiveWidth,
+				: DEFAULT_SPECTRUM_STATE.spectrumOscilloscopeReactiveWidth,
 		spectrumOscilloscopePhosphor:
 			typeof values.spectrumOscilloscopePhosphor === 'boolean'
 				? values.spectrumOscilloscopePhosphor
-				: DEFAULT_STATE.spectrumOscilloscopePhosphor,
+				: DEFAULT_SPECTRUM_STATE.spectrumOscilloscopePhosphor,
 		spectrumOscilloscopePhosphorDecay:
 			values.spectrumOscilloscopePhosphorDecay ??
-			DEFAULT_STATE.spectrumOscilloscopePhosphorDecay,
+			DEFAULT_SPECTRUM_STATE.spectrumOscilloscopePhosphorDecay,
 		spectrumOscilloscopeGrid:
 			typeof values.spectrumOscilloscopeGrid === 'boolean'
 				? values.spectrumOscilloscopeGrid
-				: DEFAULT_STATE.spectrumOscilloscopeGrid,
+				: DEFAULT_SPECTRUM_STATE.spectrumOscilloscopeGrid,
 		spectrumOscilloscopeGridDivisions:
 			values.spectrumOscilloscopeGridDivisions ??
-			DEFAULT_STATE.spectrumOscilloscopeGridDivisions,
+			DEFAULT_SPECTRUM_STATE.spectrumOscilloscopeGridDivisions,
 		spectrumDriveMode:
-			values.spectrumDriveMode ?? DEFAULT_STATE.spectrumDriveMode,
+			values.spectrumDriveMode ??
+			DEFAULT_SPECTRUM_STATE.spectrumDriveMode,
 		spectrumManualSections:
 			values.spectrumManualSections ??
-			DEFAULT_STATE.spectrumManualSections,
+			DEFAULT_SPECTRUM_STATE.spectrumManualSections,
 		spectrumManualAddWeight:
 			values.spectrumManualAddWeight ??
-			DEFAULT_STATE.spectrumManualAddWeight,
+			DEFAULT_SPECTRUM_STATE.spectrumManualAddWeight,
 		spectrumManualAttack:
-			values.spectrumManualAttack ?? DEFAULT_STATE.spectrumManualAttack,
+			values.spectrumManualAttack ??
+			DEFAULT_SPECTRUM_STATE.spectrumManualAttack,
 		spectrumManualRelease:
-			values.spectrumManualRelease ?? DEFAULT_STATE.spectrumManualRelease,
-		spectrumMode: values.spectrumMode ?? DEFAULT_STATE.spectrumMode,
+			values.spectrumManualRelease ??
+			DEFAULT_SPECTRUM_STATE.spectrumManualRelease,
+		spectrumMode:
+			values.spectrumMode ?? DEFAULT_SPECTRUM_STATE.spectrumMode,
 		spectrumLinearOrientation:
 			values.spectrumLinearOrientation ??
-			DEFAULT_STATE.spectrumLinearOrientation,
+			DEFAULT_SPECTRUM_STATE.spectrumLinearOrientation,
 		spectrumLinearDirection:
 			values.spectrumLinearDirection ??
-			DEFAULT_STATE.spectrumLinearDirection,
+			DEFAULT_SPECTRUM_STATE.spectrumLinearDirection,
 		spectrumRadialShape:
-			values.spectrumRadialShape ?? DEFAULT_STATE.spectrumRadialShape,
+			values.spectrumRadialShape ??
+			DEFAULT_SPECTRUM_STATE.spectrumRadialShape,
 		spectrumRadialAngle:
-			values.spectrumRadialAngle ?? DEFAULT_STATE.spectrumRadialAngle,
+			values.spectrumRadialAngle ??
+			DEFAULT_SPECTRUM_STATE.spectrumRadialAngle,
 		spectrumRadialSharpness:
 			values.spectrumRadialSharpness ??
-			DEFAULT_STATE.spectrumRadialSharpness,
+			DEFAULT_SPECTRUM_STATE.spectrumRadialSharpness,
 		spectrumRadialFitLogo:
-			values.spectrumRadialFitLogo ?? DEFAULT_STATE.spectrumRadialFitLogo,
+			values.spectrumRadialFitLogo ??
+			DEFAULT_SPECTRUM_STATE.spectrumRadialFitLogo,
 		spectrumFollowLogo:
-			values.spectrumFollowLogo ?? DEFAULT_STATE.spectrumFollowLogo,
+			values.spectrumFollowLogo ??
+			DEFAULT_SPECTRUM_STATE.spectrumFollowLogo,
 		spectrumLogoGap:
-			values.spectrumLogoGap ?? DEFAULT_STATE.spectrumLogoGap,
-		spectrumSpan: values.spectrumSpan ?? DEFAULT_STATE.spectrumSpan,
-		spectrumScale: values.spectrumScale ?? DEFAULT_STATE.spectrumScale,
+			values.spectrumLogoGap ?? DEFAULT_SPECTRUM_STATE.spectrumLogoGap,
+		spectrumSpan:
+			values.spectrumSpan ?? DEFAULT_SPECTRUM_STATE.spectrumSpan,
+		spectrumScale:
+			values.spectrumScale ?? DEFAULT_SPECTRUM_STATE.spectrumScale,
 		spectrumInnerRadius:
-			values.spectrumInnerRadius ?? DEFAULT_STATE.spectrumInnerRadius,
+			values.spectrumInnerRadius ??
+			DEFAULT_SPECTRUM_STATE.spectrumInnerRadius,
 		spectrumBarCount:
-			values.spectrumBarCount ?? DEFAULT_STATE.spectrumBarCount,
+			values.spectrumBarCount ?? DEFAULT_SPECTRUM_STATE.spectrumBarCount,
 		spectrumBarWidth:
-			values.spectrumBarWidth ?? DEFAULT_STATE.spectrumBarWidth,
+			values.spectrumBarWidth ?? DEFAULT_SPECTRUM_STATE.spectrumBarWidth,
 		spectrumMinHeight:
-			values.spectrumMinHeight ?? DEFAULT_STATE.spectrumMinHeight,
+			values.spectrumMinHeight ??
+			DEFAULT_SPECTRUM_STATE.spectrumMinHeight,
 		spectrumMaxHeight:
-			values.spectrumMaxHeight ?? DEFAULT_STATE.spectrumMaxHeight,
+			values.spectrumMaxHeight ??
+			DEFAULT_SPECTRUM_STATE.spectrumMaxHeight,
 		spectrumSmoothing:
-			values.spectrumSmoothing ?? DEFAULT_STATE.spectrumSmoothing,
+			values.spectrumSmoothing ??
+			DEFAULT_SPECTRUM_STATE.spectrumSmoothing,
 		spectrumOpacity:
-			values.spectrumOpacity ?? DEFAULT_STATE.spectrumOpacity,
+			values.spectrumOpacity ?? DEFAULT_SPECTRUM_STATE.spectrumOpacity,
 		spectrumGlowIntensity:
-			values.spectrumGlowIntensity ?? DEFAULT_STATE.spectrumGlowIntensity,
+			values.spectrumGlowIntensity ??
+			DEFAULT_SPECTRUM_STATE.spectrumGlowIntensity,
 		spectrumGlowReach:
-			values.spectrumGlowReach ?? DEFAULT_STATE.spectrumGlowReach,
+			values.spectrumGlowReach ??
+			DEFAULT_SPECTRUM_STATE.spectrumGlowReach,
 		spectrumGlowAudioAmount:
 			values.spectrumGlowAudioAmount ??
-			DEFAULT_STATE.spectrumGlowAudioAmount,
+			DEFAULT_SPECTRUM_STATE.spectrumGlowAudioAmount,
 		spectrumShadowBlur:
-			values.spectrumShadowBlur ?? DEFAULT_STATE.spectrumShadowBlur,
+			values.spectrumShadowBlur ??
+			DEFAULT_SPECTRUM_STATE.spectrumShadowBlur,
 		spectrumPrimaryColor:
-			values.spectrumPrimaryColor ?? DEFAULT_STATE.spectrumPrimaryColor,
+			values.spectrumPrimaryColor ??
+			DEFAULT_SPECTRUM_STATE.spectrumPrimaryColor,
 		spectrumSecondaryColor:
 			values.spectrumSecondaryColor ??
-			DEFAULT_STATE.spectrumSecondaryColor,
+			DEFAULT_SPECTRUM_STATE.spectrumSecondaryColor,
 		spectrumColorSource:
-			values.spectrumColorSource ?? DEFAULT_STATE.spectrumColorSource,
+			values.spectrumColorSource ??
+			DEFAULT_SPECTRUM_STATE.spectrumColorSource,
 		spectrumColorMode:
-			values.spectrumColorMode ?? DEFAULT_STATE.spectrumColorMode,
+			values.spectrumColorMode ??
+			DEFAULT_SPECTRUM_STATE.spectrumColorMode,
 		spectrumManualGlow:
-			values.spectrumManualGlow ?? DEFAULT_STATE.spectrumManualGlow,
+			values.spectrumManualGlow ??
+			DEFAULT_SPECTRUM_STATE.spectrumManualGlow,
 		spectrumManualGlowMode:
 			values.spectrumManualGlowMode ??
-			DEFAULT_STATE.spectrumManualGlowMode,
+			DEFAULT_SPECTRUM_STATE.spectrumManualGlowMode,
 		spectrumGlowColorSource: values.spectrumGlowColorSource ?? 'manual',
 		spectrumGlowColorMode: values.spectrumGlowColorMode ?? 'gradient',
 		spectrumGlowPrimaryColor:
 			values.spectrumGlowPrimaryColor ??
 			values.spectrumPrimaryColor ??
-			DEFAULT_STATE.spectrumGlowPrimaryColor,
+			DEFAULT_SPECTRUM_STATE.spectrumGlowPrimaryColor,
 		spectrumGlowSecondaryColor:
 			values.spectrumGlowSecondaryColor ??
 			values.spectrumSecondaryColor ??
-			DEFAULT_STATE.spectrumGlowSecondaryColor,
+			DEFAULT_SPECTRUM_STATE.spectrumGlowSecondaryColor,
 		spectrumPixelate:
-			values.spectrumPixelate ?? DEFAULT_STATE.spectrumPixelate,
+			values.spectrumPixelate ?? DEFAULT_SPECTRUM_STATE.spectrumPixelate,
 		spectrumPixelateScale:
-			values.spectrumPixelateScale ?? DEFAULT_STATE.spectrumPixelateScale,
+			values.spectrumPixelateScale ??
+			DEFAULT_SPECTRUM_STATE.spectrumPixelateScale,
 		spectrumLedCellSize:
-			values.spectrumLedCellSize ?? DEFAULT_STATE.spectrumLedCellSize,
+			values.spectrumLedCellSize ??
+			DEFAULT_SPECTRUM_STATE.spectrumLedCellSize,
 		spectrumLedCellGap:
-			values.spectrumLedCellGap ?? DEFAULT_STATE.spectrumLedCellGap,
+			values.spectrumLedCellGap ??
+			DEFAULT_SPECTRUM_STATE.spectrumLedCellGap,
 		spectrumLedAngle:
-			values.spectrumLedAngle ?? DEFAULT_STATE.spectrumLedAngle,
+			values.spectrumLedAngle ?? DEFAULT_SPECTRUM_STATE.spectrumLedAngle,
 		spectrumLedShape:
-			values.spectrumLedShape ?? DEFAULT_STATE.spectrumLedShape,
+			values.spectrumLedShape ?? DEFAULT_SPECTRUM_STATE.spectrumLedShape,
 		spectrumRgbSplit:
-			values.spectrumRgbSplit ?? DEFAULT_STATE.spectrumRgbSplit,
+			values.spectrumRgbSplit ?? DEFAULT_SPECTRUM_STATE.spectrumRgbSplit,
 		spectrumRgbSplitAmount:
 			values.spectrumRgbSplitAmount ??
-			DEFAULT_STATE.spectrumRgbSplitAmount,
+			DEFAULT_SPECTRUM_STATE.spectrumRgbSplitAmount,
 		spectrumNeonCore:
-			values.spectrumNeonCore ?? DEFAULT_STATE.spectrumNeonCore,
+			values.spectrumNeonCore ?? DEFAULT_SPECTRUM_STATE.spectrumNeonCore,
 		spectrumNeonCoreIntensity:
 			values.spectrumNeonCoreIntensity ??
-			DEFAULT_STATE.spectrumNeonCoreIntensity,
+			DEFAULT_SPECTRUM_STATE.spectrumNeonCoreIntensity,
 		spectrumNeonCoreWidth:
-			values.spectrumNeonCoreWidth ?? DEFAULT_STATE.spectrumNeonCoreWidth,
+			values.spectrumNeonCoreWidth ??
+			DEFAULT_SPECTRUM_STATE.spectrumNeonCoreWidth,
 		spectrumGradientFlow:
-			values.spectrumGradientFlow ?? DEFAULT_STATE.spectrumGradientFlow,
+			values.spectrumGradientFlow ??
+			DEFAULT_SPECTRUM_STATE.spectrumGradientFlow,
 		spectrumGradientFlowSpeed:
 			values.spectrumGradientFlowSpeed ??
-			DEFAULT_STATE.spectrumGradientFlowSpeed,
+			DEFAULT_SPECTRUM_STATE.spectrumGradientFlowSpeed,
 		spectrumGradientFlowAudio:
 			values.spectrumGradientFlowAudio ??
-			DEFAULT_STATE.spectrumGradientFlowAudio,
+			DEFAULT_SPECTRUM_STATE.spectrumGradientFlowAudio,
 		spectrumGradientFlowDirection:
 			values.spectrumGradientFlowDirection ??
-			DEFAULT_STATE.spectrumGradientFlowDirection,
+			DEFAULT_SPECTRUM_STATE.spectrumGradientFlowDirection,
 		spectrumPeakSparks:
-			values.spectrumPeakSparks ?? DEFAULT_STATE.spectrumPeakSparks,
+			values.spectrumPeakSparks ??
+			DEFAULT_SPECTRUM_STATE.spectrumPeakSparks,
 		spectrumPeakSparksAmount:
 			values.spectrumPeakSparksAmount ??
-			DEFAULT_STATE.spectrumPeakSparksAmount,
+			DEFAULT_SPECTRUM_STATE.spectrumPeakSparksAmount,
 		spectrumPeakSparksSize:
 			values.spectrumPeakSparksSize ??
-			DEFAULT_STATE.spectrumPeakSparksSize,
+			DEFAULT_SPECTRUM_STATE.spectrumPeakSparksSize,
 		spectrumPeakSparksThreshold:
 			values.spectrumPeakSparksThreshold ??
-			DEFAULT_STATE.spectrumPeakSparksThreshold,
+			DEFAULT_SPECTRUM_STATE.spectrumPeakSparksThreshold,
 		spectrumEchoTrace:
-			values.spectrumEchoTrace ?? DEFAULT_STATE.spectrumEchoTrace,
+			values.spectrumEchoTrace ??
+			DEFAULT_SPECTRUM_STATE.spectrumEchoTrace,
 		spectrumEchoTraceCount:
 			values.spectrumEchoTraceCount ??
-			DEFAULT_STATE.spectrumEchoTraceCount,
+			DEFAULT_SPECTRUM_STATE.spectrumEchoTraceCount,
 		spectrumEchoTraceOpacity:
 			values.spectrumEchoTraceOpacity ??
-			DEFAULT_STATE.spectrumEchoTraceOpacity,
+			DEFAULT_SPECTRUM_STATE.spectrumEchoTraceOpacity,
 		spectrumEchoTraceOffset:
 			values.spectrumEchoTraceOffset ??
-			DEFAULT_STATE.spectrumEchoTraceOffset,
+			DEFAULT_SPECTRUM_STATE.spectrumEchoTraceOffset,
 		spectrumEchoTraceDecay:
 			values.spectrumEchoTraceDecay ??
-			DEFAULT_STATE.spectrumEchoTraceDecay,
+			DEFAULT_SPECTRUM_STATE.spectrumEchoTraceDecay,
 		spectrumBandMode:
-			values.spectrumBandMode ?? DEFAULT_STATE.spectrumBandMode,
+			values.spectrumBandMode ?? DEFAULT_SPECTRUM_STATE.spectrumBandMode,
 		spectrumAudioSmoothing:
 			values.spectrumAudioSmoothing ??
-			DEFAULT_STATE.spectrumAudioSmoothing,
+			DEFAULT_SPECTRUM_STATE.spectrumAudioSmoothing,
 		spectrumShape: normalizeSpectrumShape(
-			values.spectrumShape ?? DEFAULT_STATE.spectrumShape
+			values.spectrumShape ?? DEFAULT_SPECTRUM_STATE.spectrumShape
 		),
 		spectrumWaveFillOpacity:
 			values.spectrumWaveFillOpacity ??
-			DEFAULT_STATE.spectrumWaveFillOpacity,
+			DEFAULT_SPECTRUM_STATE.spectrumWaveFillOpacity,
 		spectrumRotationSpeed: Math.abs(
-			values.spectrumRotationSpeed ?? DEFAULT_STATE.spectrumRotationSpeed
+			values.spectrumRotationSpeed ??
+				DEFAULT_SPECTRUM_STATE.spectrumRotationSpeed
 		),
 		spectrumRotationDrive:
-			values.spectrumRotationDrive ?? DEFAULT_STATE.spectrumRotationDrive,
+			values.spectrumRotationDrive ??
+			DEFAULT_SPECTRUM_STATE.spectrumRotationDrive,
 		spectrumRotationAudioAmount:
 			values.spectrumRotationAudioAmount ??
-			DEFAULT_STATE.spectrumRotationAudioAmount,
+			DEFAULT_SPECTRUM_STATE.spectrumRotationAudioAmount,
 		spectrumRotationChannel:
 			values.spectrumRotationChannel ??
-			DEFAULT_STATE.spectrumRotationChannel,
+			DEFAULT_SPECTRUM_STATE.spectrumRotationChannel,
 		spectrumRotationDirection:
 			values.spectrumRotationDirection ??
 			((values.spectrumRotationSpeed ??
-				DEFAULT_STATE.spectrumRotationSpeed) < 0
+				DEFAULT_SPECTRUM_STATE.spectrumRotationSpeed) < 0
 				? 'ccw'
 				: 'cw'),
 		spectrumRotationSmoothing:
 			values.spectrumRotationSmoothing ??
-			DEFAULT_STATE.spectrumRotationSmoothing,
+			DEFAULT_SPECTRUM_STATE.spectrumRotationSmoothing,
 		spectrumRotationInvertOnLowEnergy:
 			values.spectrumRotationInvertOnLowEnergy ??
-			DEFAULT_STATE.spectrumRotationInvertOnLowEnergy,
+			DEFAULT_SPECTRUM_STATE.spectrumRotationInvertOnLowEnergy,
 		spectrumRotationInvertThreshold:
 			values.spectrumRotationInvertThreshold ??
-			DEFAULT_STATE.spectrumRotationInvertThreshold,
+			DEFAULT_SPECTRUM_STATE.spectrumRotationInvertThreshold,
 		spectrumRotationInvertHoldMs:
 			values.spectrumRotationInvertHoldMs ??
-			DEFAULT_STATE.spectrumRotationInvertHoldMs,
-		spectrumMirror: values.spectrumMirror ?? DEFAULT_STATE.spectrumMirror,
+			DEFAULT_SPECTRUM_STATE.spectrumRotationInvertHoldMs,
+		spectrumMirror:
+			values.spectrumMirror ?? DEFAULT_SPECTRUM_STATE.spectrumMirror,
 		spectrumPeakHold:
-			values.spectrumPeakHold ?? DEFAULT_STATE.spectrumPeakHold,
+			values.spectrumPeakHold ?? DEFAULT_SPECTRUM_STATE.spectrumPeakHold,
 		spectrumPeakDecay:
-			values.spectrumPeakDecay ?? DEFAULT_STATE.spectrumPeakDecay,
+			values.spectrumPeakDecay ??
+			DEFAULT_SPECTRUM_STATE.spectrumPeakDecay,
 		spectrumPositionX:
-			values.spectrumPositionX ?? DEFAULT_STATE.spectrumPositionX,
+			values.spectrumPositionX ??
+			DEFAULT_SPECTRUM_STATE.spectrumPositionX,
 		spectrumPositionY:
-			values.spectrumPositionY ?? DEFAULT_STATE.spectrumPositionY,
+			values.spectrumPositionY ??
+			DEFAULT_SPECTRUM_STATE.spectrumPositionY,
 		spectrumInstances: hydrateSpectrumInstances(values)
 	});
 }

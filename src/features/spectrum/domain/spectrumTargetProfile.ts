@@ -1,4 +1,4 @@
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_SPECTRUM_STATE } from './spectrumDefaults';
 import { normalizeSpectrumSettings } from './spectrumStateTransforms';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum/runtime/spectrumProfileHydrate';
 import {
@@ -55,14 +55,14 @@ export function extractSpectrumTargetSettings(
 }
 
 /** Factory-default per-instance settings for the chosen target. The main
- *  spectrum keeps its own DEFAULT_STATE look; the extra instance uses the
+ *  spectrum keeps its own DEFAULT_SPECTRUM_STATE look; the extra instance uses the
  *  canonical instance defaults. */
 export function defaultSpectrumTargetSettings(
 	target: SpectrumProfileTarget
 ): SpectrumInstanceSettings {
 	if (target === 'instance') return createDefaultSpectrumInstanceSettings();
 	return pickSpectrumInstanceSettings(
-		DEFAULT_STATE as unknown as Partial<SpectrumInstanceSettings>
+		DEFAULT_SPECTRUM_STATE as unknown as Partial<SpectrumInstanceSettings>
 	);
 }
 

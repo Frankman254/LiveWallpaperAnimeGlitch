@@ -37,11 +37,18 @@
  * tab from here made `lib/featureProfiles` pull the whole component tree into
  * its module graph and crashed 18 test suites on circular initialisation;
  * exporting `drawSpectrum` put `store/` in a cycle with itself, because the
- * renderer reads render policy off the store. Keep components and the renderer
- * out of this file.
+ * renderer read render policy off the store. The store cycle is now gone (the
+ * renderer takes a `SpectrumRenderPolicy` argument), but `./render` stays split
+ * on weight alone — see its own header. Keep components and the renderer out of
+ * this file.
+ *
+ * This file also owns the domain's factory defaults (`DEFAULT_SPECTRUM_STATE`).
+ * `lib/constants` spreads them into `DEFAULT_STATE`; the flow is one-way, and
+ * putting it back the other way is what created the cycle in the first place.
  */
 
 // ── domain model ────────────────────────────────────────────────────────────
+export { DEFAULT_SPECTRUM_STATE } from './domain/spectrumDefaults';
 export {
 	SECOND_SPECTRUM_INSTANCE_ID,
 	SPECTRUM_INSTANCE_SETTING_KEYS,

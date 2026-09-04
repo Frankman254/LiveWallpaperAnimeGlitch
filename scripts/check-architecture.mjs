@@ -151,19 +151,15 @@ const BASELINE = [
 	'lib/constants.ts -> features/calibration/calibrationConfig.ts',
 	'lib/constants.ts -> features/layout/viewportMetrics.ts',
 	'lib/constants.ts -> features/presets/imageBassZoomProfiles.ts',
-	// NOTE: these deliberately DEEP-import the domain instead of going through
-	// `@/features/spectrum`. The barrel loads the whole domain, including the
-	// module that reads DEFAULT_STATE back out of lib/constants — routing these
-	// through it produced a circular *initialisation* that crashed 18 suites.
-	// The real fix is moving the spectrum slice of DEFAULT_STATE into the
-	// domain; until then, keep these pointed at single modules.
-	'lib/constants.ts -> features/spectrum/domain/shockwaveCalibration.ts',
-	'lib/constants.ts -> features/spectrum/domain/spectrumInstanceModel.ts',
-	'lib/constants.ts -> features/spectrum/presets/spectrumLiquidLayers.ts',
-	'lib/featureProfiles.ts -> features/spectrum/runtime/spectrumProfileHydrate.ts',
-	'lib/featureProfiles.ts -> features/spectrum/domain/spectrumControlConfig.ts',
-	'lib/featureProfiles.ts -> features/spectrum/domain/spectrumInstanceModel.ts',
-	'lib/featureProfiles.ts -> features/spectrum/presets/spectrumVisualAccentsDemoProfiles.ts',
+	// These used to be seven DEEP imports into single spectrum modules, because
+	// the barrel loaded a module that read DEFAULT_STATE back out of
+	// lib/constants — a circular initialisation that crashed 18 suites. The
+	// domain now owns its own defaults (features/spectrum/domain/spectrumDefaults),
+	// so the barrel is safe and these are two ordinary facade edges. They stay
+	// debt only because `lib/` should not reach into `features/` at all: the
+	// remaining fix is moving DEFAULT_STATE itself out of `lib/`.
+	'lib/constants.ts -> features/spectrum/index.ts',
+	'lib/featureProfiles.ts -> features/spectrum/index.ts',
 	'lib/wallpaperPersistenceCoordinator.ts -> features/export/projectExportSelection.ts',
 
 	// editor/ → domain: MotionSharedControls carries `FxBandThresholdControls`,
@@ -299,10 +295,11 @@ for (const file of walk(srcRoot)) {
 }
 
 const KNOWN_CYCLES = [
-	// DEFAULT_STATE (lib/constants) needs spectrum defaults, and the spectrum
-	// profile hydrator needs DEFAULT_STATE. Broken by moving domain defaults
-	// into features/* and having constants compose them one-way.
-	'features/spectrum/runtime/spectrumProfileHydrate.ts|lib/constants.ts|lib/featureProfiles.ts'
+	// Empty, and it should stay that way. The one entry that used to live here
+	// (DEFAULT_STATE needing spectrum defaults while the spectrum hydrator
+	// needed DEFAULT_STATE) was broken by giving the domain its own defaults
+	// and letting lib/constants compose them one-way. If you are about to add
+	// an entry here, move the shared values into the domain instead.
 ];
 const knownCycles = new Set(KNOWN_CYCLES);
 const seenCycles = new Set();
