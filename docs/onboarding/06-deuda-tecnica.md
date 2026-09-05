@@ -246,15 +246,21 @@ La forma realista, alineada con cómo ya trabaja el proyecto:
 
 ## 9. Resumen en una frase
 
-> La deuda real, por orden: **no hay tests** (el compilador es la única
-> red), **el estado es un monolito** (migrador-normalizador de 3.518 líneas
-> y checklist de 5 archivos por ajuste), **el fondo tiene la verdad
-> duplicada** (ficha + claves espejo sincronizadas a mano), **el techo de
-> rendimiento es arquitectónico** (N lienzos full-screen + shadowBlur) y
-> **hay UI gigante con useShallow a medias**. Todo está localizado, casi
-> todo tiene plan, y la regla de pago es: por oportunidad, feature a
-> feature, sin expandir el scope — y las cirugías mayores, con nombre y plan
-> propio.
+> La deuda real, por orden: **el estado es un monolito** (migrador-normalizador
+> de 3.518 líneas y checklist de 5 archivos por ajuste), **el fondo tiene la
+> verdad duplicada** (ficha + claves espejo sincronizadas a mano), **el techo de
+> rendimiento es arquitectónico** (N lienzos full-screen + shadowBlur) y **hay
+> UI gigante con useShallow a medias**. Todo está localizado, casi todo tiene
+> plan, y la regla de pago es: por oportunidad, feature a feature, sin expandir
+> el scope — y las cirugías mayores, con nombre y plan propio.
+
+> **Corregido (2026-09-05):** este resumen empezaba diciendo "no hay tests".
+> Eso dejó de ser cierto: hay **984 tests en 77 archivos**, con fixtures de
+> migración que prueban cada versión persistida. También decía que la
+> dirección de dependencias era un problema; hoy son **10 aristas de deuda
+> sobre 2.451 imports, con 0 ciclos**, y `pnpm architecture:check` lo verifica
+> en cada commit. Un documento de deuda que no se actualiza se convierte él
+> mismo en deuda.
 
 ---
 

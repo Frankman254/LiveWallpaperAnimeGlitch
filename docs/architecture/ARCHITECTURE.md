@@ -8,8 +8,8 @@
 > [CODEBASE_STRUCTURE.md](CODEBASE_STRUCTURE.md) — ése es el mapa descriptivo.
 > Para "¿dónde va lo nuevo?" y "¿qué puede importar qué?", usá éste.
 >
-> Verificado contra el árbol el **2026-09-03**: 604 archivos, ~135k LOC,
-> 2.484 imports, **22 aristas de deuda y 0 ciclos de runtime**.
+> Verificado contra el árbol el **2026-09-05**: 604 archivos, ~135k LOC,
+> 2.451 imports, **10 aristas de deuda y 0 ciclos de runtime**.
 > Lo verifica `pnpm architecture:check` en CI.
 
 ---

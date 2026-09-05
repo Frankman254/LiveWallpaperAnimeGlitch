@@ -15,6 +15,53 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Arquitectura: se cierran las fases de migración (deuda 22 → 10)
+
+Tres items del roadmap §6.5, y los tres tenían la misma forma: **el archivo
+estaba en la zona equivocada, y la arista de deuda era el síntoma.** Ninguna
+de las 12 aristas se cerró tocando el baseline.
+
+- **`export` migrado.** Doce archivos de `tabs/export/` →
+  `features/export/controls/`, con fachadas `index` (modelo: selección, plan,
+  nombres) y `ui` (ocho paneles + cuatro hooks). `ExportTabBody` pasa de once
+  imports a dos y se queda en `tabs/` porque componer secciones es trabajo de
+  editor. Era el último dominio grande sin fachada.
+- **`controlPanelResetKeys.ts` → `config/`.** 684 líneas de "qué keys son de
+  qué pestaña", un solo `import type`, cero React. Vivía en `components/` sólo
+  porque el panel de control fue su primer consumidor — y por eso
+  `features/export` subía a `components/` a buscar constantes.
+- **Nace la zona `services/`.** `projectSettings`,
+  `wallpaperPersistenceCoordinator` y todo `sync/` salen de `lib/`. Una
+  librería pura no llama a `useWallpaperStore.getState()`; un servicio de
+  aplicación está **por encima** del store, no por debajo. Tiene prohibido
+  `components` `pages` `ui` `context` `editor`: orquesta estado, no dibuja.
+- **`restoreWallpaperAssets` deja de fingir ser un hook.** Era una función
+  async de 200 líneas compartiendo archivo con el efecto de cinco líneas que
+  la llama; tres consumidores queriendo esa función eran toda la razón por la
+  que `lib/` subía a `hooks/`. El hook queda, como envoltorio.
+- **`lib/constants.ts` → `store/defaultState.ts`.** El nombre es el punto: no
+  era una bolsa de constantes, era el documento de escena de fábrica. Con él
+  se movieron `featureProfiles` y `factoryDefaults` (a `store/`), `presets` (a
+  `features/presets/`) y `backgroundImages` (a `features/background/`, que
+  estaba explícitamente bloqueado hasta que `projectSettings` saliera de
+  `lib/`).
+- **Queda 1 arista de `types/` que no se arregla moviendo archivos**, y el
+  baseline ahora explica por qué: los tipos de perfil son
+  `Pick<WallpaperState, typeof KEYS[number]>`, derivados de la misma interfaz
+  que después los guarda, y los arrays de keys son valores de runtime.
+- **Verificado en vivo, no sólo en CI.** Mover `DEFAULT_STATE` cambia el orden
+  de inicialización de módulos, que es lo que una vez rompió 18 suites: el
+  store hidrata en v108 con 767 claves, los slots de perfil se construyen
+  desde su nueva ubicación y las ocho secciones de Export montan por la
+  fachada nueva sin errores de consola.
+
+### AI Director: el pedido en vuelo se puede cancelar
+
+- `handleAskModel` ya creaba un `AbortController` y lo guardaba, pero **el
+  botón nunca se construyó**: un "Preguntando…" colgado no tenía más salida
+  que recargar. Se agregó el control (`ai_btn_cancel_ask`, en/es). Con eso
+  `pnpm lint` queda en **0 errores**.
+
 ### Borrado: el subsistema Edge Glow (store v107 → v108)
 
 - **Edge Glow era inalcanzable de punta a punta.** `EdgeGlowSection` (360 LOC)
