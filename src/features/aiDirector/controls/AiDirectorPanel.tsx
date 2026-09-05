@@ -4,14 +4,14 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
-import { analyzeImageUrl } from '@/features/aiDirector/analysis/analyzeImageUrl';
-import { getOrComputeSignature } from '@/features/aiDirector/analysis/signatureCache';
 import {
+	analyzeImageUrl,
+	getOrComputeSignature,
 	draftFromSignature,
 	draftWithIntent,
-	shouldApplySceneIntentResult
-} from '@/features/aiDirector/sceneDraft';
-import { requestSceneIntent } from '@/features/aiDirector/client/sceneIntentClient';
+	shouldApplySceneIntentResult,
+	requestSceneIntent
+} from '../index';
 import AiIntentEditor from './AiIntentEditor';
 import {
 	Button,

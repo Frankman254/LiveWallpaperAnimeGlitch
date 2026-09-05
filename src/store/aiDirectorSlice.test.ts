@@ -12,8 +12,8 @@ const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { partializeWallpaperStore } =
 	await import('@/store/wallpaperStorePersistence');
 const { draftFromSignature, draftWithIntent } =
-	await import('@/features/aiDirector/sceneDraft');
-import type { ImageSignature } from '@/features/aiDirector/analysis/imageSignature';
+	await import('@/features/aiDirector');
+import type { ImageSignature } from '@/features/aiDirector';
 import type { WallpaperState } from '@/types/wallpaper';
 
 function signature(partial: Partial<ImageSignature> = {}): ImageSignature {

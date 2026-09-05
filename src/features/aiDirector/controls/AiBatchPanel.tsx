@@ -4,17 +4,17 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useDialog } from '@/editor/DialogProvider';
 import { useT } from '@/lib/i18n';
-import { analyzeImageUrl } from '@/features/aiDirector/analysis/analyzeImageUrl';
-import { getOrComputeSignature } from '@/features/aiDirector/analysis/signatureCache';
 import {
+	analyzeImageUrl,
+	getOrComputeSignature,
 	clusterSignatures,
+	requestSceneIntent,
+	personalizeIntent,
 	type SignatureCluster,
-	type SignatureEntry
-} from '@/features/aiDirector/analysis/clusterSignatures';
-import { requestSceneIntent } from '@/features/aiDirector/client/sceneIntentClient';
-import { personalizeIntent } from '@/features/aiDirector/batch/personalizeIntent';
-import type { BatchImageIntent } from '@/features/aiDirector/batch/buildBatchScenes';
-import type { SceneIntent } from '@/features/aiDirector/intent/sceneIntent';
+	type SignatureEntry,
+	type BatchImageIntent,
+	type SceneIntent
+} from '../index';
 import { Button, SectionCard, Slider, UI_COLORS, ICON_SIZE } from '@/ui';
 
 /**

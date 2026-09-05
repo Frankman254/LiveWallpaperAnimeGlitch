@@ -757,25 +757,23 @@ export type WallpaperStore = WallpaperState & {
 
 	// ── AI Director (try-on state; never persisted) ──────────────────────────
 	/** The scene currently being tried on, or null. */
-	aiDraft: import('@/features/aiDirector/sceneDraft').SceneDraft | null;
+	aiDraft: import('@/features/aiDirector').SceneDraft | null;
 	/** Whether `aiDraft` is applied to live state right now. */
 	aiPreviewActive: boolean;
 	/** Exactly the keys the preview overwrote, for a residue-free revert. */
 	aiPreviewSnapshot: Partial<WallpaperState> | null;
 	setAiDraft: (
-		draft: import('@/features/aiDirector/sceneDraft').SceneDraft | null
+		draft: import('@/features/aiDirector').SceneDraft | null
 	) => void;
 	previewAiDraft: (
-		draft?: import('@/features/aiDirector/sceneDraft').SceneDraft
+		draft?: import('@/features/aiDirector').SceneDraft
 	) => void;
 	revertAiPreview: () => void;
 	/** Commits scenes for a whole pool in one write and binds each to its
 	 *  image. Returns what was built, or null when there was nothing to do. */
 	applyAiBatch: (
-		entries: import('@/features/aiDirector/batch/buildBatchScenes').BatchImageIntent[]
-	) =>
-		| import('@/features/aiDirector/batch/buildBatchScenes').BatchScenesResult
-		| null;
+		entries: import('@/features/aiDirector').BatchImageIntent[]
+	) => import('@/features/aiDirector').BatchScenesResult | null;
 	discardAiDraft: () => void;
 	/** Saves the previewed look as a Scene and binds it to the draft's image.
 	 *  Returns the same shape as `captureSceneSlotFromCurrent`, or null. */

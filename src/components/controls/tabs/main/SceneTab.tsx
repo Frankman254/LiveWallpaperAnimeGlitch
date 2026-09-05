@@ -16,8 +16,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { useTabViewState } from '@/hooks/useTabViewState';
 import SetlistsPanel from './scene/SetlistsPanel';
-import AiDirectorPanel from './scene/AiDirectorPanel';
-import AiBatchPanel from './scene/AiBatchPanel';
+import { AiDirectorPanel, AiBatchPanel } from '@/features/aiDirector/ui';
 import { resolveEditorImagePreviewUrl } from '@/lib/editorImagePreviews';
 import {
 	SectionCard,

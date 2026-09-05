@@ -10,9 +10,9 @@ import {
 	SPECTRUM_FAMILIES,
 	SPECTRUM_MODES,
 	SPECTRUM_SHAPES,
+	draftWithIntent,
 	type SceneIntent
-} from '@/features/aiDirector/intent/sceneIntent';
-import { draftWithIntent } from '@/features/aiDirector/sceneDraft';
+} from '../index';
 
 /**
  * Hand-editing surface for a draft's `SceneIntent`.

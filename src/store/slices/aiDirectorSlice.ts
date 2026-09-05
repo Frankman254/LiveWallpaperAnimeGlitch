@@ -2,13 +2,11 @@ import type { StateCreator } from 'zustand';
 import {
 	buildDraftPatch,
 	snapshotForPatch,
-	type SceneDraft
-} from '@/features/aiDirector/sceneDraft';
-import {
 	buildBatchScenes,
+	type SceneDraft,
 	type BatchImageIntent,
 	type BatchScenesResult
-} from '@/features/aiDirector/batch/buildBatchScenes';
+} from '@/features/aiDirector';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
