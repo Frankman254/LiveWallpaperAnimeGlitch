@@ -22,7 +22,7 @@
 ## 1. Letras de canciones: Lyrixa
 
 **Dónde:** `src/features/lyrics/` (6 archivos) + el dibujante
-`src/components/audio/LyricsOverlay.ts` + la pestaña Lyrics.
+`src/features/lyrics/runtime/LyricsOverlay.ts` + la pestaña Lyrics.
 
 **La decisión de diseño más importante:** este proyecto **no es un editor de
 letras**. Hubo un mini-editor local y se eliminó a propósito. Las letras se

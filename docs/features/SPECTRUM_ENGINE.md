@@ -7,8 +7,8 @@
 
 The spectrum engine renders audio-reactive visualizations on a per-layer Canvas 2D context. Each wallpaper may mount up to **two** spectrum instances (`primary` / clone) with independent settings.
 
-Entry: `drawSpectrum()` in `src/components/audio/CircularSpectrum.ts`  
-Dispatch: `src/features/spectrum/spectrumFamilyRegistry.ts`
+Entry: `drawSpectrum()` in `src/features/spectrum/runtime/CircularSpectrum.ts`  
+Dispatch: `src/features/spectrum/domain/spectrumFamilyRegistry.ts`
 
 ## Ownership model (Spectrum 1 / Spectrum 2)
 

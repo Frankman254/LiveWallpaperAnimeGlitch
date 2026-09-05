@@ -68,7 +68,7 @@ Higher **Pixel size** = coarser grid (larger visual pixels).
 
 ### Helpers
 
-`src/features/spectrum/pixelArtHelpers.ts` — scale normalization, active check, small canvas dimensions.
+`src/features/spectrum/domain/pixelArtHelpers.ts` — scale normalization, active check, small canvas dimensions.
 
 ### Performance cost
 

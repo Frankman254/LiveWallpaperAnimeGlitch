@@ -257,10 +257,11 @@ La forma realista, alineada con cómo ya trabaja el proyecto:
 > **Corregido (2026-09-05):** este resumen empezaba diciendo "no hay tests".
 > Eso dejó de ser cierto: hay **984 tests en 77 archivos**, con fixtures de
 > migración que prueban cada versión persistida. También decía que la
-> dirección de dependencias era un problema; hoy son **10 aristas de deuda
-> sobre 2.451 imports, con 0 ciclos**, y `pnpm architecture:check` lo verifica
-> en cada commit. Un documento de deuda que no se actualiza se convierte él
-> mismo en deuda.
+> dirección de dependencias era un problema; hoy son **5 aristas de deuda
+> sobre 2.474 imports, con 0 ciclos**, y `pnpm architecture:check` lo verifica
+> en cada commit. Y esas 5 son _declaraciones de tipo_, que TypeScript borra al
+> compilar: **en el programa que corre no queda ninguna**. Un documento de
+> deuda que no se actualiza se convierte él mismo en deuda.
 
 ---
 

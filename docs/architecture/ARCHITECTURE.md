@@ -8,8 +8,9 @@
 > [CODEBASE_STRUCTURE.md](CODEBASE_STRUCTURE.md) — ése es el mapa descriptivo.
 > Para "¿dónde va lo nuevo?" y "¿qué puede importar qué?", usá éste.
 >
-> Verificado contra el árbol el **2026-09-05**: 604 archivos, ~135k LOC,
-> 2.451 imports, **10 aristas de deuda y 0 ciclos de runtime**.
+> Verificado contra el árbol el **2026-09-05**: 606 archivos, ~134k LOC,
+> 2.474 imports, **5 aristas de deuda y 0 ciclos de runtime**. Las 5 son
+> posiciones de tipo que se borran en build: **en runtime no queda ninguna**.
 > Lo verifica `pnpm architecture:check` en CI.
 
 ---
@@ -59,11 +60,17 @@ que ya tiene el proyecto; protegela.
 **4 · Persistencia**
 
 ```
-CONFIGURACIÓN → localStorage (Zustand persist, versionado)
-ASSETS        → IndexedDB    (imágenes, audio, binarios)
+CONFIGURACIÓN → IndexedDB (Zustand persist, versionado, db `lwag-store`)
+ASSETS        → IndexedDB (imágenes, audio, binarios)
 
 persist → cerrar → abrir → migrate → rehydrate → restore assets → render
 ```
+
+No es `localStorage`: sus ~5 MB no alcanzan para un pool de 200 imágenes y
+120 slots de spectrum, y el modo de fallo era silencioso —la escritura tiraba,
+la sesión seguía viva en memoria, y todo se perdía al recargar—. `store/
+indexedDbStorage.ts` migra una sola vez desde `localStorage` y cae de vuelta a
+él si IndexedDB no está disponible.
 
 Toda key persistida nueva **obliga** a bumpear `STORE_PERSIST_VERSION` y a
 escribir su migración. Sin eso queda `undefined` en producción y sólo se nota en
@@ -239,19 +246,32 @@ consumidor**, no por accidente.
 
 ### El estado hoy (2026-09-05)
 
-| Dominio        | Motor + UI en su carpeta | Fachada | Estado                                         |
-| -------------- | -----------------------: | :-----: | ---------------------------------------------- |
-| **spectrum**   |       80 arch · ~18k LOC |  ✅ ×3  | **migrado** — index + render + ui              |
-| **background** |      37 arch · ~8,4k LOC |  ✅ ×2  | **migrado** — index + ui                       |
-| **lyrics**     |      16 arch · ~3,9k LOC |  ✅ ×2  | **migrado** — index + ui                       |
-| **stageFx**    |      12 arch · ~2,7k LOC |  ✅ ×1  | **migrado** — sólo ui (ver abajo)              |
-| **logo**       |      10 arch · ~1,7k LOC |  ✅ ×2  | **migrado** — index + ui                       |
-| **particles**  |       4 arch · ~1,4k LOC |  ✅ ×2  | **migrado** — index + ui                       |
-| **rain**       |        2 arch · ~340 LOC |  ✅ ×1  | **migrado** — sólo ui (no tiene modelo propio) |
-| **export**     |      28 arch · ~4,1k LOC |  ✅ ×2  | **migrado** — index + ui                       |
+**Regla de fachada, dicha como umbral y no como manta:** un dominio necesita
+puerta de entrada cuando tiene **estructura interna** que sus consumidores no
+deberían conocer. Una carpeta plana de dos archivos ya es su propia frontera;
+ponerle un `index.ts` es ceremonia.
 
-`components/controls/tabs/` bajó de **31.640 a ~13.100 LOC** — menos de la
-mitad. Lo que queda ahí son los _shells_ de composición (`MotionTab`,
+| Dominio         | Motor + UI en su carpeta | Fachada | Estado                                 |
+| --------------- | -----------------------: | :-----: | -------------------------------------- |
+| **spectrum**    |       80 arch · ~20k LOC |  ✅ ×3  | index + render + ui                    |
+| **background**  |      37 arch · ~8,5k LOC |  ✅ ×2  | index + ui                             |
+| **lyrics**      |      16 arch · ~6,1k LOC |  ✅ ×2  | index + ui                             |
+| **aiDirector**  |      18 arch · ~4,6k LOC |  ✅ ×2  | index + ui — **cerrado el 2026-09-05** |
+| **export**      |      28 arch · ~4,2k LOC |  ✅ ×2  | index + ui                             |
+| **stageFx**     |      14 arch · ~3,0k LOC |  ✅ ×1  | sólo ui (ver abajo)                    |
+| **audioLayers** |       6 arch · ~2,3k LOC |  ✅ ×1  | sólo render (ver abajo)                |
+| **logo**        |      10 arch · ~1,8k LOC |  ✅ ×2  | index + ui                             |
+| **particles**   |       4 arch · ~1,5k LOC |  ✅ ×2  | index + ui                             |
+| **calibration** |        4 arch · ~930 LOC |  ✅ ×2  | index + ui — **cerrado el 2026-09-05** |
+| **rain**        |        3 arch · ~350 LOC |  ✅ ×1  | sólo ui (no tiene modelo propio)       |
+
+Los que quedan (`scenes`, `layout`, `presets`, `filterLooks`, `flashEdge`,
+`recording`, `visualTransition`, `discovery`) son carpetas planas de 1–4
+archivos. **No llevan fachada a propósito**: `@/features/layout/viewportMetrics`
+ya dice exactamente dónde vive lo que importás.
+
+`components/controls/tabs/` bajó de **31.640 a ~11.600 LOC** — poco más de un
+tercio. Lo que queda ahí son los _shells_ de composición (`MotionTab`,
 `LayersTab`, `SceneTab`, `ExportTabBody`…), que sí pertenecen al editor: apilan
 secciones de varios dominios y son dueños del layout de su pestaña, no del
 motor de nadie.
@@ -260,17 +280,21 @@ motor de nadie.
 pestaña que apilaba cuatro cosas distintas. Se repartió en `particles`, `rain`
 y `stageFx` (§6.4).
 
-**Por qué `stageFx` y `rain` no tienen `index.ts`:**
+**Por qué a `stageFx`, `rain` y `audioLayers` les falta una de las tres:**
 
 - `rain` no tiene todavía nada de modelo puro — lo que no es UI es estado del
   store o `components/wallpaper/RainLayer`, que es una capa registrada del motor
   de escena. Cuando aparezca lógica pura, se agrega el `index.ts` y se deja React
   afuera.
-- `stageFx` sí tiene modelo (`stageFxConfig.ts`), pero lo importan **~80
+- `stageFx` sí tiene modelo (`stageFxConfig.ts`), pero lo importan **~54
   posiciones de tipo inline** `import('...')` desde `types/wallpaper.ts` y
   `store/wallpaperStoreTypes.ts`. Pasarlas por una fachada sería churn sobre
   declaraciones que se borran en build, y tener dos caminos para el mismo
   vocabulario es peor que uno solo claro. Queda deep-import a propósito.
+- `audioLayers` publica `./render` porque lo que el resto del mundo le pide es
+  que **dibuje** — el exportador offline y el motor de escena. Su mitad React
+  (`components/audio/layers/AudioLayerCanvas`) se quedó afuera a propósito: un
+  dominio es dueño del dibujo, no del montaje.
 
 ---
 
@@ -302,54 +326,64 @@ subir rompe a todos los que ya lo importaban.
 
 `pnpm architecture:check` tolera exactamente estas violaciones y **ninguna
 más**. La lista sólo puede achicarse; si borrás una y no la sacás del baseline,
-el check también falla.
+el check también falla. Eso corta por los dos lados: renombrar el archivo
+destino de una arista también rompe el check, que es justo cómo se detectó el
+`calibrationConfig → index` del 2026-09-05.
 
-| Grupo                          | Aristas | Qué la causa                                                                                              |
-| ------------------------------ | ------: | --------------------------------------------------------------------------------------------------------- |
-| `types/` → dominios            |       5 | `types/wallpaper.ts` usa `import('...').Foo` inline. Sólo tipos: **se borra en build**, no es ciclo real. |
-| `lib/i18n` → `store`           |       1 | El proveedor de idioma lee el locale del store.                                                           |
-| `editor/` → `features/stageFx` |       1 | `MotionSharedControls` lleva un control de stageFx adentro.                                               |
-| `features/*` → `components`    |       3 | El render offline y flashEdge reusan renderers que viven en la UI viva.                                   |
-| **Total**                      |  **10** | 0,4 % de las aristas del grafo.                                                                           |
+| Grupo               | Aristas | Qué la causa                                                                                              |
+| ------------------- | ------: | --------------------------------------------------------------------------------------------------------- |
+| `types/` → dominios |       5 | `types/wallpaper.ts` usa `import('...').Foo` inline. Sólo tipos: **se borra en build**, no es ciclo real. |
+| **Total**           |   **5** | 0,2 % de las aristas del grafo.                                                                           |
+
+**No queda ninguna arista de deuda en runtime.** Las cinco que sobreviven son
+posiciones de tipo que TypeScript borra al compilar: en el bundle esas
+dependencias no existen.
 
 **Ciclos de runtime conocidos: 0.** ✅ `KNOWN_CYCLES` está vacío en el script y
 la idea es que siga así: si vas a agregar una entrada ahí, mové los valores
 compartidos al dominio en vez.
 
-### De 37 a 10
+### De 37 a 5
 
-| Momento                       | Aristas | Qué la bajó                                             |
-| ----------------------------- | ------: | ------------------------------------------------------- |
-| Baseline inicial (2026-09-02) |      37 | —                                                       |
-| Tras logo/spectrum/lyrics     |      22 | fachadas + `editor/` + defaults propios de cada dominio |
-| Tras export (§6.5-1)          |      20 | `controlPanelResetKeys` → `config/`                     |
-| Tras `services/` (§6.5-2)     |      15 | persistencia de proyecto fuera de `lib/`                |
-| Tras `DEFAULT_STATE` (§6.5-3) |  **10** | el documento de fábrica a `store/`                      |
+| Momento                       | Aristas | Qué la bajó                                                    |
+| ----------------------------- | ------: | -------------------------------------------------------------- |
+| Baseline inicial (2026-09-02) |      37 | —                                                              |
+| Tras logo/spectrum/lyrics     |      22 | fachadas + `editor/` + defaults propios de cada dominio        |
+| Tras export (§6.5-1)          |      20 | `controlPanelResetKeys` → `config/`                            |
+| Tras `services/` (§6.5-2)     |      15 | persistencia de proyecto fuera de `lib/`                       |
+| Tras `DEFAULT_STATE` (§6.5-3) |      10 | el documento de fábrica a `store/`                             |
+| Tras `audioLayers` (§6.6)     |   **5** | las capas de audio dejaron de ser "presentación por archivado" |
 
 **Ninguno de esos saltos fue contabilidad.** Cada uno movió un archivo a la zona
 que de verdad le corresponde, y la arista desapareció como consecuencia. Un
-baseline se puede "arreglar" agregando líneas; eso no es lo que pasó acá.
+baseline se puede "arreglar" agregando líneas; eso no es lo que pasó acá: de las
+32 aristas cerradas, **32 se cerraron moviendo archivos y 0 tocando el
+baseline**.
 
-### Las 10 que quedan, y por qué
+> **La regla que salió de esto:** cuando aparece una arista de deuda, casi nunca
+> es descuido de wiring — es que **el archivo está en la zona equivocada**. Antes
+> de "arreglar" el import, preguntate dónde debería vivir el módulo.
 
-Las cinco de `types/` son posiciones de tipo, erased en build. Una de ellas
-**no se arregla moviendo archivos**, y conviene saberlo antes de intentarlo:
-los tipos de perfil son `Pick<WallpaperState, typeof CIERTAS_KEYS[number]>`,
-derivados de la misma interfaz que después los guarda en sus campos de slot.
-Los arrays de keys son valores de runtime (manejan extract/build), así que no
-pueden vivir en `types/`, y `WallpaperState` no puede describir un slot sin
-ellos. Es circularidad de vocabulario, no de código.
+### Las 5 que quedan, y por qué
 
-Las tres de `features/* → components` son el exportador offline reusando
-`audioLayerFrameRenderer`, más `flashEdge` reusando `imageCanvasShared`.
-Desenredarlas significa **promover las capas de audio a dominio propio**, porque
-`overlayLayerRegistry` dibuja a través de `TrackTitleOverlay` y
-`NowPlayingWidget`. Ése es el próximo dominio de la lista, no un parche.
+Las cinco son posiciones de tipo, erased en build. Una de ellas **no se arregla
+moviendo archivos**, y conviene saberlo antes de intentarlo: los tipos de perfil
+son `Pick<WallpaperState, typeof CIERTAS_KEYS[number]>`, derivados de la misma
+interfaz que después los guarda en sus campos de slot. Los arrays de keys son
+valores de runtime (manejan extract/build), así que no pueden vivir en `types/`,
+y `WallpaperState` no puede describir un slot sin ellos. Es circularidad de
+vocabulario, no de código.
 
-> **Lectura honesta:** la dirección de dependencias ya está **bien** — 10
-> aristas malas sobre 2.451 imports, y las que quedan tienen cada una un motivo
-> escrito. El problema nunca fue acoplamiento descontrolado sino **dispersión de
-> ownership** (§3).
+Las otras cuatro (`lyrics`, `calibration`, `filterLooks`, `stageFx`) son el
+mismo patrón más leve: `types/wallpaper.ts` toma prestado el vocabulario de un
+dominio en vez de que el dominio lo declare. Se arreglarían moviendo el tipo,
+pero el tipo es parte del contrato del dominio y sacarlo de ahí empeora la
+lectura. Se dejan a propósito.
+
+> **Lectura honesta:** la dirección de dependencias ya está **bien** — 5 aristas
+> sobre 2.474 imports, ninguna en runtime, y cada una con su motivo escrito. El
+> problema nunca fue acoplamiento descontrolado sino **dispersión de ownership**
+> (§3), y eso es lo que se estuvo arreglando.
 
 ---
 
@@ -357,16 +391,16 @@ Desenredarlas significa **promover las capas de audio a dominio propio**, porque
 
 Sin features nuevas mientras esto corre.
 
-| Fase                        | Qué                                                                                                  | Estado   |
-| --------------------------- | ---------------------------------------------------------------------------------------------------- | -------- |
-| **1 · Arqueología**         | Grafo real, imports cruzados, ciclos, dispersión por dominio.                                        | ✅ hecho |
-| **2 · Contrato**            | Este documento.                                                                                      | ✅ hecho |
-| **3 · Guardrail**           | `scripts/check-architecture.mjs` + `pnpm architecture:check` con baseline congelado.                 | ✅ hecho |
-| **4a · Zona `editor/`**     | Extraer el chrome compartido (§2). Desbloqueó todo lo demás.                                         | ✅ hecho |
-| **4b · Fachadas**           | Los ocho dominios grandes tienen fachada. Las features chicas siguen con deep-import a propósito.    | ✅ hecho |
-| **4c · Migración vertical** | `logo`, `spectrum`, `lyrics`, `background`, `particles`, `rain`, `stageFx` y `export` en su carpeta. | ✅ hecho |
-| **4d · Zonas correctas**    | Nace `services/`; `DEFAULT_STATE`, `featureProfiles`, `presets` y `backgroundImages` van a su zona.  | ✅ hecho |
-| **5 · Simplificación**      | Edge Glow + huérfanos borrados (§7). Queda una decisión de producto: los presets globales (§7.5).    | ✅ hecho |
+| Fase                        | Qué                                                                                                   | Estado   |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- | -------- |
+| **1 · Arqueología**         | Grafo real, imports cruzados, ciclos, dispersión por dominio.                                         | ✅ hecho |
+| **2 · Contrato**            | Este documento.                                                                                       | ✅ hecho |
+| **3 · Guardrail**           | `scripts/check-architecture.mjs` + `pnpm architecture:check` con baseline congelado.                  | ✅ hecho |
+| **4a · Zona `editor/`**     | Extraer el chrome compartido (§2). Desbloqueó todo lo demás.                                          | ✅ hecho |
+| **4b · Fachadas**           | Once dominios con estructura interna tienen fachada. Las carpetas planas no llevan, a propósito (§3). | ✅ hecho |
+| **4c · Migración vertical** | `logo`, `spectrum`, `lyrics`, `background`, `particles`, `rain`, `stageFx` y `export` en su carpeta.  | ✅ hecho |
+| **4d · Zonas correctas**    | Nace `services/`; `DEFAULT_STATE`, `featureProfiles`, `presets` y `backgroundImages` van a su zona.   | ✅ hecho |
+| **5 · Simplificación**      | Edge Glow + huérfanos borrados (§7). Queda una decisión de producto: los presets globales (§7.5).     | ✅ hecho |
 
 **Reglas de la migración**
 
@@ -500,7 +534,7 @@ Lo interesante fue **lo que decidí no mover**, porque es la parte que se olvida
 | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `wallpaper/layers/imageCanvasBackground*`       | Dibujan el fondo, pero son _plugins_ del motor de capas (`imageCanvasShared`), que también sirve a los overlays. Moverlos cambia una arista `components → features` por una `features → components`.                          |
 | `lib/backgroundPalette`, `useBackgroundPalette` | Se llaman "background" pero 18 y 10 módulos los usan como **fuente de color**, desde stageFx hasta lyrics. Infraestructura compartida, no estado del dominio.                                                                 |
-| ~~`lib/backgroundImages`~~                      | **Desbloqueado y movido** (§6.6). Estaba trabado porque cuatro consumidores colgaban de `lib/projectSettings`; en cuanto ése se fue a `services/`, la arista dejó de existir y el archivo pudo irse a `features/background/`. |
+| ~~`lib/backgroundImages`~~                      | **Desbloqueado y movido** (§6.5). Estaba trabado porque cuatro consumidores colgaban de `lib/projectSettings`; en cuanto ése se fue a `services/`, la arista dejó de existir y el archivo pudo irse a `features/background/`. |
 
 **`motion` se repartió, no se movió.** Nunca fue un dominio: era el nombre de una
 pestaña que apilaba partículas, rain, stage lights y camera fx. Cada sección se
@@ -512,7 +546,7 @@ propio comentario dice que rain y stage FX quedan intactos.
 es un _shell_, no un dominio, y ahora trae cada sección por la fachada de su
 dueño. Esa es la regla general para las pestañas que quedan ahí.
 
-### 6.6 · `export` y las zonas correctas (2026-09-05)
+### 6.5 · `export` y las zonas correctas (2026-09-05)
 
 La última ronda cerró los tres items que quedaban del roadmap, y las tres
 tienen la misma forma: **el archivo estaba en la zona equivocada, y la arista
@@ -557,31 +591,83 @@ inicialización, que es exactamente lo que una vez rompió 18 suites de test.
 
 ---
 
-### 6.5 · Lo que sigue
+### 6.6 · `audioLayers`, y la última arista de runtime (2026-09-05)
 
-Los tres items que encabezaban esta lista están **hechos** (2026-09-05):
+`components/audio/` era **presentación por archivado, no por naturaleza**: de
+los siete archivos, uno solo era React. Los otros seis eran un motor de canvas
+—`audioLayerFrameRenderer`, `overlayLayerRegistry`, `coverImageCache`— que el
+exportador offline necesita para dibujar un cuadro fuera de pantalla. Por eso
+`features/export` importaba **hacia arriba**, la única dirección que el contrato
+prohíbe.
 
-1. ~~`export`~~ — último dominio grande sin fachada. Ahora tiene `index` + `ui`,
-   y `controlPanelResetKeys` se fue a `config/`, que es lo que siempre fue.
-2. ~~Sacar `projectSettings` y `wallpaperPersistenceCoordinator` de `lib/`~~ —
-   nació `services/` (§2) y se llevó también todo `sync/`.
-3. ~~`DEFAULT_STATE` fuera de `lib/`~~ — `lib/constants.ts` es ahora
-   `store/defaultState.ts`, con el nombre que le correspondía: no es una bolsa
-   de constantes, es el documento de escena de fábrica.
+El nudo que este documento describía resultó más chico al medirlo: de los siete
+imports a `components/`, **seis eran internos a la propia carpeta** y se
+mudaron con ella. Sólo uno era una arista de verdad hacia afuera. Vale la pena
+anotarlo porque el miedo estaba escrito acá y no era proporcional al problema.
 
-Lo que sigue de verdad, en orden:
+La mitad React se quedó atrás a propósito: `AudioLayerCanvas` es dueño del
+`<canvas>`, del loop y de los hooks que lo alimentan. **Un dominio es dueño del
+dibujo, no del montaje.**
 
-1. **Promover las capas de audio a dominio.** `components/audio/layers/` es un
-   motor de canvas completo —`audioLayerFrameRenderer`, `overlayLayerRegistry`,
-   `coverImageCache`— viviendo en zona de presentación. Es la causa de las
-   últimas 3 aristas `features/* → components` y un bloqueo real del exportador
-   offline, que hoy tiene que importar hacia arriba para dibujar un cuadro.
-   El nudo: `overlayLayerRegistry` dibuja a través de `TrackTitleOverlay` y
-   `NowPlayingWidget`, así que el dominio se lleva esos dos.
-2. **Decidir los presets globales** (§7.5). `features/presets/presets.ts` ya
-   está en el dominio correcto; lo que falta es producto, no arquitectura.
-3. **`MotionSharedControls`** — partir `FxBandThresholdControls` hacia
-   `features/stageFx/controls` borra la única arista `editor/ → features`.
+En la misma ronda cayeron las otras dos:
+
+- **`MotionSharedControls`** cedió `FxBandThresholdControls` a
+  `features/stageFx/controls/`. El chrome genérico no sabe qué es una banda de
+  kick.
+- **`I18nProvider`** dejó de leer el store: ahora recibe `language` como prop
+  desde `WallpaperAppProviders`. Un proveedor de traducciones no tiene por qué
+  saber que existe un store de wallpaper.
+
+Con eso la deuda quedó en **5 aristas, todas de tipo**. Cero en runtime.
+
+---
+
+### 6.7 · Auditoría de estructura: lo que la carpeta decía y el doc no (2026-09-05)
+
+Cerradas las fases, se auditó el árbol **contra el contrato**, no contra este
+documento. Dos hallazgos, y el primero contradice lo que este mismo archivo
+afirmaba.
+
+**`aiDirector` no tenía fachada.** La tabla de fases decía "los ocho dominios
+grandes tienen fachada". `aiDirector` son 4.600 LOC —más que `logo` y
+`particles` juntos—, con 22 imports profundos entrando a `intent/`, `analysis/`,
+`batch/` y `client/` desde cuatro zonas distintas, y sus tres paneles archivados
+bajo `components/controls/tabs/main/scene/` como si fueran chrome de pestaña.
+Exactamente la forma que tenía `export` antes de migrarse. Ahora publica
+`./index` (vocabulario de intent, compilador determinista, análisis de imagen,
+pasada por lotes) y `./ui` (los tres paneles), y los paneles importan su propio
+dominio por `../index` — que es lo que hace que la fachada sea **portante** y no
+decorativa: si se desalinea, los paneles rompen primero.
+
+**`calibration` eran tres archivos sueltos.** Los 552 LOC del panel que es toda
+la cara visible del dominio vivían en `components/controls/tabs/`. Movido, con
+`index` (`CALIBRATION_PARAMS`, el modelo de override de rangos,
+`getEffectiveRange`, `syntheticKickValue`) y `ui`.
+
+**Lo que la auditoría dijo que NO hay que hacer** es igual de valioso: ocho
+dominios son carpetas planas de 1–4 archivos y **no necesitan fachada**. La
+regla correcta no es "todo dominio lleva `index.ts`" sino "todo dominio con
+estructura interna lleva puerta". Agregar ocho barriles ceremoniales habría
+sido churn disfrazado de rigor.
+
+---
+
+### 6.8 · Lo que sigue
+
+Arquitectura de zonas: **terminada**. 0 aristas de runtime, 0 ciclos. Lo que
+queda son mudanzas de ownership puntuales y una decisión de producto.
+
+1. **`TrackTitleTab` (1.459 LOC) → `features/audioLayers/controls/`.** Es el
+   panel del overlay que `audioLayers` ya dibuja. Arrastra
+   `lib/canvasText/trackTitleOptions`, así que es una mudanza de dos piezas y
+   merece su propio PR.
+2. **`SetlistsPanel` (541 LOC) → `features/scenes/controls/`.** Hoy no tiene
+   acoplamiento de código con el dominio (todo pasa por el store), así que es
+   una mudanza por **legibilidad**: la pregunta "¿dónde viven las Setlists?"
+   debería contestarse con una carpeta.
+3. **Decidir los presets globales** (§7.5). Producto, no arquitectura:
+   `features/presets/presets.ts` ya está donde va, pero `PresetSelector` no lo
+   monta nadie mientras el motor sigue corriendo.
 
 ---
 

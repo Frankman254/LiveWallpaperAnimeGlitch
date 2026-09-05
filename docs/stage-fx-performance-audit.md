@@ -1,19 +1,24 @@
 # Stage FX Performance Audit — TODO
 
 > **Status:** Planning only. Do not optimize until after particles stabilization is merged.
+>
+> **2026-09-05:** Edge Glow **no longer exists** — the whole subsystem was
+> deleted (~1.988 LOC, store v108). Its rows below are kept struck through so
+> the audit's numbers stay readable, but there is nothing left to optimize
+> there. Flash Edge is a different subsystem and is still live.
 
 ---
 
 ## Components to audit
 
-| File                                         | Renderer                                | Priority |
-| -------------------------------------------- | --------------------------------------- | -------- |
-| `src/features/stageFx/StageLightsCanvas.tsx` | Canvas 2D                               | HIGH     |
-| `src/features/stageFx/FlashLightCanvas.tsx`  | Canvas 2D (offscreen cache)             | MEDIUM   |
-| `src/features/stageFx/CameraFxStage.tsx`     | CSS transforms on DOM                   | LOW      |
-| `src/features/edgeGlow/edgeGlowRenderer.ts`  | Canvas 2D (called from render pipeline) | MEDIUM   |
-| `src/features/edgeGlow/flashEdgeRenderer.ts` | Canvas 2D (called from render pipeline) | MEDIUM   |
-| Screen shake (inside `CameraFxStage`)        | CSS transforms                          | LOW      |
+| File                                          | Renderer                                | Priority |
+| --------------------------------------------- | --------------------------------------- | -------- |
+| `src/features/stageFx/StageLightsCanvas.tsx`  | Canvas 2D                               | HIGH     |
+| `src/features/stageFx/FlashLightCanvas.tsx`   | Canvas 2D (offscreen cache)             | MEDIUM   |
+| `src/features/stageFx/CameraFxStage.tsx`      | CSS transforms on DOM                   | LOW      |
+| ~~`edgeGlowRenderer.ts`~~ (BORRADO 2026-09)   | —                                       | n/a      |
+| `src/features/flashEdge/flashEdgeRenderer.ts` | Canvas 2D (called from render pipeline) | MEDIUM   |
+| Screen shake (inside `CameraFxStage`)         | CSS transforms                          | LOW      |
 
 ---
 
@@ -62,7 +67,7 @@
 
 ---
 
-## Edge Glow Renderer (`edgeGlowRenderer.ts`) — suspected hotspots
+## ~~Edge Glow Renderer~~ — BORRADO (2026-09), sección histórica
 
 ### Medium
 
@@ -104,7 +109,7 @@
 
 1. `StageLightsCanvas` — highest impact, biggest loop
 2. `flashEdgeRenderer` (logo path) — image blur filter is expensive
-3. `edgeGlowRenderer` — FFT scan + double pass
+3. ~~`edgeGlowRenderer` — FFT scan + double pass~~ (subsistema borrado)
 4. `FlashLightCanvas` — verify cache invalidation
 5. `CameraFxStage` — low risk, last
 

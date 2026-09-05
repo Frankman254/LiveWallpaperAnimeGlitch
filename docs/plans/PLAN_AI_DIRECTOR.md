@@ -73,7 +73,7 @@ escritorio local, caro en cuanto haya login y carga desde red.
 
 ### A.2 Qué falta para la fase backend
 
-Lo bueno: **la costura ya existe.** `src/lib/sync/SyncRepository.ts` define el
+Lo bueno: **la costura ya existe.** `src/services/sync/SyncRepository.ts` define el
 contrato y `localSyncRepository.ts` ya lo implementa sobre IndexedDB. Un
 adaptador remoto entra sin tocar los llamadores. Entre `backend/schema/001_init.sql`
 y `docker-compose.yml` ya está modelado el esquema de proyectos versionados y

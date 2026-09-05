@@ -4,9 +4,13 @@
 > y [Nivel 03](./03-audio.md) (bins, canales, AudioSnapshot). El spectrum es
 > el mayor consumidor de ambos.
 >
-> Números para situarte: `src/features/spectrum/` tiene **27 archivos y
-> ~10.500 líneas**. Es, con diferencia, el subsistema más grande del
-> proyecto. Pero tiene un mapa claro — vamos a dibujarlo.
+> Números para situarte (2026-09-05): `src/features/spectrum/` tiene **66
+> archivos y ~17.000 líneas** sin contar tests. Es, con diferencia, el
+> subsistema más grande del proyecto — más que el segundo y el tercero juntos.
+> Creció desde las ~10.500 líneas que decía este documento en junio porque la
+> pestaña, los perfiles y los efectos se **mudaron dentro** del dominio: no es
+> código nuevo, es código que antes estaba disperso. Tiene un mapa claro —
+> vamos a dibujarlo.
 
 ---
 
@@ -35,7 +39,7 @@ AudioSnapshot (Nivel 03)
 AudioLayerCanvas (Nivel 02) — el lienzo full-screen de la capa 'spectrum'
       │  en cada cuadro llama a…
       ▼
-drawSpectrum()  ←  src/components/audio/CircularSpectrum.ts (575 líneas)
+drawSpectrum()  ←  src/features/spectrum/runtime/CircularSpectrum.ts (575 líneas)
       │  el "capataz" del motor: prepara todo y despacha a…
       ▼
 src/features/spectrum/  ←  el motor: familias, renderers, runtime, efectos

@@ -15,6 +15,45 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Arquitectura: cero aristas de deuda en runtime (deuda 10 → 5)
+
+Segunda ronda. Las cinco que sobreviven son posiciones de tipo
+(`import('...').Foo` desde `types/wallpaper.ts`) que TypeScript borra al
+compilar: **en el bundle no queda ninguna dependencia mal dirigida.**
+
+- **`components/audio/` → `features/audioLayers/`.** Era presentación **por
+  archivado, no por naturaleza**: de siete archivos, uno solo era React. Los
+  otros seis son un motor de canvas que el exportador offline necesita, y por
+  eso `features/export` importaba _hacia arriba_. El nudo que la doc describía
+  resultó más chico al medirlo: seis de los siete imports a `components/` eran
+  internos a la carpeta y se mudaron con ella. La mitad React
+  (`AudioLayerCanvas`) se quedó atrás a propósito — un dominio es dueño del
+  dibujo, no del montaje. Publica `@/features/audioLayers/render`.
+- **`MotionSharedControls` cede `FxBandThresholdControls`** a
+  `features/stageFx/controls/`. El chrome genérico no sabe qué es una banda de
+  kick. Con eso muere la única arista `editor/ → features`.
+- **`I18nProvider` deja de leer el store**: recibe `language` como prop desde
+  `WallpaperAppProviders`. Un proveedor de traducciones no tiene por qué saber
+  que existe un store de wallpaper.
+- **`aiDirector` recibe la fachada que la doc decía que ya tenía.** La
+  auditoría de estructura encontró 4.600 LOC —más que `logo` y `particles`
+  juntos— con 22 imports profundos desde cuatro zonas y sus tres paneles
+  archivados bajo `tabs/main/scene/`. Ahora publica `./index` (intent,
+  compilador determinista, análisis, lotes) y `./ui`. Los paneles importan su
+  propio dominio por `../index`, que es lo que hace la fachada **portante**: si
+  se desalinea, rompen primero.
+- **`calibration` deja de ser tres archivos sueltos.** Los 552 LOC del panel
+  que es toda su cara visible salen de `components/controls/tabs/`. Fachadas
+  `index` + `ui`. La arista congelada de `types/` se **retargeteó**, no se
+  agregó: el check rechaza un delist silencioso en cualquiera de las dos
+  direcciones, que es justo cómo detectó el rename.
+- **La regla que sí generaliza**, escrita en ARCHITECTURE §3: un dominio
+  necesita fachada cuando tiene **estructura interna**. Ocho dominios son
+  carpetas planas de 1–4 archivos y no llevan; agregarles barriles habría sido
+  churn disfrazado de rigor.
+- **Verificado en vivo**: el panel de Calibration renderiza completo desde su
+  nueva ubicación, `EnvelopeWaveformPreview` incluido.
+
 ### Arquitectura: se cierran las fases de migración (deuda 22 → 10)
 
 Tres items del roadmap §6.5, y los tres tenían la misma forma: **el archivo

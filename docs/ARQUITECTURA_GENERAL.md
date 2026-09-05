@@ -2,6 +2,15 @@
 
 ## Estado de esta guia (2026-04)
 
+> **Rutas reverificadas el 2026-09-05.** Este documento es de 2026-04 y sus
+> explicaciones siguen siendo válidas, pero el árbol se reorganizó por dominios
+> desde entonces: los motores de spectrum, logo, background y las capas de audio
+> viven ahora bajo `src/features/*`, y la persistencia de proyecto bajo
+> `src/services/`. Todas las rutas citadas acá fueron corregidas y **cada una
+> existe hoy**. Para el mapa canónico usá
+> [architecture/CODEBASE_STRUCTURE.md](architecture/CODEBASE_STRUCTURE.md); para
+> las reglas, [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md).
+
 Este documento sigue siendo valido como mapa del sistema. Como actualizacion reciente:
 
 - El proyecto reforzo el enfoque de ownership por dominio (layout, audio, overlays, background, persistencia).
@@ -243,7 +252,7 @@ Con esto, el render trabaja contra un modelo mas limpio.
 
 ## 4.5 Background y slideshow
 
-### `src/components/SlideshowManager.tsx`
+### `src/features/background/slideshow/SlideshowManager.tsx`
 
 - No renderiza nada.
 - Solo cambia `activeImageId` segun el timer.
@@ -318,7 +327,7 @@ Ademas concentra:
 
 ## 4.7 Spectrum
 
-### `src/components/audio/CircularSpectrum.ts`
+### `src/features/spectrum/runtime/CircularSpectrum.ts`
 
 - Renderer del spectrum.
 - Soporta layouts circulares y lineales.
@@ -328,12 +337,12 @@ Ademas concentra:
 
 - Canvas dedicado a audio layers.
 
-### `src/components/audio/layers/overlayLayerRegistry.ts`
+### `src/features/audioLayers/render/overlayLayerRegistry.ts`
 
 - Conecta el layer `spectrum` con el renderer real.
 - Tambien decide `follow logo`.
 
-### `src/components/controls/tabs/SpectrumTab.tsx`
+### `src/features/spectrum/controls/SpectrumTab.tsx`
 
 - UI de configuracion.
 - Incluye slots guardables locales.
@@ -342,7 +351,7 @@ Ademas concentra:
 
 ## 4.8 Logo reactivo
 
-### `src/components/audio/ReactiveLogo.ts`
+### `src/features/logo/runtime/ReactiveLogo.ts`
 
 - Render canvas imperativo del logo.
 - Tiene estado temporal fuera de React:
@@ -351,11 +360,11 @@ Ademas concentra:
     - adaptive floor,
     - rendered scale.
 
-### `src/components/audio/layers/overlayLayerRegistry.ts`
+### `src/features/audioLayers/render/overlayLayerRegistry.ts`
 
 - Calcula el drive real del logo desde bins y bandas.
 
-### `src/components/controls/tabs/LogoTab.tsx`
+### `src/features/logo/controls/LogoTab.tsx`
 
 - UI del logo.
 - Incluye quick profiles y slots guardables locales.
@@ -375,7 +384,7 @@ Ademas concentra:
 
 - Colocan las particulas atras o adelante.
 
-### `src/components/controls/tabs/ParticlesTab.tsx`
+### `src/features/particles/controls/ (MotionTab la compone)`
 
 - UI de particulas.
 
@@ -388,7 +397,7 @@ Ademas concentra:
 - Capa shader de lluvia.
 - Usa plano full-screen + uniforms.
 
-### `src/components/controls/tabs/RainTab.tsx`
+### `src/features/rain/controls/ (MotionTab la compone)`
 
 - UI de lluvia.
 
@@ -396,7 +405,7 @@ Ademas concentra:
 
 ## 4.11 Overlays
 
-### `src/components/controls/tabs/OverlaysTab.tsx`
+### `src/components/controls/tabs/main/layers/OverlaysPanel.tsx`
 
 - Gestiona overlays del usuario.
 
@@ -433,7 +442,7 @@ Ademas concentra:
 
 ### Export/import
 
-- `src/lib/projectSettings.ts`
+- `src/services/projectSettings.ts`
 - exporta JSON de settings
 - no empaqueta binarios todavia
 
@@ -559,14 +568,14 @@ Eso es ideal para suavizado y performance, pero menos intuitivo que puro React.
 6. `src/lib/layers.ts`
 7. `src/components/wallpaper/layers/ImageLayerCanvas.tsx`
 8. `src/context/AudioDataContext.tsx`
-9. `src/components/audio/ReactiveLogo.ts`
-10. `src/components/audio/CircularSpectrum.ts`
+9. `src/features/logo/runtime/ReactiveLogo.ts`
+10. `src/features/spectrum/runtime/CircularSpectrum.ts`
 11. `src/components/controls/ControlPanel.tsx`
-12. `src/components/controls/tabs/BgTab.tsx`
-13. `src/components/controls/tabs/AudioTab.tsx`
-14. `src/components/controls/tabs/OverlaysTab.tsx`
+12. `src/features/background/controls/BackgroundTab.tsx`
+13. `src/components/controls/tabs/main/AudioTab.tsx`
+14. `src/components/controls/tabs/main/layers/OverlaysPanel.tsx`
 15. `src/hooks/useRestoreWallpaperAssets.ts`
-16. `src/lib/projectSettings.ts`
+16. `src/services/projectSettings.ts`
 
 ---
 

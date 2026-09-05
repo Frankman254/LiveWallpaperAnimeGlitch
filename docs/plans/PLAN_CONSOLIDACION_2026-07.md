@@ -88,7 +88,7 @@ Hecho:
 Hecho además (julio 2026):
 
 5. ✅ **Fundación de backend** (`backend/`): `docker-compose.yml` con Postgres 16 local, esquema SQL (`wallpaper_projects` con `state` jsonb versionado + `revision` para concurrencia optimista, `project_assets` = metadata con content-hash; blobs fuera de la DB), README con flujo Docker→Supabase/Railway (mismo motor). Sin desplegar nada.
-6. ✅ **Capa cliente de sync** (`src/lib/sync/`): interfaz `SyncRepository` (+ `SyncConflictError`), `LocalSyncRepository` sobre IndexedDB (espeja el esquema server para que subir a la nube sea copia directa), `computeContentHash` sha-256 para dedupe de assets. Enchufable: un adaptador Postgres/Supabase implementa la misma interfaz sin tocar callers.
+6. ✅ **Capa cliente de sync** (`src/services/sync/`): interfaz `SyncRepository` (+ `SyncConflictError`), `LocalSyncRepository` sobre IndexedDB (espeja el esquema server para que subir a la nube sea copia directa), `computeContentHash` sha-256 para dedupe de assets. Enchufable: un adaptador Postgres/Supabase implementa la misma interfaz sin tocar callers.
 7. ✅ **Audio routing visible** (`AudioRoutingSection` en AudioTab, advanced): inspector read-only de las 11 rutas de audio con estado on/off + tab dueño.
 8. ✅ **Biblioteca local funcional** (Export): crear, actualizar con revisión optimista, cargar y borrar proyectos completos. Estado + manifest de blobs se reemplazan en una transacción IndexedDB; la carga reutiliza las migraciones y restauración de assets canónicas. También se incluyen carátulas ID3 en sync y paquetes `.lwag`.
 

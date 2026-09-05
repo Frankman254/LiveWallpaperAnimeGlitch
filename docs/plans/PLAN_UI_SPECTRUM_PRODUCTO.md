@@ -22,19 +22,19 @@ La meta no es solo agregar sliders. La meta es:
 
 ### Lo que ya existe y vale la pena conservar
 
-- `src/components/controls/tabs/FiltersTab.tsx`
+- `src/components/controls/tabs/main/LooksTab.tsx` (en el plan original: `FiltersTab`)
     - ya tiene pipeline base de filtros globales: opacity, brightness, contrast, saturation, blur, hue rotate, RGB shift, noise, scanlines y reaccion al audio
-- `src/components/controls/tabs/ParticlesTab.tsx`
+- `src/features/particles/controls/`
     - ya tiene sistema util de particulas con color, glow, scanlines y audio reactivity
-- `src/components/controls/tabs/OverlaysTab.tsx`
+- `src/components/controls/tabs/main/layers/OverlaysPanel.tsx`
     - ya permite una composicion por capas bastante flexible
-- `src/components/controls/tabs/bg/constants.ts`
+- `src/features/background/controls/constants.ts`
     - ya tiene varias transiciones de slideshow
-- `src/components/controls/tabs/SpectrumTab.tsx`
+- `src/features/spectrum/controls/SpectrumTab.tsx`
     - ya tiene muchos controles, perfiles y randomizer
-- `src/components/audio/CircularSpectrum.ts`
+- `src/features/spectrum/runtime/CircularSpectrum.ts`
     - ya tiene un renderer capaz con radial, linear, glow, peak hold, wave fill y color modes
-- `src/components/controls/editorTheme.ts`
+- `src/editor/editorTheme.ts`
     - ya tiene una direccion visual adaptable al wallpaper y no conviene tirarla
 
 ### Debilidades detectadas
@@ -95,12 +95,12 @@ Preparar la base para que las siguientes mejoras no se monten sobre archivos gig
 
 ### Trabajo
 
-- dividir `src/components/audio/CircularSpectrum.ts`
+- dividir `src/features/spectrum/runtime/CircularSpectrum.ts`
     - extraer color utilities
     - extraer runtime state / history buffers
     - extraer renderers por familia visual
     - extraer geometria radial/linear
-- dividir `src/components/controls/tabs/SpectrumTab.tsx`
+- dividir `src/features/spectrum/controls/SpectrumTab.tsx`
     - separar en subpanels `Basic`, `Motion`, `Color`, `Reactive`, `Advanced`, `Presets`
 - planear migraciones en `src/store/wallpaperStorePersistence.ts`
     - nuevos campos sin romper proyectos existentes
@@ -303,7 +303,7 @@ Pasar de controles sueltos a estilos reutilizables.
     - posterize
     - channel delay
     - light leaks
-- mantener modo avanzado manual en `FiltersTab`
+- mantener modo avanzado manual en `LooksTab` (ex `FiltersTab`)
 - separar filtros por grupos:
     - `Tone`
     - `Glitch`

@@ -38,30 +38,41 @@ The editor's tab UI lives under `src/components/controls/`:
   "current"). The historical `Modern*` naming has been fully removed from the
   live UI.
 - Tabs that now live with their domain: `SpectrumTab`, `LyricsTab`, `LogoTab`,
-  `BackgroundTab`, the eight Export sections, and the particles / rain /
-  stage-FX sections. Import them via the domain facade
-  (`@/features/<domain>/ui`), never by file path.
+  `BackgroundTab`, `CalibrationTab`, the three AI Director panels, the eight
+  Export sections, and the particles / rain / stage-FX sections. Import them via
+  the domain facade (`@/features/<domain>/ui`), never by file path.
 
 > `src/lib/` used to be the drawer everything ambiguous ended up in. It is now
 > genuinely a leaf: if a module calls `useWallpaperStore.getState()` it belongs
 > in `src/services/`, if it is a table of constants it belongs in `src/config/`,
 > and if it is the app's default scene document it is `store/defaultState.ts`.
 
-- `tabs/audio/`, `tabs/export/` — the feature sections still composed from here.
-- `tabs/CalibrationTab.tsx` — calibration controls.
+- `tabs/main/audio/`, `tabs/main/layers/`, `tabs/main/editor/` — sections still
+  composed from here because they stack several domains.
+
+**"Where does X live?" should be answerable with one folder.** If it isn't, that
+is the bug. The three panels that still fail that test are listed in
+[ARCHITECTURE.md](ARCHITECTURE.md) §6.8; everything else is at home.
 
 ## Where renderers and engines live
 
 - Spectrum renderers: `src/features/spectrum/renderers/`
 - Spectrum effects (glow, neon, rgb split, echo…): `src/features/spectrum/effects/`
 - Spectrum runtime/profiles: `src/features/spectrum/runtime/`, `src/store/featureProfiles.ts`
-- Pixel Art: `src/features/spectrum/pixelArtHelpers.ts` (+ `renderers/linear/`)
+- Pixel Art: `src/features/spectrum/domain/pixelArtHelpers.ts` (+ `renderers/linear/`)
 - Logo (motor, presets, diagnostics, grid): `src/features/logo/` — **importar
   siempre por `@/features/logo`**, nunca por un archivo interno. Es el dominio
   migrado de referencia (ver [ARCHITECTURE.md](ARCHITECTURE.md) §6.1).
 - Background (encuadre, slideshow, UI): `src/features/background/`
 - Particles / Rain / Stage FX: `src/features/particles/`, `src/features/rain/`,
   `src/features/stageFx/`
+- Capas de audio (Track Title, Now Playing, cover): `src/features/audioLayers/`
+  — el **dibujo** se pide por `@/features/audioLayers/render`; el `<canvas>` y
+  su loop siguen en `src/components/audio/layers/AudioLayerCanvas.tsx`.
+- AI Director (intent, análisis de imagen, lotes): `src/features/aiDirector/`
+  — modelo por `@/features/aiDirector`, paneles por `@/features/aiDirector/ui`.
+  La clave de API vive en `backend/server/`, nunca en el browser.
+- Calibración (rangos de sliders, kick sintético): `src/features/calibration/`
 - Spectrum draw path: `@/features/spectrum/render` (el modelo es
   `@/features/spectrum`; están separados a propósito, ver ARCHITECTURE.md §3.1).
 - Audio runtime / media-session / playlist: `src/context/audioData/`
@@ -69,17 +80,20 @@ The editor's tab UI lives under `src/components/controls/`:
 
 ## Where do I edit X?
 
-| Want to change…    | Edit here                                                                         |
-| ------------------ | --------------------------------------------------------------------------------- |
-| Background UI      | `src/features/background/controls/` (fachada: `@/features/background/ui`)         |
-| Spectrum UI        | `src/features/spectrum/controls/` (fachada: `@/features/spectrum/ui`)             |
-| Spectrum renderers | `src/features/spectrum/renderers/`                                                |
-| Pixel Art          | `src/features/spectrum/pixelArtHelpers.ts`                                        |
-| Audio / media keys | `src/context/audioData/` (e.g. `mediaTrackKeys.ts`, `useAudioPlaybackEffects.ts`) |
-| Import/Export      | `src/features/export/`, `src/store/featureProfiles.ts`                            |
-| Stage FX           | `src/features/stageFx/` (fachada: `@/features/stageFx/ui`)                        |
-| Particles / Rain   | `src/features/particles/`, `src/features/rain/`                                   |
-| Output / Recording | `tabs/main/OutputTab.tsx` + `src/runtime/` + `src/features/recording/`            |
+| Want to change…           | Edit here                                                                         |
+| ------------------------- | --------------------------------------------------------------------------------- |
+| Background UI             | `src/features/background/controls/` (fachada: `@/features/background/ui`)         |
+| Spectrum UI               | `src/features/spectrum/controls/` (fachada: `@/features/spectrum/ui`)             |
+| Spectrum renderers        | `src/features/spectrum/renderers/`                                                |
+| Pixel Art                 | `src/features/spectrum/domain/pixelArtHelpers.ts`                                 |
+| Audio / media keys        | `src/context/audioData/` (e.g. `mediaTrackKeys.ts`, `useAudioPlaybackEffects.ts`) |
+| Import/Export             | `src/features/export/`, `src/store/featureProfiles.ts`                            |
+| Stage FX                  | `src/features/stageFx/` (fachada: `@/features/stageFx/ui`)                        |
+| Particles / Rain          | `src/features/particles/`, `src/features/rain/`                                   |
+| Output / Recording        | `tabs/main/OutputTab.tsx` + `src/runtime/` + `src/features/recording/`            |
+| AI Director               | `src/features/aiDirector/` (fachadas: `@/features/aiDirector`, `.../ui`)          |
+| Calibración               | `src/features/calibration/` (fachadas: `@/features/calibration`, `.../ui`)        |
+| Track Title / Now Playing | `src/features/audioLayers/` + `tabs/main/TrackTitleTab.tsx` (§6.8)                |
 
 ## Tests & docs
 
@@ -93,9 +107,11 @@ The editor's tab UI lives under `src/components/controls/`:
   `modern` naming has been removed from the live UI (folder + all `Modern*`
   components, sub-cards, hooks, and prop types). `pnpm structure:check` guards
   against regressions.
-- **Future batch (not done):** feature-specific control sections may later move
-  next to their engines under `src/features/*/controls/` — only if a smaller,
-  safe move proves cleaner first.
+- **That "future batch" happened** (2026-09-03 → 09-05): feature-specific
+  control sections now live next to their engines under
+  `src/features/*/controls/`. `components/controls/tabs/` went from 31.6k to
+  ~11.6k LOC. What is left there is composition shells, which belong to the
+  editor by design.
 
 > Persisted `localStorage` keys (`lwag-modern-editor-scroll-map`,
 > `lwag-modern-spectrum-view`, `lwag-modern-spectrum-target`) and the

@@ -2,6 +2,15 @@
 
 ## Estado de esta guia (2026-04)
 
+> **Rutas reverificadas el 2026-09-05.** Este documento es de 2026-04 y sus
+> explicaciones siguen siendo válidas, pero el árbol se reorganizó por dominios
+> desde entonces: los motores de spectrum, logo, background y las capas de audio
+> viven ahora bajo `src/features/*`, y la persistencia de proyecto bajo
+> `src/services/`. Todas las rutas citadas acá fueron corregidas y **cada una
+> existe hoy**. Para el mapa canónico usá
+> [architecture/CODEBASE_STRUCTURE.md](architecture/CODEBASE_STRUCTURE.md); para
+> las reglas, [architecture/ARCHITECTURE.md](architecture/ARCHITECTURE.md).
+
 Esta guia sigue vigente para entender el pipeline tecnico. Ajustes recientes importantes:
 
 - El contexto de audio se simplifico y delega responsabilidades a hooks de captura, playlist, playback y snapshot runtime.
@@ -378,7 +387,7 @@ muchas veces la causa real esta aqui.
 
 ## 8.1 Renderer
 
-### `src/components/audio/ReactiveLogo.ts`
+### `src/features/logo/runtime/ReactiveLogo.ts`
 
 El logo no vive como un `img` normal.
 Se dibuja manualmente en canvas.
@@ -417,7 +426,7 @@ Es un mini motor imperativo.
 
 ## 8.2 De donde sale el drive del logo
 
-### `src/components/audio/layers/overlayLayerRegistry.ts`
+### `src/features/audioLayers/render/overlayLayerRegistry.ts`
 
 Para el logo, este modulo:
 
@@ -439,7 +448,7 @@ Eso separa:
 
 ## 9.1 Renderer
 
-### `src/components/audio/CircularSpectrum.ts`
+### `src/features/spectrum/runtime/CircularSpectrum.ts`
 
 Aunque se llama `CircularSpectrum`, en realidad soporta:
 
@@ -662,7 +671,7 @@ Esto es importante porque el render necesita `url`, pero el estado persistido so
 
 ## 15. Export / import de settings
 
-### `src/lib/projectSettings.ts`
+### `src/services/projectSettings.ts`
 
 Exporta:
 
@@ -744,9 +753,9 @@ Cuando un efecto "existe" pero no se ve, muchas veces el problema no es el slide
 6. `src/lib/layers.ts`
 7. `src/components/wallpaper/layers/ImageLayerCanvas.tsx`
 8. `src/components/audio/layers/AudioLayerCanvas.tsx`
-9. `src/components/audio/layers/overlayLayerRegistry.ts`
-10. `src/components/audio/ReactiveLogo.ts`
-11. `src/components/audio/CircularSpectrum.ts`
+9. `src/features/audioLayers/render/overlayLayerRegistry.ts`
+10. `src/features/logo/runtime/ReactiveLogo.ts`
+11. `src/features/spectrum/runtime/CircularSpectrum.ts`
 12. `src/components/wallpaper/ParticleField.tsx`
 13. `src/components/wallpaper/RainLayer.tsx`
 

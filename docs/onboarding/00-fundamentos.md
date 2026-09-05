@@ -344,16 +344,23 @@ src/
 │   │   ├── layers/            dibujantes de imágenes (DOM/Canvas)
 │   │   ├── ParticleField.tsx  dibujante de partículas (GPU)
 │   │   └── RainLayer.tsx      dibujante de lluvia (GPU)
-│   ├── audio/                 dibujantes de espectro, logo y letras (Canvas)
-│   └── controls/             ⭐ TODA la interfaz del editor (botones, paneles)
-│       └── tabs/              las pestañas de configuración
+│   ├── audio/                 sólo el <canvas> de las capas de audio
+│   └── controls/             ⭐ los armazones del editor y sus pestañas
+│       └── tabs/              las pestañas que mezclan varios subsistemas
 │
-├── features/               ← subsistemas grandes y complejos, cada uno aparte
+├── features/               ← ⭐ los subsistemas. Cada uno es UNA carpeta con
+│   │                          TODO lo suyo: motor, dibujo y su pestaña.
 │   ├── spectrum/             el motor de las barras de sonido (es enorme)
-│   ├── stageFx/              luces y "cámara" de concierto
 │   ├── lyrics/               las letras de canciones (sistema "Lyrixa")
+│   ├── background/           el fondo: encuadre, slideshow, transiciones
+│   ├── aiDirector/           la IA que propone escenas a partir de la imagen
+│   ├── audioLayers/          título de pista, "Now Playing", carátula
+│   ├── stageFx/              luces y "cámara" de concierto
 │   ├── export/               exportar el wallpaper como video/imagen
-│   └── (motion, scenes, calibration, edgeGlow, filterLooks, ...)
+│   └── (logo, particles, rain, calibration, scenes, presets, ...)
+│
+├── services/               ← guardar, cargar, restaurar y sincronizar el
+│   │                          proyecto. Habla con el almacén; no dibuja nada.
 │
 ├── ui/                     ← el "kit de piezas" reutilizables de la interfaz
 │   │                          (botones, deslizadores, interruptores estándar)
@@ -364,10 +371,11 @@ src/
 └── styles/                 ← estilos globales
 ```
 
-> **¿"slices"?** El almacén creció tanto que se partió en **12 secciones**
+> **¿"slices"?** El almacén creció tanto que se partió en **13 secciones**
 > (slices = "rebanadas"), una por tema: una para el fondo, otra para el audio,
-> otra para el espectro, etc. (En la carpeta verás 13 archivos: uno es una
-> caja de herramientas interna de la rebanada del fondo, no una rebanada.)
+> otra para el espectro, etc. (En la carpeta verás 14 archivos sin contar tests:
+> uno es una caja de herramientas interna de la rebanada del fondo, no una
+> rebanada.)
 > Es como dividir un almacén gigante en pasillos señalizados. Lo desmenuzamos
 > en el Nivel 01.
 
@@ -378,15 +386,21 @@ fijos**. Si entiendes este patrón, encuentras todo:
 
 1. ¿Es un **ajuste guardable**? → vive en una rebanada de `store/slices/` y su
    ficha en `types/wallpaper.ts`.
-2. ¿Es la **interfaz** para tocar ese ajuste (los botones)? → una pestaña en
-   `components/controls/tabs/`.
-3. ¿Es el **cálculo o la lógica pesada**? → una carpeta en `features/`.
-4. ¿Es el **dibujo en pantalla**? → en `components/wallpaper/` (visual) o
-   `components/audio/` (lo que reacciona al sonido).
+2. **Todo lo demás de ese subsistema** —los botones, el cálculo y el dibujo—
+   vive en **una sola carpeta**: `features/<nombre>/`, con `controls/` para su
+   pestaña, `domain/` para las reglas y `renderers/`+`runtime/` para el dibujo.
+3. ¿Es el **compositor de la escena entera** (quién va encima de quién)? → eso
+   sí es `components/wallpaper/`.
 
-> **Ejemplo mental:** la lluvia tiene (1) sus ajustes en una rebanada del store,
-> (2) una pestaña para encenderla y graduarla, y (4) un dibujante WebGL
-> (`RainLayer.tsx`). Tres sitios. Siempre el mismo patrón.
+> **Ésta es la prueba de fuego del proyecto:** si alguien te pregunta "¿dónde
+> viven las Letras?", la respuesta tiene que ser **una carpeta**
+> (`src/features/lyrics/`), no una lista de seis sitios. Durante 2026 se
+> movieron ~20.000 líneas justamente para que esa respuesta fuera corta.
+
+> **Ejemplo mental:** la lluvia tiene (1) sus ajustes en una rebanada del store
+> y (2) su carpeta `features/rain/` con la sección de la pestaña. El dibujante
+> WebGL (`RainLayer.tsx`) todavía está en `components/wallpaper/` porque es una
+> capa registrada del compositor — es la excepción, y está anotada como tal.
 
 ---
 

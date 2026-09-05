@@ -13,8 +13,8 @@ performance, and sharing are made product-grade.
 
 The product should be treated as five owned subsystems:
 
-- State/document owner: `src/store`, `src/lib/projectSettings.ts`,
-  `src/lib/wallpaperPersistenceCoordinator.ts`. This remains the source of
+- State/document owner: `src/store`, `src/services/projectSettings.ts`,
+  `src/services/wallpaperPersistenceCoordinator.ts`. This remains the source of
   truth for projects, presets, scene slots, and persisted versions.
 - Renderer owner: `src/components/wallpaper`, `src/components/audio`,
   `src/features/spectrum`. This owns preview rendering today and will expose
