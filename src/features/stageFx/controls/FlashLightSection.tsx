@@ -7,9 +7,9 @@ import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 import type { FlashLightShape } from '@/features/stageFx/stageFxConfig';
 import {
 	ColorField,
-	FxBandThresholdControls,
 	MotionSlider as Slider
 } from '@/editor/MotionSharedControls';
+import { FxBandThresholdControls } from './FxBandThresholdControls';
 import { formatDecimal } from '@/editor/motionTabUtils';
 
 export function FlashLightSection() {

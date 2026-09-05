@@ -29,8 +29,9 @@ export default function WallpaperAppProviders({
 }: {
 	children: ReactNode;
 }) {
+	const language = useWallpaperStore(s => s.language);
 	return (
-		<I18nProvider>
+		<I18nProvider language={language}>
 			<AudioDataProvider>
 				<DialogProvider>
 					<SleepModeBootstrap />

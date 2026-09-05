@@ -154,14 +154,16 @@ const BASELINE = [
 	'types/wallpaper.ts -> features/calibration/calibrationConfig.ts',
 	'types/wallpaper.ts -> features/filterLooks/filterLooks.ts',
 	'types/wallpaper.ts -> features/stageFx/stageFxConfig.ts',
-	'types/wallpaper.ts -> store/featureProfiles.ts',
+	'types/wallpaper.ts -> store/featureProfiles.ts'
 
 	// ui/ → producto: RESUELTO. Los tres widgets conectados (ProfileSlotsEditor,
 	// ConnectedColorInput, y el CollapsibleSection con memoria de workspace)
 	// se movieron a `editor/`, que es la zona donde sí pueden hablar con el store.
 
-	// lib/ acting as an application service rather than a pure library.
-	'lib/i18n/index.tsx -> store/wallpaperStore.ts',
+	// lib/ acting as an application service rather than a pure library:
+	// RESOLVED. `projectSettings`, `wallpaperPersistenceCoordinator` and `sync/`
+	// moved to `services/`; `I18nProvider` stopped reading the store and takes
+	// the language as a prop instead.
 
 	// lib/ pulling domain defaults out of features/: RESOLVED. `lib/constants`
 	// was never a library — it was the factory scene document, so it is now
@@ -176,12 +178,9 @@ const BASELINE = [
 	// debt only because `lib/` should not reach into `features/` at all: the
 	// remaining fix is moving DEFAULT_STATE itself out of `lib/`.
 
-	// editor/ → domain: MotionSharedControls carries `FxBandThresholdControls`,
-	// which is stageFx UI, not generic chrome. Proof that this module is
-	// misfiled — split that control into features/stageFx/controls and this
-	// edge disappears. (It also duplicates editor/advancedControls; see the
-	// findings section of ARCHITECTURE.md.)
-	'editor/MotionSharedControls.tsx -> features/stageFx/stageFxConfig.ts'
+	// editor/ → domain: RESOLVED. `FxBandThresholdControls` was stageFx UI
+	// wearing generic-chrome clothes; it now lives in
+	// features/stageFx/controls, next to its only three consumers.
 ];
 
 // ---------------------------------------------------------------------------

@@ -10,9 +10,9 @@ import type {
 } from '@/features/stageFx/stageFxConfig';
 import {
 	ColorField,
-	FxBandThresholdControls,
 	MotionSlider as Slider
 } from '@/editor/MotionSharedControls';
+import { FxBandThresholdControls } from './FxBandThresholdControls';
 import { formatDecimal, formatInteger } from '@/editor/motionTabUtils';
 
 export function StageLightsSection() {

@@ -8,10 +8,8 @@ import type {
 	CameraMotionTarget,
 	ScreenShakeMode
 } from '@/features/stageFx/stageFxConfig';
-import {
-	FxBandThresholdControls,
-	MotionSlider as Slider
-} from '@/editor/MotionSharedControls';
+import { MotionSlider as Slider } from '@/editor/MotionSharedControls';
+import { FxBandThresholdControls } from './FxBandThresholdControls';
 import { formatDecimal } from '@/editor/motionTabUtils';
 import {
 	CAMERA_FX_TARGETS,
