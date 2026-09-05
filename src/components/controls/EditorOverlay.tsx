@@ -47,7 +47,7 @@ import { BackgroundTab as BackgroundPanel } from '@/features/background/ui';
 import LayersTab from './tabs/main/layers/LayerStackPanel';
 import OverlaysTab from './tabs/main/layers/OverlaysPanel';
 import EditorOverlayInsightsPane from './tabs/main/editor/EditorOverlayInsightsPane';
-import { EDITOR_OVERLAY_TAB_KEYS } from './controlPanelResetKeys';
+import { EDITOR_OVERLAY_TAB_KEYS } from '@/config/controlPanelResetKeys';
 import IconButton from '@/ui/IconButton';
 import {
 	EDITOR_SIDEBAR,

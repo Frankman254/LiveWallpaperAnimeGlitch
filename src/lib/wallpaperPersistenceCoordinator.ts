@@ -19,7 +19,7 @@ import {
 	normalizeProjectExportSelection,
 	shouldImportProjectAssetKind,
 	type ProjectExportSelection
-} from '@/features/export/projectExportSelection';
+} from '@/features/export';
 import { cloneFactoryDefaultState } from '@/lib/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { PROJECT_FORMAT, PROJECT_SCHEMA_VERSION } from '@/lib/version';

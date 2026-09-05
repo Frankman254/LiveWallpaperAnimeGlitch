@@ -7,31 +7,29 @@ import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	createOfflineExportPlan,
-	resolveOfflineExportAudioAsset
-} from '@/features/export/offlineExportPlanner';
-import { getEnabledProjectExportSectionCount } from '@/features/export/projectExportSelection';
+	resolveOfflineExportAudioAsset,
+	getEnabledProjectExportSectionCount,
+	formatDuration,
+	type ExportNamingState
+} from '@/features/export';
+import {
+	OfflineExportSection,
+	OutputModeLaunchSection,
+	ProjectHealthSection,
+	ProjectLibrarySection,
+	ProjectPackageSection,
+	RecordingToolsSection,
+	SettingsExportSection,
+	VirtualFoldersSection,
+	RECORDING_FPS_OPTIONS,
+	useRecordingExport,
+	useProjectPackageExport,
+	useSettingsExport,
+	useOfflineAudioAnalysis
+} from '@/features/export/ui';
 import { createProjectHealthReport } from '@/lib/projectHealth';
 import SectionDivider from '@/ui/SectionDivider';
 import { useLocalFolders } from '@/hooks/useLocalFolders';
-import OfflineExportSection from '../export/OfflineExportSection';
-import ProjectHealthSection from '../export/ProjectHealthSection';
-import ProjectLibrarySection from '../export/ProjectLibrarySection';
-import ProjectPackageSection from '../export/ProjectPackageSection';
-import RecordingToolsSection from '../export/RecordingToolsSection';
-import OutputModeLaunchSection from '../export/OutputModeLaunchSection';
-import SettingsExportSection from '../export/SettingsExportSection';
-import VirtualFoldersSection from '../export/VirtualFoldersSection';
-import {
-	formatDuration,
-	type ExportNamingState
-} from '@/features/export/exportFileUtils';
-import {
-	RECORDING_FPS_OPTIONS,
-	useRecordingExport
-} from '../export/useRecordingExport';
-import { useProjectPackageExport } from '../export/useProjectPackageExport';
-import { useSettingsExport } from '../export/useSettingsExport';
-import { useOfflineAudioAnalysis } from '../export/useOfflineAudioAnalysis';
 
 export default function ExportTabBody() {
 	const t = useT();

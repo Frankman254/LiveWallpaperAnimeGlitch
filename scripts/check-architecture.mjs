@@ -160,7 +160,7 @@ const BASELINE = [
 	// remaining fix is moving DEFAULT_STATE itself out of `lib/`.
 	'lib/constants.ts -> features/spectrum/index.ts',
 	'lib/featureProfiles.ts -> features/spectrum/index.ts',
-	'lib/wallpaperPersistenceCoordinator.ts -> features/export/projectExportSelection.ts',
+	'lib/wallpaperPersistenceCoordinator.ts -> features/export/index.ts',
 
 	// editor/ → domain: MotionSharedControls carries `FxBandThresholdControls`,
 	// which is stageFx UI, not generic chrome. Proof that this module is
@@ -172,7 +172,6 @@ const BASELINE = [
 	// features/export renders through the live editor components.
 	'features/flashEdge/flashEdgeRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
 	'features/export/offlineAudioLayerRenderer.ts -> components/audio/layers/audioLayerFrameRenderer.ts',
-	'features/export/projectExportSelection.ts -> components/controls/controlPanelResetKeys.ts',
 	'features/export/renderSubsystems/audioLayers.ts -> components/audio/layers/audioLayerFrameRenderer.ts'
 ];
 

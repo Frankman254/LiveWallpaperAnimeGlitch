@@ -1,4 +1,4 @@
-import { LEGACY_TAB_KEYS } from '@/components/controls/controlPanelResetKeys';
+import { LEGACY_TAB_KEYS } from '@/config/controlPanelResetKeys';
 import {
 	createProfileSlotId,
 	MAX_SPECTRUM_SLOT_COUNT

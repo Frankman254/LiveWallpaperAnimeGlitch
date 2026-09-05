@@ -6,7 +6,7 @@ import {
 	loadImageBlob,
 	saveImage
 } from '@/lib/db/imageDb';
-import { downloadBlobFallback } from '@/features/export/exportFileUtils';
+import { downloadBlobFallback } from '@/features/export';
 import type { BackgroundImageItem, Setlist } from '@/types/wallpaper';
 import { resolveBackgroundDownloadFileName } from './backgroundImageDownload';
 import type { BackgroundStore } from './useBackgroundStore';

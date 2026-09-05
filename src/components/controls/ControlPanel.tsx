@@ -45,7 +45,7 @@ import {
 	resolveCanvasInteractionTab,
 	type AdvancedSubTab,
 	type MainTabId
-} from './controlPanelResetKeys';
+} from '@/config/controlPanelResetKeys';
 import type { ActiveTool } from '@/types/wallpaper';
 import {
 	panelKey,
