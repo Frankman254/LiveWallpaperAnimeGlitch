@@ -1,9 +1,9 @@
 import type { AudioEnvelope } from '@/utils/audioEnvelope';
 import { clamp, lerp } from '@/lib/math';
-import { getScanlineAmount } from './imageCanvasEffects';
+import { getScanlineAmount } from '@/lib/canvas/imageEffects';
 import type { BackgroundImageLayer } from '@/types/layers';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import type { ImageLayer } from './imageCanvasShared';
+import type { ImageLayer } from '@/features/background/imageLayerGeometry';
 
 export type ParallaxOffset = {
 	parallaxX: number;

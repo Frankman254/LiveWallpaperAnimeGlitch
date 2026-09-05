@@ -10,7 +10,7 @@ import {
 	createAudioLayerFrameRenderState,
 	renderAudioLayerFrame,
 	type RenderableAudioLayer
-} from '@/components/audio/layers/audioLayerFrameRenderer';
+} from '@/features/audioLayers/render';
 import {
 	resolveOutputMinFrameMs,
 	syncOutputCanvasBacking,

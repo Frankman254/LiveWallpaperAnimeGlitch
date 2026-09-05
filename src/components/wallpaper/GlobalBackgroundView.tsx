@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
 import { setLruEntry, getLruEntry } from '@/lib/lruCache';
-import { getBackgroundBaseSize } from '@/components/wallpaper/layers/imageCanvasShared';
+import { getBackgroundBaseSize } from '@/features/background/imageLayerGeometry';
 import {
 	getLayoutReferenceResolution,
 	resolveResponsiveBackgroundTransform
@@ -20,7 +20,7 @@ import {
 	drawScanlines,
 	drawVignette,
 	getScanlineAmount
-} from '@/components/wallpaper/layers/imageCanvasEffects';
+} from '@/lib/canvas/imageEffects';
 
 const GLOBAL_BACKGROUND_CACHE_LIMIT = 6;
 const imageCache = new Map<string, HTMLImageElement>();

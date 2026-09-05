@@ -4,7 +4,7 @@ import {
 	renderAudioLayerFrame,
 	type AudioLayerFrameRenderState,
 	type RenderableAudioLayer
-} from '@/components/audio/layers/audioLayerFrameRenderer';
+} from '@/features/audioLayers/render';
 import { resetLogo } from '@/features/logo';
 import { resetSpectrum } from '@/features/spectrum/render';
 import type { RenderFrameContext } from '../renderFrameContext';

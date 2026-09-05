@@ -3,7 +3,10 @@ import { createAudioChannelSelectionState } from '@/lib/audio/audioChannels';
 import { useAudioData } from '@/hooks/useAudioData';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { getCanvasBlendMode, type ImageLayer } from './imageCanvasShared';
+import {
+	getCanvasBlendMode,
+	type ImageLayer
+} from '@/features/background/imageLayerGeometry';
 import {
 	type ImageCanvasRuntimeRefs,
 	renderImageCanvasFrame,

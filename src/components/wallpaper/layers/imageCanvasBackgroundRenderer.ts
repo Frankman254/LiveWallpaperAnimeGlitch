@@ -1,5 +1,5 @@
 import { clamp } from '@/lib/math';
-import type { BackgroundImageSnapshot } from './imageCanvasShared';
+import type { BackgroundImageSnapshot } from '@/features/background/imageLayerGeometry';
 import {
 	drawBackgroundImageDirect,
 	runBackgroundTransitionPass

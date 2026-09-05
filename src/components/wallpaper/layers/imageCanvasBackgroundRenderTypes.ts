@@ -5,7 +5,7 @@ import type { BackgroundImageLayer } from '@/types/layers';
 import type {
 	BackgroundImageSnapshot,
 	BackgroundTransitionSnapshot
-} from './imageCanvasShared';
+} from '@/features/background/imageLayerGeometry';
 
 export type BgDrawContext = {
 	ctx: CanvasRenderingContext2D;

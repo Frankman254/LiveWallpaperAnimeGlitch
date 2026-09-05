@@ -48,8 +48,8 @@ import {
 } from '@/features/stageFx/flashEdgeDrive';
 import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { drawSpectrum } from '@/features/spectrum/render';
-import { drawTrackTitleOverlay } from '@/components/audio/TrackTitleOverlay';
-import type { NowPlayingData } from '@/components/audio/NowPlayingWidget';
+import { drawTrackTitleOverlay } from '@/features/audioLayers/render/trackTitleOverlay';
+import type { NowPlayingData } from '@/features/audioLayers/render/nowPlayingWidget';
 import { drawLyricsOverlay } from '@/features/lyrics';
 import { resolveActiveAudioAssetId } from '@/lib/audio/activeTrack';
 

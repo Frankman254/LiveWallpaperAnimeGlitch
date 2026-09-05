@@ -1,10 +1,10 @@
 import { clamp, lerp } from '@/lib/math';
-import { drawRgbShift, seededRandom } from './imageCanvasEffects';
-import type { BackgroundImageSnapshot } from './imageCanvasShared';
+import { drawRgbShift, seededRandom } from '@/lib/canvas/imageEffects';
+import type { BackgroundImageSnapshot } from '@/features/background/imageLayerGeometry';
 import {
 	getBackgroundDrawRectsFromSnapshot,
 	getBackgroundRectFromSnapshot
-} from './imageCanvasShared';
+} from '@/features/background/imageLayerGeometry';
 import type {
 	BgDrawContext,
 	BgTransitionCtx

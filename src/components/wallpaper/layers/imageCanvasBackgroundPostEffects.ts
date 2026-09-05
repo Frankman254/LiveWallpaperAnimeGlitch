@@ -2,10 +2,10 @@ import { clamp } from '@/lib/math';
 import {
 	applyImagePostProcessPasses,
 	getScanlineAmount
-} from './imageCanvasEffects';
-import { getBackgroundDrawRectsFromSnapshot } from './imageCanvasShared';
+} from '@/lib/canvas/imageEffects';
+import { getBackgroundDrawRectsFromSnapshot } from '@/features/background/imageLayerGeometry';
 import type { BgDrawContext } from './imageCanvasBackgroundRenderTypes';
-import type { BackgroundImageSnapshot } from './imageCanvasShared';
+import type { BackgroundImageSnapshot } from '@/features/background/imageLayerGeometry';
 import type { ScanlineMode } from '@/types/wallpaper';
 import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
 

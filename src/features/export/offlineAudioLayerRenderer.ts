@@ -11,7 +11,7 @@ import {
 	renderAudioLayerFrame,
 	type AudioLayerFrameRenderState,
 	type RenderableAudioLayer
-} from '@/components/audio/layers/audioLayerFrameRenderer';
+} from '@/features/audioLayers/render';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { OfflineAudioAnalysisSource } from './offlineAudioAnalysis';
 import type { OfflineRenderFrameContext } from './offlineExportTypes';

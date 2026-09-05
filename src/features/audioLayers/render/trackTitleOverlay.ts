@@ -8,7 +8,7 @@ import {
 	drawNowPlayingWidget,
 	type NowPlayingData,
 	type NowPlayingWidgetSettings
-} from '@/components/audio/NowPlayingWidget';
+} from '@/features/audioLayers/render/nowPlayingWidget';
 import {
 	createOffscreenCanvas,
 	getTextRenderScale

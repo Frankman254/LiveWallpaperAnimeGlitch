@@ -11,7 +11,7 @@ import {
 	getLayerRect,
 	targetMatches,
 	type ImageLayer
-} from './imageCanvasShared';
+} from '@/features/background/imageLayerGeometry';
 import type { BackgroundTransitionRuntimeRefs } from './imageCanvasBackgroundTransitionState';
 import { syncBackgroundImageRequestDuringFrame } from './imageCanvasBackgroundTransitionState';
 import {

@@ -4,7 +4,7 @@ import {
 	type BackgroundImageSnapshot,
 	type BackgroundTransitionSnapshot,
 	type ImageLayer
-} from './imageCanvasShared';
+} from '@/features/background/imageLayerGeometry';
 import {
 	beginBackgroundImageRequest,
 	commitBackgroundImageLoad,

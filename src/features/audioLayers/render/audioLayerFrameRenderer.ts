@@ -10,14 +10,14 @@ import type {
 import type { WallpaperState } from '@/types/wallpaper';
 import { getOverlayLayerById } from '@/lib/layers';
 import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
-import { getCoverImage } from '@/components/audio/layers/coverImageCache';
-import { drawOverlayLayer } from '@/components/audio/layers/overlayLayerRegistry';
+import { getCoverImage } from '@/features/audioLayers/render/coverImageCache';
+import { drawOverlayLayer } from '@/features/audioLayers/render/overlayLayerRegistry';
 import {
 	drawFilmNoise,
 	drawRgbShift,
 	drawScanlines,
 	getScanlineAmount
-} from '@/components/wallpaper/layers/imageCanvasEffects';
+} from '@/lib/canvas/imageEffects';
 
 export type RenderableAudioLayer =
 	| LogoLayer

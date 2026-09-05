@@ -3,7 +3,7 @@ import type {
 	BackgroundImageSnapshot,
 	BackgroundTransitionSnapshot,
 	ImageLayer
-} from './imageCanvasShared';
+} from '@/features/background/imageLayerGeometry';
 
 export type BackgroundTransitionRuntimeRefs = {
 	imageRef: MutableRefObject<HTMLImageElement | null>;

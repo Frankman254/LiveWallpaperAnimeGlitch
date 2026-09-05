@@ -181,12 +181,7 @@ const BASELINE = [
 	// misfiled — split that control into features/stageFx/controls and this
 	// edge disappears. (It also duplicates editor/advancedControls; see the
 	// findings section of ARCHITECTURE.md.)
-	'editor/MotionSharedControls.tsx -> features/stageFx/stageFxConfig.ts',
-
-	// features/export renders through the live editor components.
-	'features/flashEdge/flashEdgeRenderer.ts -> components/wallpaper/layers/imageCanvasShared.ts',
-	'features/export/offlineAudioLayerRenderer.ts -> components/audio/layers/audioLayerFrameRenderer.ts',
-	'features/export/renderSubsystems/audioLayers.ts -> components/audio/layers/audioLayerFrameRenderer.ts'
+	'editor/MotionSharedControls.tsx -> features/stageFx/stageFxConfig.ts'
 ];
 
 // ---------------------------------------------------------------------------

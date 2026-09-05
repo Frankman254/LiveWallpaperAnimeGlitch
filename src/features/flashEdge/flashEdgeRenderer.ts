@@ -17,7 +17,7 @@
  * SPECTRUM / OVERLAY ITEMS: V2 debt (ver deliverables).
  */
 
-import type { LayerRect } from '@/components/wallpaper/layers/imageCanvasShared';
+import type { LayerRect } from '@/features/background/imageLayerGeometry';
 
 function clamp(v: number, lo: number, hi: number): number {
 	return v < lo ? lo : v > hi ? hi : v;

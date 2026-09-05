@@ -5,7 +5,7 @@ import {
 	type ImageDrawRect,
 	getImageBaseSize,
 	resolveImageTransform
-} from '@/features/background';
+} from './index';
 import { getLruEntry, setLruEntry } from '@/lib/lruCache';
 
 export type ImageLayer = BackgroundImageLayer | OverlayImageLayer;

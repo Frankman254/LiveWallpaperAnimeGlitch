@@ -4,8 +4,8 @@ import {
 	applyImagePostProcessPasses,
 	applySoftEdgeMask,
 	drawOverlayGlow
-} from './imageCanvasEffects';
-import type { LayerRect } from './imageCanvasShared';
+} from '@/lib/canvas/imageEffects';
+import type { LayerRect } from '@/features/background/imageLayerGeometry';
 import type { OverlayImageLayer } from '@/types/layers';
 import type { VisualQualityTier } from '@/lib/visual/performanceQuality';
 
