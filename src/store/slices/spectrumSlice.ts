@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand';
 import { SPECTRUM_RANGES } from '@/config/ranges';
 import { clamp } from '@/lib/math';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import { CANONICAL_FACTORY_SPECTRUM_PATCH } from '@/lib/canonicalFactoryPresets';
 import {
 	buildSpectrumMacroPatch,
@@ -13,7 +13,7 @@ import {
 	createDefaultSpectrumSecondProfileSlots,
 	extractSpectrumProfileSettings,
 	MAX_SPECTRUM_SLOT_COUNT
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import {
 	normalizeSpectrumFamily,
 	normalizeSpectrumShape

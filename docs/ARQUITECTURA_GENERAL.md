@@ -188,7 +188,7 @@ No hay un solo renderer universal.
 
 - Define el shape completo del estado.
 
-### `src/lib/constants.ts`
+### `src/store/defaultState.ts`
 
 - `DEFAULT_STATE`
 
@@ -278,7 +278,7 @@ Ademas concentra:
 - Fondo fijo de respaldo detras del slideshow.
 - Evita que aparezca negro cuando cambian imagenes o escalas.
 
-### `src/lib/backgroundImages.ts`
+### `src/features/background/backgroundImages.ts`
 
 - Helpers de coleccion de wallpapers.
 

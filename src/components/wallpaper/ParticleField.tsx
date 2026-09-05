@@ -17,7 +17,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useAudioData } from '@/hooks/useAudioData';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { randomBetween } from '@/lib/math';
-import { PARTICLE_LIMITS } from '@/lib/constants';
+import { PARTICLE_LIMITS } from '@/store/defaultState';
 import vertexShader from '@/shaders/particleVertex.glsl';
 import fragmentShader from '@/shaders/particleFragment.glsl';
 import type {

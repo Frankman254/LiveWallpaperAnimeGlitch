@@ -143,11 +143,18 @@ const BASELINE = [
 	// types/ still borrows domain vocabulary instead of owning it. All of these
 	// are type positions (`import('...').Foo`), so they are erased at build —
 	// the debt is conceptual, not a runtime cycle.
+	//
+	// The featureProfiles one is not fixable by moving a file, and it is worth
+	// knowing why before someone tries: the profile settings types are
+	// `Pick<WallpaperState, typeof SOME_KEYS[number]>` — derived FROM the very
+	// interface that then holds them in its slot fields. The key arrays are
+	// runtime values (they drive extract/build), so they cannot live in
+	// `types/`, and `WallpaperState` cannot describe a slot without them.
 	'types/wallpaper.ts -> features/lyrics/domain/types.ts',
 	'types/wallpaper.ts -> features/calibration/calibrationConfig.ts',
 	'types/wallpaper.ts -> features/filterLooks/filterLooks.ts',
 	'types/wallpaper.ts -> features/stageFx/stageFxConfig.ts',
-	'types/wallpaper.ts -> lib/featureProfiles.ts',
+	'types/wallpaper.ts -> store/featureProfiles.ts',
 
 	// ui/ → producto: RESUELTO. Los tres widgets conectados (ProfileSlotsEditor,
 	// ConnectedColorInput, y el CollapsibleSection con memoria de workspace)
@@ -156,13 +163,11 @@ const BASELINE = [
 	// lib/ acting as an application service rather than a pure library.
 	'lib/i18n/index.tsx -> store/wallpaperStore.ts',
 
-	// lib/ pulling domain defaults out of features/. The three background
-	// entries that used to head this list are gone: backgroundAutoFit and
-	// slideshowPlayback moved into features/background, and backgroundTransform
-	// (a five-line re-export shim with no importers at all) was deleted.
-	'lib/constants.ts -> features/calibration/calibrationConfig.ts',
-	'lib/constants.ts -> features/layout/viewportMetrics.ts',
-	'lib/constants.ts -> features/presets/imageBassZoomProfiles.ts',
+	// lib/ pulling domain defaults out of features/: RESOLVED. `lib/constants`
+	// was never a library — it was the factory scene document, so it is now
+	// `store/defaultState`, and `store/` is allowed to read domain defaults.
+	// `featureProfiles`, `factoryDefaults`, `backgroundImages` and `presets`
+	// followed it to the zone that actually owns each one.
 	// These used to be seven DEEP imports into single spectrum modules, because
 	// the barrel loaded a module that read DEFAULT_STATE back out of
 	// lib/constants — a circular initialisation that crashed 18 suites. The
@@ -170,8 +175,6 @@ const BASELINE = [
 	// so the barrel is safe and these are two ordinary facade edges. They stay
 	// debt only because `lib/` should not reach into `features/` at all: the
 	// remaining fix is moving DEFAULT_STATE itself out of `lib/`.
-	'lib/constants.ts -> features/spectrum/index.ts',
-	'lib/featureProfiles.ts -> features/spectrum/index.ts',
 
 	// editor/ → domain: MotionSharedControls carries `FxBandThresholdControls`,
 	// which is stageFx UI, not generic chrome. Proof that this module is

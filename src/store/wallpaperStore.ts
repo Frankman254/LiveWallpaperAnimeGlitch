@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
+import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 import {
 	createAiDirectorSlice,
 	createAudioPlaylistSlice,

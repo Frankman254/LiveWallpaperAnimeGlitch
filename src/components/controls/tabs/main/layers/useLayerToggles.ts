@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import { useT } from '@/lib/i18n';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { WallpaperLayer } from '@/types/layers';

@@ -1,10 +1,10 @@
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	createBackgroundImageItem,
 	getBackgroundImageRuntimePatch,
 	isBackgroundImageUsingDefaultLayout,
 	type BackgroundImageLayout
-} from '@/lib/backgroundImages';
+} from '@/features/background/backgroundImages';
 import type {
 	BackgroundImageItem,
 	SlideshowTransitionType,

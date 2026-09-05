@@ -9,7 +9,7 @@ import {
 	doProfileSettingsMatch,
 	extractLogoProfileSettings,
 	MAX_LOGO_SLOT_COUNT
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import { AUDIO_ROUTING_RANGES, LOGO_RANGES } from '@/config/ranges';
 import { useT } from '@/lib/i18n';
 import { useTabViewState } from '@/hooks/useTabViewState';

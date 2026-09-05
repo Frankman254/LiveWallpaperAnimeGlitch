@@ -1,6 +1,6 @@
 import { Maximize2, MonitorUp, RotateCcw, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
-import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/lib/constants';
+import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/store/defaultState';
 import { useT } from '@/lib/i18n';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useWallpaperStore } from '@/store/wallpaperStore';

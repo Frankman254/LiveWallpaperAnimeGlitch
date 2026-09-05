@@ -2,7 +2,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useSpectrumTargetSettings } from '@/features/spectrum/controls/useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
-import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
+import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 import {
 	Caption,
 	EnumButtonGroup as EnumButtons,

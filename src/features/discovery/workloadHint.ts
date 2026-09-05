@@ -1,5 +1,5 @@
 import type { WallpaperState } from '@/types/wallpaper';
-import { PARTICLE_LIMITS } from '@/lib/constants';
+import { PARTICLE_LIMITS } from '@/store/defaultState';
 
 /**
  * Returns whether the current wallpaper settings are likely GPU-heavy

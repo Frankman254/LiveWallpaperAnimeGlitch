@@ -11,8 +11,8 @@
  * around it. Those three callers wanting one function was the whole reason
  * `lib/` used to reach up into `hooks/`.
  */
-import { createBackgroundImageItem } from '@/lib/backgroundImages';
-import { APP_LOGO_URL } from '@/lib/constants';
+import { createBackgroundImageItem } from '@/features/background/backgroundImages';
+import { APP_LOGO_URL } from '@/store/defaultState';
 import { loadAllImages, loadImage } from '@/lib/db/imageDb';
 import { hydrateMissingPoolThumbnails } from '@/lib/thumbnailUtils';
 import { useWallpaperStore } from '@/store/wallpaperStore';

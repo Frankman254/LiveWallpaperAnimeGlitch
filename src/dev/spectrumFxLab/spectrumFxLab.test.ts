@@ -15,7 +15,7 @@ import {
 	SPECTRUM_PROFILE_NEON_GLITCH,
 	SPECTRUM_PROFILE_ECHO_SPARKS
 } from '@/features/spectrum';
-import { createDefaultSpectrumProfileSlots } from '@/lib/featureProfiles';
+import { createDefaultSpectrumProfileSlots } from '@/store/featureProfiles';
 
 describe('spectrumFxLab config', () => {
 	it('filters scenarios per mode via compat', () => {

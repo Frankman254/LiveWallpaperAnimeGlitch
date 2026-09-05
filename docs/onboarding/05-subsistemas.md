@@ -160,7 +160,7 @@ Casi cada feature (espectro, logo, partículas, lluvia, looks, luces, cámara,
 título…) tiene **slots de perfil**: huecos numerados donde guardas "mi
 configuración favorita de ESTA feature". Viven en el store
 (`spectrumProfileSlots`, `logoProfileSlots`…) y la maquinaria común está en
-`src/lib/featureProfiles.ts` (1.006 líneas): los extractores ("saca del
+`src/store/featureProfiles.ts` (1.006 líneas): los extractores ("saca del
 estado solo las claves de esta feature"), los hidratadores ("rellena lo que
 falte con defaults") y los topes de slots.
 

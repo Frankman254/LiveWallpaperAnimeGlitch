@@ -21,8 +21,10 @@ humans and agents — when something here disagrees with the tree, the tree wins
 | Wallpaper render stage                 | `src/components/wallpaper/`                     |
 | Feature engines (render/runtime/logic) | `src/features/*`                                |
 | Audio capture / analysis / media keys  | `src/context/audioData/`, `src/lib/audio/`      |
-| Global state                           | `src/store/`                                    |
-| Pure utilities / persistence           | `src/lib/`                                      |
+| Global state + factory document        | `src/store/` (`defaultState.ts`)                |
+| Save / load / restore / sync a project | `src/services/`                                 |
+| Pure utilities (no store, no React)    | `src/lib/`                                      |
+| Leaf constants and ranges              | `src/config/`                                   |
 
 ## Editor controls
 
@@ -36,8 +38,15 @@ The editor's tab UI lives under `src/components/controls/`:
   "current"). The historical `Modern*` naming has been fully removed from the
   live UI.
 - Tabs that now live with their domain: `SpectrumTab`, `LyricsTab`, `LogoTab`,
-  `BackgroundTab`, and the particles / rain / stage-FX sections. Import them via
-  the domain facade (`@/features/<domain>/ui`), never by file path.
+  `BackgroundTab`, the eight Export sections, and the particles / rain /
+  stage-FX sections. Import them via the domain facade
+  (`@/features/<domain>/ui`), never by file path.
+
+> `src/lib/` used to be the drawer everything ambiguous ended up in. It is now
+> genuinely a leaf: if a module calls `useWallpaperStore.getState()` it belongs
+> in `src/services/`, if it is a table of constants it belongs in `src/config/`,
+> and if it is the app's default scene document it is `store/defaultState.ts`.
+
 - `tabs/audio/`, `tabs/export/` — the feature sections still composed from here.
 - `tabs/CalibrationTab.tsx` — calibration controls.
 
@@ -45,7 +54,7 @@ The editor's tab UI lives under `src/components/controls/`:
 
 - Spectrum renderers: `src/features/spectrum/renderers/`
 - Spectrum effects (glow, neon, rgb split, echo…): `src/features/spectrum/effects/`
-- Spectrum runtime/profiles: `src/features/spectrum/runtime/`, `src/lib/featureProfiles.ts`
+- Spectrum runtime/profiles: `src/features/spectrum/runtime/`, `src/store/featureProfiles.ts`
 - Pixel Art: `src/features/spectrum/pixelArtHelpers.ts` (+ `renderers/linear/`)
 - Logo (motor, presets, diagnostics, grid): `src/features/logo/` — **importar
   siempre por `@/features/logo`**, nunca por un archivo interno. Es el dominio
@@ -67,7 +76,7 @@ The editor's tab UI lives under `src/components/controls/`:
 | Spectrum renderers | `src/features/spectrum/renderers/`                                                |
 | Pixel Art          | `src/features/spectrum/pixelArtHelpers.ts`                                        |
 | Audio / media keys | `src/context/audioData/` (e.g. `mediaTrackKeys.ts`, `useAudioPlaybackEffects.ts`) |
-| Import/Export      | `src/features/export/`, `src/lib/featureProfiles.ts`                              |
+| Import/Export      | `src/features/export/`, `src/store/featureProfiles.ts`                            |
 | Stage FX           | `src/features/stageFx/` (fachada: `@/features/stageFx/ui`)                        |
 | Particles / Rain   | `src/features/particles/`, `src/features/rain/`                                   |
 | Output / Recording | `tabs/main/OutputTab.tsx` + `src/runtime/` + `src/features/recording/`            |

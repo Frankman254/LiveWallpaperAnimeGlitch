@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { AUDIO_ROUTING_RANGES } from '@/config/ranges';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	getSpectrumFamilyGpuCostHint,
 	resolveSpectrumRenderQuality

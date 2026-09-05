@@ -14,8 +14,8 @@ import {
 	extractLightsProfileSettings,
 	extractParticlesProfileSettings,
 	extractRainProfileSettings
-} from '@/lib/featureProfiles';
-import { PARTICLE_LIMITS } from '@/lib/constants';
+} from '@/store/featureProfiles';
+import { PARTICLE_LIMITS } from '@/store/defaultState';
 import { useT } from '@/lib/i18n';
 import { useTabViewState } from '@/hooks/useTabViewState';
 import { useWallpaperStore } from '@/store/wallpaperStore';

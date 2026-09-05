@@ -110,7 +110,7 @@ un canal nuevo hacia el render:
   `Pick<WallpaperState, KEYS>` con listas de claves ya declaradas
   (`SPECTRUM_PROFILE_KEYS`, `PARTICLES_PROFILE_KEYS`, `LOOKS_*`, `RAIN_*`,
   `LIGHTS_*`, `CAMERA_FX_*`, `LOGO_*`, `TRACK_TITLE_*`) en
-  `src/lib/featureProfiles.ts`.
+  `src/store/featureProfiles.ts`.
 - `SceneSlot` (`src/features/scenes/sceneSlot.ts`) es **solo composición**:
   referencias a esos slots, cero valores propios. Regla dura ya escrita en el
   archivo.

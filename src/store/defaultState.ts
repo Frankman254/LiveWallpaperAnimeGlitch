@@ -10,7 +10,7 @@ import {
 	createDefaultSpectrumProfileSlots,
 	createDefaultSpectrumSecondProfileSlots,
 	createDefaultTrackTitleProfileSlots
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
 import { createDefaultCalibrationProfileSlots } from '@/features/calibration/calibrationConfig';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
@@ -271,7 +271,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	audioLyricsByTrackAssetId: {},
 
 	// Spectrum — the domain owns its factory defaults; only the profile
-	// slots stay here, because lib/featureProfiles builds them.
+	// slots stay here, because store/featureProfiles builds them.
 	...DEFAULT_SPECTRUM_STATE,
 	spectrumProfileSlots: createDefaultSpectrumProfileSlots(),
 	spectrumSecondProfileSlots: createDefaultSpectrumSecondProfileSlots(),

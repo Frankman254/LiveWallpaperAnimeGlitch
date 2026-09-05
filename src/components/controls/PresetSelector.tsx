@@ -1,6 +1,6 @@
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import { PRESET_LABELS, resolvePreset } from '@/lib/presets';
+import { PRESET_LABELS, resolvePreset } from '@/features/presets/presets';
 import type { PresetKey } from '@/types/presets';
 import { useDialog } from '@/editor/DialogProvider';
 

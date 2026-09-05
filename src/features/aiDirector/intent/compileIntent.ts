@@ -26,7 +26,7 @@ import type {
 	LooksProfileSettings,
 	ParticlesProfileSettings,
 	RainProfileSettings
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import type {
 	ParticleShape,
 	SpectrumInstanceSettings

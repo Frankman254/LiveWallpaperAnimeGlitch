@@ -26,7 +26,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	convertLegacySpectrumCloneState,
 	createDefaultSpectrumInstance
@@ -64,7 +64,7 @@ import {
 	RAIN_PROFILE_KEYS,
 	type ParticlesProfileSettings,
 	type RainProfileSettings
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import {
 	buildBackgroundImageCollectionPatch,
 	normalizePersistedBackgroundImages

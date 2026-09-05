@@ -1,5 +1,5 @@
 import { CANONICAL_DEFAULT_STATE_PATCH } from '@/lib/canonicalFactoryPresets';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type { WallpaperState } from '@/types/wallpaper';
 
 export const FACTORY_DEFAULT_STATE = {

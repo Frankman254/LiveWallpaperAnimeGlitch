@@ -113,13 +113,13 @@ export type WallpaperStore = WallpaperState & {
 	setImageLogoOverride: (v: LogoProfileSettings | null) => void;
 	setImageSpectrumOverride: (v: SpectrumProfileSettings | null) => void;
 	setImageParticlesOverride: (
-		v: import('@/lib/featureProfiles').ParticlesProfileSettings | null
+		v: import('@/store/featureProfiles').ParticlesProfileSettings | null
 	) => void;
 	setImageRainOverride: (
-		v: import('@/lib/featureProfiles').RainProfileSettings | null
+		v: import('@/store/featureProfiles').RainProfileSettings | null
 	) => void;
 	setImageLooksOverride: (
-		v: import('@/lib/featureProfiles').LooksProfileSettings | null
+		v: import('@/store/featureProfiles').LooksProfileSettings | null
 	) => void;
 	captureImageLogoOverride: () => void;
 	captureImageSpectrumOverride: () => void;

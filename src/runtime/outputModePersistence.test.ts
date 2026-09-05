@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 
 describe('presentation mode persistence boundary', () => {
 	it('partializeWallpaperStore does not include runtime UI mode fields', () => {

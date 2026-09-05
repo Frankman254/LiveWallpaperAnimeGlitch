@@ -25,7 +25,7 @@ import {
 	extractParticlesProfileSettings,
 	extractRainProfileSettings,
 	extractTrackTitleProfileSettings
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import {
 	isSpectrumSlotActiveForTarget,
 	selectSpectrumActiveProfileIndexForTarget

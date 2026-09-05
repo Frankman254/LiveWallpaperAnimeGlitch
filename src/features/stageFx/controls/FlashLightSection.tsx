@@ -3,7 +3,7 @@ import { SectionCard, SegmentedControl, ToggleSwitch } from '@/ui';
 import { CollapsibleSection } from '@/editor';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
-import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
+import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 import type { FlashLightShape } from '@/features/stageFx/stageFxConfig';
 import {
 	ColorField,

@@ -2,8 +2,8 @@ import { LEGACY_TAB_KEYS } from '@/config/controlPanelResetKeys';
 import {
 	createProfileSlotId,
 	MAX_SPECTRUM_SLOT_COUNT
-} from '@/lib/featureProfiles';
-import { DEFAULT_STATE } from '@/lib/constants';
+} from '@/store/featureProfiles';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type {
 	ProfileSlot,
 	SpectrumProfileSettings,

@@ -1,11 +1,11 @@
 import { restoreWallpaperAssets } from '@/services/restoreWallpaperAssets';
-import { createBackgroundImageItem } from '@/lib/backgroundImages';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { createBackgroundImageItem } from '@/features/background/backgroundImages';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	FACTORY_DEFAULT_STATE,
 	cloneFactoryDefaultState,
 	getFactoryDefaultValue
-} from '@/lib/factoryDefaults';
+} from '@/store/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	SETTINGS_FORMAT,

@@ -1,7 +1,7 @@
 import { useSpectrumTargetSettings } from '@/features/spectrum/controls/useSpectrumTargetSettings';
 import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import { AdvancedOnly } from '@/editor/UIMode';
 import { CollapsibleSection } from '@/editor';
 import SliderControl from '@/editor/SliderControl';

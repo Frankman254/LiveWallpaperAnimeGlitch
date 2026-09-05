@@ -2,13 +2,13 @@ import type { StateCreator } from 'zustand';
 import {
 	FACTORY_DEFAULT_STATE,
 	getFactoryDefaultValue
-} from '@/lib/factoryDefaults';
+} from '@/store/factoryDefaults';
 import { CANONICAL_FACTORY_SETTINGS_PATCH } from '@/lib/canonicalFactoryPresets';
 import {
 	createCustomPresetId,
 	extractPresetValues,
 	resolvePreset
-} from '@/lib/presets';
+} from '@/features/presets/presets';
 import {
 	buildSceneSlotActivationPatch,
 	createEmptySceneSlot,

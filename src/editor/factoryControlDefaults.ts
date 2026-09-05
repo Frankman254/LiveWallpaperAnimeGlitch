@@ -1,4 +1,4 @@
-import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
+import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import type { WallpaperState } from '@/types/wallpaper';
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveSpectrumVisualAccentsCompat } from './spectrumVisualAccentsCompat';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 
 function compat(
 	overrides: Record<string, unknown> = {}

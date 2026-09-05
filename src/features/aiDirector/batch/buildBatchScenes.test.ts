@@ -13,7 +13,7 @@ const { buildBatchScenes } = await import('./buildBatchScenes');
 const { buildSceneSlotActivationPatch } =
 	await import('@/features/scenes/sceneSlot');
 const { defaultSceneIntent } = await import('../intent/sceneIntent');
-const { DEFAULT_STATE } = await import('@/lib/constants');
+const { DEFAULT_STATE } = await import('@/store/defaultState');
 import type { SceneIntent } from '../intent/sceneIntent';
 import type { WallpaperState } from '@/types/wallpaper';
 

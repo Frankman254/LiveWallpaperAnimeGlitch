@@ -6,7 +6,7 @@ import {
 	doProfileSettingsMatch,
 	extractTrackTitleProfileSettings,
 	MAX_TRACK_TITLE_SLOT_COUNT
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import { resolveTrackDisplay } from '@/lib/audio/trackMetadata';
 import { useT } from '@/lib/i18n';
 import { useTabViewState } from '@/hooks/useTabViewState';

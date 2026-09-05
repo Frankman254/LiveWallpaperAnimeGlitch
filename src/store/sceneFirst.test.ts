@@ -9,7 +9,8 @@ const mem = new Map<string, string>();
 };
 
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
-const { createBackgroundImageItem } = await import('@/lib/backgroundImages');
+const { createBackgroundImageItem } =
+	await import('@/features/background/backgroundImages');
 const { createEmptySceneSlot, resolveEffectiveSceneSlotId } =
 	await import('@/features/scenes/sceneSlot');
 import type {

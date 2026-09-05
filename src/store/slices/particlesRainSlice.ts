@@ -8,8 +8,8 @@ import {
 	extractRainProfileSettings,
 	MAX_PARTICLES_SLOT_COUNT,
 	MAX_RAIN_SLOT_COUNT
-} from '@/lib/featureProfiles';
-import { DEFAULT_STATE } from '@/lib/constants';
+} from '@/store/featureProfiles';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import { generateRandomMotionProfile } from '@/features/particles';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 

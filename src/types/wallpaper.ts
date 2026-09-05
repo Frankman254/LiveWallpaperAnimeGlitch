@@ -413,12 +413,14 @@ export interface BackgroundImageItem {
 	 *  carry its own Spectrum 2 without re-capturing the whole spectrum. */
 	/** Inline per-image particles config. When set, takes priority over particlesProfileSlotIndex. */
 	particlesOverride:
-		| import('@/lib/featureProfiles').ParticlesProfileSettings
+		| import('@/store/featureProfiles').ParticlesProfileSettings
 		| null;
 	/** Inline per-image rain config. When set, takes priority over rainProfileSlotIndex. */
-	rainOverride: import('@/lib/featureProfiles').RainProfileSettings | null;
+	rainOverride: import('@/store/featureProfiles').RainProfileSettings | null;
 	/** Inline per-image looks config. When set, takes priority over looksProfileSlotIndex. */
-	looksOverride: import('@/lib/featureProfiles').LooksProfileSettings | null;
+	looksOverride:
+		| import('@/store/featureProfiles').LooksProfileSettings
+		| null;
 	/** Seconds into the audio track at which this image becomes active (manual timestamps mode). */
 	playbackSwitchAt: number | null;
 	/**
@@ -1445,27 +1447,27 @@ export type WallpaperState = {
 	rainVariation: number;
 	/** User-saveable particles-only slots referenced by Scene slots. */
 	particlesProfileSlots: ProfileSlot<
-		import('@/lib/featureProfiles').ParticlesProfileSettings
+		import('@/store/featureProfiles').ParticlesProfileSettings
 	>[];
 	/** User-saveable rain-only slots referenced by Scene slots. */
 	rainProfileSlots: ProfileSlot<
-		import('@/lib/featureProfiles').RainProfileSettings
+		import('@/store/featureProfiles').RainProfileSettings
 	>[];
 	/** User-saveable Looks (filter + post-fx) slots referenced by Scene slots. */
 	looksProfileSlots: ProfileSlot<
-		import('@/lib/featureProfiles').LooksProfileSettings
+		import('@/store/featureProfiles').LooksProfileSettings
 	>[];
 	/** User-saveable Lights (stage lights + flash) slots referenced by Scene slots. */
 	lightsProfileSlots: ProfileSlot<
-		import('@/lib/featureProfiles').LightsProfileSettings
+		import('@/store/featureProfiles').LightsProfileSettings
 	>[];
 	/** User-saveable Camera FX (motion + screen shake) slots referenced by Scene slots. */
 	cameraFxProfileSlots: ProfileSlot<
-		import('@/lib/featureProfiles').CameraFxProfileSettings
+		import('@/store/featureProfiles').CameraFxProfileSettings
 	>[];
 	/** User-saveable Track Title slots referenced by Scene slots. */
 	trackTitleProfileSlots: ProfileSlot<
-		import('@/lib/featureProfiles').TrackTitleProfileSettings
+		import('@/store/featureProfiles').TrackTitleProfileSettings
 	>[];
 	/** Composition-only scene slots (references to feature slots). */
 	sceneSlots: SceneSlot[];

@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	CALIBRATION_PARAMS,
 	CALIBRATION_PARAM_KEYS,

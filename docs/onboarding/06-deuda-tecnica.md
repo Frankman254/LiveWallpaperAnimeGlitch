@@ -54,7 +54,7 @@ sin pantalla, que son justamente las más críticas:
    estado v85 válido?" Es la función con más usuarios afectados si falla.
 2. `utils/audioEnvelope.ts`, `lib/audio/audioChannels.ts` — matemática pura,
    entradas y salidas claras.
-3. `features/scenes/sceneSlot.ts`, `lib/featureProfiles.ts` — los
+3. `features/scenes/sceneSlot.ts`, `store/featureProfiles.ts` — los
    normalizadores de referencias y perfiles.
 
 Nada de eso necesita navegador ni GPU: son funciones de "números entran,
@@ -72,8 +72,8 @@ Síntomas medibles (cuenta de líneas real):
 | `store/wallpaperStoreMigrations.ts` | 3.518  | El normalizador universal del Nivel 01                                                  |
 | `types/wallpaper.ts`                | 1.685  | La ficha técnica de TODO el estado                                                      |
 | `store/wallpaperStoreTypes.ts`      | 1.087  | Las firmas de TODAS las acciones                                                        |
-| `lib/featureProfiles.ts`            | 1.006  | Extractores/hidratadores de todos los perfiles                                          |
-| `lib/constants.ts`                  | 815    | Los valores de fábrica                                                                  |
+| `store/featureProfiles.ts`          | 1.006  | Extractores/hidratadores de todos los perfiles                                          |
+| `store/defaultState.ts`             | 815    | Los valores de fábrica                                                                  |
 
 Los problemas concretos, no estéticos:
 

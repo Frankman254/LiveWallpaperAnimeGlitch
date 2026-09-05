@@ -1,9 +1,9 @@
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	loadImageDimensions,
 	suggestBackgroundAutoFit
 } from '@/features/background';
-import { createBackgroundImageItem } from '@/lib/backgroundImages';
+import { createBackgroundImageItem } from '@/features/background/backgroundImages';
 import {
 	buildSceneSlotActivationPatch,
 	createSceneSlotId,
@@ -15,7 +15,7 @@ import {
 	extractLooksProfileSettings,
 	extractParticlesProfileSettings,
 	extractRainProfileSettings
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import { createVisualTransitionSnapshot } from '@/features/visualTransition/visualTransitionCoordinator';
 import { invalidateSpectrumPresetMorph } from '@/features/spectrum';
 import {

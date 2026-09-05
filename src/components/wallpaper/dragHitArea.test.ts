@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type { WallpaperState } from '@/types/wallpaper';
 import { isInsideHitArea, resolveDragHitArea } from './dragHitArea';
 

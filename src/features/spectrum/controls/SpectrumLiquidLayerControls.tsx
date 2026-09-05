@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { SPECTRUM_RANGES } from '@/config/ranges';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type { SpectrumRadialShape } from '@/types/wallpaper';
 import {
 	getSpectrumLiquidLayerFieldKey,

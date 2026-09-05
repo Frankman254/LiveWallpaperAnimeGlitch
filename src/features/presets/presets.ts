@@ -1,4 +1,4 @@
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type {
 	CustomPresetsMap,
 	Preset,

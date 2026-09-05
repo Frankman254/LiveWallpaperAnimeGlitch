@@ -16,9 +16,9 @@ const { captureSceneSlot, ALL_SCENE_CAPTURE_KINDS } =
 	await import('@/features/scenes/captureSceneSlot');
 const { buildSceneSlotActivationPatch } =
 	await import('@/features/scenes/sceneSlot');
-const { DEFAULT_STATE } = await import('@/lib/constants');
+const { DEFAULT_STATE } = await import('@/store/defaultState');
 const { MAX_PARTICLES_SLOT_COUNT, createProfileSlotId } =
-	await import('@/lib/featureProfiles');
+	await import('@/store/featureProfiles');
 import type { WallpaperState } from '@/types/wallpaper';
 
 /** A full, realistic state — the extract* helpers read across many keys. */

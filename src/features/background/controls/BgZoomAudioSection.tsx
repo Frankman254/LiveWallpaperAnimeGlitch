@@ -7,7 +7,7 @@ import {
 import {
 	doProfileSettingsMatch,
 	extractBackgroundProfileSettings
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import { useDialog } from '@/editor/DialogProvider';

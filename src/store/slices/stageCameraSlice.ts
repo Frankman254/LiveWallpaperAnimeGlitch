@@ -8,8 +8,8 @@ import {
 	extractLightsProfileSettings,
 	MAX_CAMERA_FX_SLOT_COUNT,
 	MAX_LIGHTS_SLOT_COUNT
-} from '@/lib/featureProfiles';
-import { DEFAULT_STATE } from '@/lib/constants';
+} from '@/store/featureProfiles';
+import { DEFAULT_STATE } from '@/store/defaultState';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
 type WallpaperGet = Parameters<StateCreator<WallpaperStore>>[1];
@@ -17,7 +17,7 @@ type WallpaperApi = Parameters<StateCreator<WallpaperStore>>[2];
 
 /**
  * Setters for radial spectrum rotation drive, Stage Lights FX, and Camera FX.
- * Data + defaults live in `types/wallpaper.ts` and `lib/constants.ts`; the
+ * Data + defaults live in `types/wallpaper.ts` and `store/defaultState.ts`; the
  * render-side caps live in `features/stageFx/stageFxConfig.ts`.
  */
 export function createStageCameraSlice(

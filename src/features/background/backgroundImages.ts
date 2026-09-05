@@ -1,4 +1,4 @@
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type { BackgroundImageItem, WallpaperState } from '@/types/wallpaper';
 
 export type BackgroundImageLayout = Pick<

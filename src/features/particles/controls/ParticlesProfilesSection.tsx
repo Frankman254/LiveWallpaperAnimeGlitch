@@ -1,4 +1,4 @@
-import { MAX_PARTICLES_SLOT_COUNT } from '@/lib/featureProfiles';
+import { MAX_PARTICLES_SLOT_COUNT } from '@/store/featureProfiles';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { SectionCard } from '@/ui';
 

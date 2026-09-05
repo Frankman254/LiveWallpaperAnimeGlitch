@@ -152,9 +152,9 @@ estado inicial (FACTORY_DEFAULT_STATE)
 ### ¿Y de dónde sale el estado inicial?
 
 Las slices aportan **acciones**, no datos. Los **valores de fábrica** viven en
-`src/lib/constants.ts` (`DEFAULT_STATE`, ~800 líneas de "el logo por defecto
+`src/store/defaultState.ts` (`DEFAULT_STATE`, ~800 líneas de "el logo por defecto
 mide tanto, el espectro arranca en tal modo…"), retocados por un parche
-canónico en `src/lib/factoryDefaults.ts`. Es decir:
+canónico en `src/store/factoryDefaults.ts`. Es decir:
 
 > **Analogía:** `constants.ts` es el **catálogo de fábrica** ("así sale el
 > producto de serie"), y las slices son el personal. El almacén se inaugura
@@ -324,7 +324,7 @@ existentes (míralo en cualquier commit reciente de feature):
 
 1. **Declararlo** en `src/types/wallpaper.ts` dentro de `WallpaperState`
    (con su tipo: número, booleano, o una unión de opciones).
-2. **Darle valor de fábrica** en `DEFAULT_STATE` (`src/lib/constants.ts`).
+2. **Darle valor de fábrica** en `DEFAULT_STATE` (`src/store/defaultState.ts`).
 3. **Crear su acción** (`setMiAjuste`) en la **slice dueña** (la del prefijo)
    y declarar la firma de la acción en `wallpaperStoreTypes.ts`.
 4. **Migración:** añadir su línea `miAjuste: state.miAjuste ??

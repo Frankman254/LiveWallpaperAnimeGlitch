@@ -13,7 +13,7 @@
  * This file stays anyway, for the reason that outlived the cycle: weight.
  * `renderers/`, `geometry/` and `effects/` are ~6.8k LOC of canvas code across
  * 17 modules that only 7 call sites need, while `./index` is imported by 21 —
- * `lib/constants.ts` among them, which in turn is imported by nearly the whole
+ * `store/defaultState.ts` among them, which in turn is imported by nearly the whole
  * app. Folding the two would make every consumer of DEFAULT_STATE load the
  * renderer. A fat barrel is exactly what crashed 18 test suites here before.
  *

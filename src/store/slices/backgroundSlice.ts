@@ -16,14 +16,14 @@ import {
 	extractSpectrumProfileSettings,
 	MAX_LOOKS_SLOT_COUNT,
 	MAX_PROFILE_SLOT_COUNT
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import {
 	buildBackgroundImageCollectionPatch,
 	syncActiveBackgroundImage
 } from '@/store/backgroundStoreUtils';
 import { createBackgroundCollectionActions } from '@/store/slices/backgroundCollectionActions';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	CUSTOM_FILTER_LOOK_ID,
 	extractFilterLookSettingsFromState,

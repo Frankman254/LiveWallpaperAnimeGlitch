@@ -3,8 +3,8 @@ import {
 	buildWallpaperSettingsExport,
 	parseWallpaperSettingsJson
 } from '@/services/projectSettings';
-import { DEFAULT_STATE } from '@/lib/constants';
-import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
+import { DEFAULT_STATE } from '@/store/defaultState';
+import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 import { WORKSPACE_ONLY_KEYS } from '@/lib/workspaceKeys';
 import type { WallpaperState } from '@/types/wallpaper';
 

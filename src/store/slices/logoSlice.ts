@@ -4,8 +4,8 @@ import {
 	buildLogoProfileName,
 	extractLogoProfileSettings,
 	MAX_LOGO_SLOT_COUNT
-} from '@/lib/featureProfiles';
-import { DEFAULT_STATE } from '@/lib/constants';
+} from '@/store/featureProfiles';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];

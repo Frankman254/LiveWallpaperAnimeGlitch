@@ -11,14 +11,14 @@
  * "factory defaults, then the slot's values" merge so a previewed look and a
  * re-applied scene resolve identically.
  */
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	extractCameraFxProfileSettings,
 	extractLightsProfileSettings,
 	extractLooksProfileSettings,
 	extractParticlesProfileSettings,
 	extractRainProfileSettings
-} from '@/lib/featureProfiles';
+} from '@/store/featureProfiles';
 import {
 	applySpectrumTargetSettings,
 	defaultSpectrumTargetSettings

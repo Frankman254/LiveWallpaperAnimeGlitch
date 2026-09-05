@@ -14,7 +14,7 @@ import {
 	resolveNeonCoreStrokeStyle
 } from './neonCorePass';
 import { countPeakSparkCandidates } from './peakSparksPass';
-import { DEFAULT_STATE } from '@/lib/constants';
+import { DEFAULT_STATE } from '@/store/defaultState';
 import type { SpectrumSettings } from '../runtime/spectrumRuntime';
 import { createSpectrumRuntimeState } from '../runtime/spectrumRuntime';
 import { drawEchoTracePasses, updateEchoTraceHistory } from './echoTrace';

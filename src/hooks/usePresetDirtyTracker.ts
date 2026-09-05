@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { doesStateMatchPreset } from '@/lib/presets';
+import { doesStateMatchPreset } from '@/features/presets/presets';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 
 export function usePresetDirtyTracker(): void {

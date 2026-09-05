@@ -13,7 +13,7 @@ import { useTabViewState } from '@/hooks/useTabViewState';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import type { ColorSourceMode } from '@/types/wallpaper';
-import { MAX_SPECTRUM_SLOT_COUNT } from '@/lib/featureProfiles';
+import { MAX_SPECTRUM_SLOT_COUNT } from '@/store/featureProfiles';
 import {
 	Button,
 	Caption,

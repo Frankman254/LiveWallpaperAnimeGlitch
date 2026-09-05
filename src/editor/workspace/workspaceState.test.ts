@@ -12,7 +12,7 @@ import {
 	resetWorkspaceStateCache
 } from './workspaceState';
 import { WORKSPACE_ONLY_KEYS } from '@/lib/workspaceKeys';
-import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
+import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 
 /**
  * The workspace holds where the user was working, not what they made. Its only

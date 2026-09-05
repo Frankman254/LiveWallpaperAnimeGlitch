@@ -6,15 +6,15 @@ import { DEFAULT_SPECTRUM_LIQUID_LAYERS } from '../presets/spectrumLiquidLayers'
 /**
  * Factory defaults for every spectrum key of `WallpaperState`.
  *
- * These used to live inline in `lib/constants.ts`, which forced the domain to
+ * These used to live inline in `store/defaultState.ts`, which forced the domain to
  * import `DEFAULT_STATE` back out of `lib/` to hydrate a profile — a genuine
- * runtime cycle (`spectrumProfileHydrate -> lib/constants -> lib/featureProfiles
+ * runtime cycle (`spectrumProfileHydrate -> store/defaultState -> store/featureProfiles
  * -> spectrumProfileHydrate`) that crashed module initialisation whenever the
- * load order shifted. Owning the values here breaks it: `lib/constants` now
+ * load order shifted. Owning the values here breaks it: `store/defaultState` now
  * spreads this in, and nothing inside the domain reaches back up.
  *
  * `spectrumProfileSlots` / `spectrumSecondProfileSlots` deliberately stay in
- * `lib/constants`: they are built by `lib/featureProfiles`, which itself calls
+ * `store/defaultState`: they are built by `store/featureProfiles`, which itself calls
  * into this domain, so moving them here would just re-open the cycle.
  *
  * The identity helper keeps the exact literal types of the object (so
