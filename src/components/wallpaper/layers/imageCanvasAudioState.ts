@@ -6,7 +6,7 @@ import {
 } from '@/lib/audio/audioChannels';
 import type { AudioEnvelope } from '@/utils/audioEnvelope';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
-import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
+import { syntheticKickValue } from '@/features/calibration';
 
 export type ImageCanvasAudioSelections = {
 	imageChannelSelection: AudioChannelSelectionState;

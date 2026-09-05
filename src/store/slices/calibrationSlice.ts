@@ -9,7 +9,7 @@ import {
 	type CalibrationProfileValues,
 	type CalibrationRangeOverride,
 	type CalibrationRangeOverrides
-} from '@/features/calibration/calibrationConfig';
+} from '@/features/calibration';
 import type { WallpaperState } from '@/types/wallpaper';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 

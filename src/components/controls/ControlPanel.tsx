@@ -82,7 +82,7 @@ import TrackTitleTab from './tabs/main/TrackTitleTab';
 import EditorTab from './tabs/main/EditorTab';
 import { LyricsTab } from '@/features/lyrics/ui';
 import OutputTab from './tabs/main/OutputTab';
-import CalibrationTab from './tabs/CalibrationTab';
+import { CalibrationTab } from '@/features/calibration/ui';
 import {
 	getCompactAdvancedSubEntries,
 	getCompactMainEntries,

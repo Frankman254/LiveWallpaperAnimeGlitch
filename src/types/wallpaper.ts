@@ -1504,16 +1504,16 @@ export type WallpaperState = {
 	 * Keys match field names on WallpaperState; missing keys fall back to
 	 * the defaults declared in `src/features/calibration/calibrationConfig.ts`.
 	 */
-	calibrationRangeOverrides: import('@/features/calibration/calibrationConfig').CalibrationRangeOverrides;
+	calibrationRangeOverrides: import('@/features/calibration').CalibrationRangeOverrides;
 	/** User-saveable slots that snapshot the reactivity calibration values. */
-	calibrationProfileSlots: import('@/features/calibration/calibrationConfig').CalibrationProfileSlot[];
+	calibrationProfileSlots: import('@/features/calibration').CalibrationProfileSlot[];
 	/**
 	 * Per-group "Sintético" toggle for the Calibration tab. When a group is
 	 * `true`, the element it calibrates (e.g. logo, BG zoom) is driven by a
 	 * synthetic 120 BPM test pulse instead of the live audio channel, so it
 	 * can be calibrated in silence. Ephemeral — excluded from persistence.
 	 */
-	calibrationSyntheticGroups: import('@/features/calibration/calibrationConfig').CalibrationSyntheticGroups;
+	calibrationSyntheticGroups: import('@/features/calibration').CalibrationSyntheticGroups;
 
 	// ── Radial spectrum rotation drive (Task 1) ──────────────────────────────
 	/** off=no rotation, fixed=base speed, audio=energy-driven, fixed-audio=both. */

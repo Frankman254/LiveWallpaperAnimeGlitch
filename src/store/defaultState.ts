@@ -12,7 +12,7 @@ import {
 	createDefaultTrackTitleProfileSlots
 } from '@/store/featureProfiles';
 import { IMAGE_BASS_ZOOM_CLASSIC } from '@/features/presets/imageBassZoomProfiles';
-import { createDefaultCalibrationProfileSlots } from '@/features/calibration/calibrationConfig';
+import { createDefaultCalibrationProfileSlots } from '@/features/calibration';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import { DEFAULT_SPECTRUM_STATE } from '@/features/spectrum';
 

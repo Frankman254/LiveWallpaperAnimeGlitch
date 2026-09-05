@@ -46,7 +46,7 @@ import {
 	getFlashEdgeDrive,
 	getFlashEdgeColor
 } from '@/features/stageFx/flashEdgeDrive';
-import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
+import { syntheticKickValue } from '@/features/calibration';
 import { drawSpectrum } from '@/features/spectrum/render';
 import { drawTrackTitleOverlay } from '@/features/audioLayers/render/trackTitleOverlay';
 import type { NowPlayingData } from '@/features/audioLayers/render/nowPlayingWidget';

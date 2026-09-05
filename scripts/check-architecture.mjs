@@ -151,7 +151,7 @@ const BASELINE = [
 	// runtime values (they drive extract/build), so they cannot live in
 	// `types/`, and `WallpaperState` cannot describe a slot without them.
 	'types/wallpaper.ts -> features/lyrics/domain/types.ts',
-	'types/wallpaper.ts -> features/calibration/calibrationConfig.ts',
+	'types/wallpaper.ts -> features/calibration/index.ts',
 	'types/wallpaper.ts -> features/filterLooks/filterLooks.ts',
 	'types/wallpaper.ts -> features/stageFx/stageFxConfig.ts',
 	'types/wallpaper.ts -> store/featureProfiles.ts'

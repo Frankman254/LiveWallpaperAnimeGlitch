@@ -24,8 +24,8 @@ import {
 	type CalibrationParam,
 	type CalibrationRangeOverride,
 	getEffectiveRange
-} from '@/features/calibration/calibrationConfig';
-import { EnvelopeWaveformPreview } from '@/features/calibration/EnvelopeWaveformPreview';
+} from '../index';
+import { EnvelopeWaveformPreview } from '../EnvelopeWaveformPreview';
 import TabSection from '@/editor/TabSection';
 import ProfileSlotsEditor from '@/editor/ProfileSlotsEditor';
 import { useDialog } from '@/editor/DialogProvider';

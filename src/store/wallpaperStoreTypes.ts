@@ -867,15 +867,15 @@ export type WallpaperStore = WallpaperState & {
 
 	// Calibration
 	setCalibrationRangeOverride: (
-		key: keyof import('@/features/calibration/calibrationConfig').CalibrationRangeOverrides &
+		key: keyof import('@/features/calibration').CalibrationRangeOverrides &
 			string,
 		override:
-			| import('@/features/calibration/calibrationConfig').CalibrationRangeOverride
+			| import('@/features/calibration').CalibrationRangeOverride
 			| null
 	) => void;
 	resetCalibrationRangeOverrides: () => void;
 	setCalibrationSyntheticMode: (
-		group: import('@/features/calibration/calibrationConfig').CalibrationGroupId,
+		group: import('@/features/calibration').CalibrationGroupId,
 		enabled: boolean
 	) => void;
 
