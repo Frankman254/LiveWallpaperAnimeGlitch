@@ -3,7 +3,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	buildWallpaperSettingsExport,
 	parseWallpaperSettingsJson
-} from '@/lib/projectSettings';
+} from '@/services/projectSettings';
 import { migrateWallpaperStore } from './wallpaperStoreMigrations';
 import { partializeWallpaperStore } from './wallpaperStorePersistence';
 import { STORE_PERSIST_VERSION } from '@/lib/version';

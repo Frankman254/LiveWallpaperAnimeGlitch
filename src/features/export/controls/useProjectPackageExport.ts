@@ -2,7 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import {
 	applyWallpaperProjectPackage,
 	createWallpaperProjectPackageBlob
-} from '@/lib/wallpaperPersistenceCoordinator';
+} from '@/services/wallpaperPersistenceCoordinator';
 import {
 	DEFAULT_PROJECT_EXPORT_SELECTION,
 	type ProjectExportSectionId,

@@ -93,6 +93,11 @@ apuntan hacia abajo y nunca hacia arriba.
   └───────────────────────┬──────────────────────┘
                           ▼
   ┌──────────────────────────────────────────────┐
+  │ services  services/                          │  ← guardar, cargar,
+  │                                              │    restaurar, sincronizar
+  └───────────────────────┬──────────────────────┘
+                          ▼
+  ┌──────────────────────────────────────────────┐
   │ state     store/                             │  ← el documento de escena
   └───────────────────────┬──────────────────────┘
                           ▼
@@ -126,18 +131,31 @@ impedía mover la UI de cada dominio a su carpeta.
 propósito: así un dominio puede ser dueño de su panel del editor sin tocar
 `components/`.
 
+**Por qué existe `services/`.** Mismo error, otra capa. `lib/` decía ser
+"lógica agnóstica de dominio", pero adentro vivían `projectSettings`,
+`wallpaperPersistenceCoordinator` y todo `sync/`: código cuyo trabajo es
+_leer y escribir el documento de escena_. Una librería pura no llama a
+`useWallpaperStore.getState()`. Esas cinco aristas de deuda no eran descuido,
+eran la zona equivocada — y el arreglo no era esconder el import, era admitir
+que un servicio de aplicación está **por encima** del store, no por debajo.
+
+`services/` orquesta estado y persistencia, y no renderiza nada: por eso tiene
+prohibido `components/`, `pages/`, `ui/` y `context/`. Si algo ahí adentro
+necesita JSX, está en la zona equivocada.
+
 ### Tabla de reglas (esto es lo que verifica el script)
 
-| Zona                | NO puede importar                                                            | Por qué                                                                   |
-| ------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `types/`            | todo lo demás                                                                | Es el vocabulario. Si depende de algo, deja de ser vocabulario.           |
-| `config/`, `utils/` | `features` `components` `store` `context` `runtime` `pages` `hooks` `lib`    | Helpers de hoja. Reusables en aislamiento o no sirven.                    |
-| `ui/`               | `components` `features` `store` `context` `runtime` `pages` `editor`         | Design system. **No debe saber que este producto existe.**                |
-| `editor/`           | `components` `features` `context` `runtime` `pages`                          | Chrome compartido. Ve el store, nunca un dominio ni la app.               |
-| `lib/`              | `components` `context` `runtime` `pages` `hooks` `store` `features` `editor` | Lógica y persistencia agnósticas de dominio.                              |
-| `features/*`        | `components` `pages`                                                         | Un motor que importa su propia UI no se puede reusar ni testear headless. |
-| `store/`            | `components` `context` `runtime` `pages` `hooks` `ui`                        | El estado posee datos, no presentación. **Ya está en cero — mantenelo.**  |
-| `dev/`              | (nadie lo importa salvo `App.tsx`)                                           | Laboratorios, no producto.                                                |
+| Zona                | NO puede importar                                                                       | Por qué                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `types/`            | todo lo demás                                                                           | Es el vocabulario. Si depende de algo, deja de ser vocabulario.           |
+| `config/`, `utils/` | `features` `components` `store` `context` `runtime` `pages` `hooks` `lib`               | Helpers de hoja. Reusables en aislamiento o no sirven.                    |
+| `ui/`               | `components` `features` `store` `context` `runtime` `pages` `editor`                    | Design system. **No debe saber que este producto existe.**                |
+| `editor/`           | `components` `features` `context` `runtime` `pages`                                     | Chrome compartido. Ve el store, nunca un dominio ni la app.               |
+| `lib/`              | `components` `context` `runtime` `pages` `hooks` `store` `features` `editor` `services` | Lógica agnóstica de dominio. **Ya no hace persistencia de proyecto.**     |
+| `services/`         | `components` `pages` `ui` `context` `editor`                                            | Guardan y cargan el proyecto. Orquestan el store; no dibujan nada.        |
+| `features/*`        | `components` `pages`                                                                    | Un motor que importa su propia UI no se puede reusar ni testear headless. |
+| `store/`            | `components` `context` `runtime` `pages` `hooks` `ui`                                   | El estado posee datos, no presentación. **Ya está en cero — mantenelo.**  |
+| `dev/`              | (nadie lo importa salvo `App.tsx`)                                                      | Laboratorios, no producto.                                                |
 
 **Ciclos en tiempo de ejecución: prohibidos.** Los ciclos sólo de tipos
 (`import type`) los borra el compilador y no rompen nada, pero igual son señal

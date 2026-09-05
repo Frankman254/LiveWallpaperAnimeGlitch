@@ -48,7 +48,8 @@ const FORBIDDEN = {
 		'lib',
 		'ui',
 		'config',
-		'utils'
+		'utils',
+		'services'
 	],
 	// Leaf helpers. Must stay reusable in isolation.
 	config: [
@@ -61,7 +62,8 @@ const FORBIDDEN = {
 		'pages',
 		'hooks',
 		'lib',
-		'ui'
+		'ui',
+		'services'
 	],
 	utils: [
 		'editor',
@@ -73,7 +75,8 @@ const FORBIDDEN = {
 		'pages',
 		'hooks',
 		'lib',
-		'ui'
+		'ui',
+		'services'
 	],
 	// Design system. Must not know the product exists.
 	ui: [
@@ -83,12 +86,20 @@ const FORBIDDEN = {
 		'context',
 		'runtime',
 		'pages',
-		'editor'
+		'editor',
+		'services'
 	],
 	// Shared editor chrome: store-connected, domain-agnostic. Sits above `ui/`
 	// and below every domain, so `features/*` may import it (the one upward
 	// edge the contract allows) but it may never import a domain back.
-	editor: ['components', 'features', 'context', 'runtime', 'pages'],
+	editor: [
+		'components',
+		'features',
+		'context',
+		'runtime',
+		'pages',
+		'services'
+	],
 	// Domain-neutral logic + persistence.
 	lib: [
 		'components',
@@ -97,12 +108,17 @@ const FORBIDDEN = {
 		'pages',
 		'hooks',
 		'store',
-		'features'
+		'features',
+		'services'
 	],
 	// Domain engines. May be driven by UI, never reach up into it.
 	// `editor` is deliberately absent: a domain owns its own editor panel and
 	// builds it out of shared chrome.
 	features: ['components', 'pages'],
+	// Application services: save/load a project, restore its assets, sync it.
+	// They orchestrate the store, so they sit ABOVE it — but they render
+	// nothing, which is exactly what kept them from living in `lib/`.
+	services: ['components', 'pages', 'ui', 'editor', 'context'],
 	// Global state. Owns data, not presentation.
 	store: [
 		'components',
@@ -138,11 +154,7 @@ const BASELINE = [
 	// se movieron a `editor/`, que es la zona donde sí pueden hablar con el store.
 
 	// lib/ acting as an application service rather than a pure library.
-	'lib/projectSettings.ts -> hooks/useRestoreWallpaperAssets.ts',
 	'lib/i18n/index.tsx -> store/wallpaperStore.ts',
-	'lib/projectSettings.ts -> store/wallpaperStore.ts',
-	'lib/projectSettings.ts -> store/wallpaperStoreMigrations.ts',
-	'lib/wallpaperPersistenceCoordinator.ts -> store/wallpaperStore.ts',
 
 	// lib/ pulling domain defaults out of features/. The three background
 	// entries that used to head this list are gone: backgroundAutoFit and
@@ -160,7 +172,6 @@ const BASELINE = [
 	// remaining fix is moving DEFAULT_STATE itself out of `lib/`.
 	'lib/constants.ts -> features/spectrum/index.ts',
 	'lib/featureProfiles.ts -> features/spectrum/index.ts',
-	'lib/wallpaperPersistenceCoordinator.ts -> features/export/index.ts',
 
 	// editor/ → domain: MotionSharedControls carries `FxBandThresholdControls`,
 	// which is stageFx UI, not generic chrome. Proof that this module is

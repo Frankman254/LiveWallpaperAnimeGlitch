@@ -3,7 +3,7 @@
  *
  * Planning, selection and file naming: everything the app needs to *decide*
  * what an export contains, with no React and no canvas. `store/` and
- * `lib/wallpaperPersistenceCoordinator` import this to merge and filter a
+ * `services/wallpaperPersistenceCoordinator` import this to merge and filter a
  * project on import/export; the editor panel imports it to price a plan
  * before anything is drawn.
  *

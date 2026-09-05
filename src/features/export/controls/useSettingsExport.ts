@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
-import { applyWallpaperSettingsJson } from '@/lib/projectSettings';
-import { createWallpaperSettingsBlob } from '@/lib/wallpaperPersistenceCoordinator';
+import { applyWallpaperSettingsJson } from '@/services/projectSettings';
+import { createWallpaperSettingsBlob } from '@/services/wallpaperPersistenceCoordinator';
 import {
 	buildDescriptiveExportFileName,
 	downloadBlobFallback,

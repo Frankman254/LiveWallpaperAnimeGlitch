@@ -1,4 +1,4 @@
-import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
+import { restoreWallpaperAssets } from '@/services/restoreWallpaperAssets';
 import { createBackgroundImageItem } from '@/lib/backgroundImages';
 import { DEFAULT_STATE } from '@/lib/constants';
 import {
@@ -13,7 +13,7 @@ import {
 	STORE_PERSIST_VERSION
 } from '@/lib/version';
 import { migrateWallpaperStore } from '@/store/wallpaperStoreMigrations';
-import { isWorkspaceOnlyKey } from './workspaceKeys';
+import { isWorkspaceOnlyKey } from '@/lib/workspaceKeys';
 import type {
 	BackgroundImageItem,
 	OverlayImageItem,

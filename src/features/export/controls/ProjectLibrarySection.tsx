@@ -7,12 +7,12 @@ import {
 	loadProject,
 	saveCurrentProject,
 	type ProjectSyncProgress
-} from '@/lib/sync/projectSyncCoordinator';
+} from '@/services/sync/projectSyncCoordinator';
 import {
 	SyncConflictError,
 	type ProjectSummary
-} from '@/lib/sync/SyncRepository';
-import { localSyncRepository } from '@/lib/sync/localSyncRepository';
+} from '@/services/sync/SyncRepository';
+import { localSyncRepository } from '@/services/sync/localSyncRepository';
 import { Button, Caption, SectionCard, TextInput, UI_COLORS } from '@/ui';
 import { useDialog } from '@/editor/DialogProvider';
 

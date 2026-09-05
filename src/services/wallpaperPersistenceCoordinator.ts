@@ -3,7 +3,7 @@ import {
 	buildWallpaperSettingsExport,
 	createWallpaperSettingsJson,
 	parseWallpaperSettingsJson
-} from '@/lib/projectSettings';
+} from '@/services/projectSettings';
 import {
 	clearAllImages,
 	getImageAssetByteLength,

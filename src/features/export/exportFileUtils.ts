@@ -1,4 +1,4 @@
-import type { ProjectPackageProgress } from '@/lib/wallpaperPersistenceCoordinator';
+import type { ProjectPackageProgress } from '@/services/wallpaperPersistenceCoordinator';
 import type { ProjectExportSelection } from '@/features/export/projectExportSelection';
 
 export type SavePickerAcceptMap = Record<string, string[]>;

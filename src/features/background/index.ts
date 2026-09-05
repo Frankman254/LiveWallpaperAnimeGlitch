@@ -31,7 +31,7 @@
  *     background, but 18 and 10 modules respectively sample them as a *colour
  *     source*, from stageFx to lyrics. Shared infrastructure, not domain state.
  *   - `lib/backgroundImages` — the asset store; it belongs here, but four of its
- *     consumers sit in `lib/projectSettings`, which would gain a fresh debt edge.
+ *     consumers sit in `services/projectSettings`, which would gain a fresh debt edge.
  *     Blocked until that module moves. See ARCHITECTURE.md §6.3.
  *   - `store/slices/backgroundSlice.ts` — stays in `store/` by design (§2).
  */

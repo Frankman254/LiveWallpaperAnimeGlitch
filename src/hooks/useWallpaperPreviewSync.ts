@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { restoreWallpaperAssets } from '@/hooks/useRestoreWallpaperAssets';
+import { restoreWallpaperAssets } from '@/services/restoreWallpaperAssets';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';

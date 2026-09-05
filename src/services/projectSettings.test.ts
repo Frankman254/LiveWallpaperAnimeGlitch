@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildWallpaperSettingsExport,
 	parseWallpaperSettingsJson
-} from './projectSettings';
+} from '@/services/projectSettings';
 import { DEFAULT_STATE } from '@/lib/constants';
 import { FACTORY_DEFAULT_STATE } from '@/lib/factoryDefaults';
-import { WORKSPACE_ONLY_KEYS } from './workspaceKeys';
+import { WORKSPACE_ONLY_KEYS } from '@/lib/workspaceKeys';
 import type { WallpaperState } from '@/types/wallpaper';
 
 describe('project settings export normalization', () => {

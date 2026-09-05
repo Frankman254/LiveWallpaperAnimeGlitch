@@ -2,7 +2,7 @@ import { loadImageBlob, saveImageAsset } from '@/lib/db/imageDb';
 import {
 	applyWallpaperSettingsJson,
 	buildWallpaperSettingsExport
-} from '@/lib/projectSettings';
+} from '@/services/projectSettings';
 import { SETTINGS_FORMAT, SETTINGS_SCHEMA_VERSION } from '@/lib/version';
 import type { WallpaperState } from '@/types/wallpaper';
 import type {
