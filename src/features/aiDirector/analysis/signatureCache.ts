@@ -11,9 +11,25 @@
  */
 import { IMAGE_SIGNATURE_VERSION, type ImageSignature } from './imageSignature';
 
-const DB_NAME = 'lwag-ai-director';
+const DB_NAME = 'vibrix-ai-director';
 const DB_VERSION = 1;
 const STORE = 'signatures';
+
+/** Pre-rename name. Everything in here is recomputable from the images, so the
+ *  old database is dropped rather than copied — the alternative is leaving a
+ *  dead database on every existing install forever. */
+const LEGACY_DB_NAME = 'lwag-ai-director';
+let droppedLegacyDb = false;
+
+function dropLegacyDb(): void {
+	if (droppedLegacyDb || typeof indexedDB === 'undefined') return;
+	droppedLegacyDb = true;
+	try {
+		indexedDB.deleteDatabase(LEGACY_DB_NAME);
+	} catch {
+		// Blocked or unavailable storage: a stale cache database costs nothing.
+	}
+}
 
 type CacheRow = {
 	assetId: string;
@@ -28,6 +44,7 @@ function openDb(): Promise<IDBDatabase | null> {
 			resolve(null);
 			return;
 		}
+		dropLegacyDb();
 		let request: IDBOpenDBRequest;
 		try {
 			request = indexedDB.open(DB_NAME, DB_VERSION);

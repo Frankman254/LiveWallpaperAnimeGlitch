@@ -66,7 +66,7 @@ export default function AudioTransportSection({
 								onChange={event =>
 									seek(Number(event.target.value))
 								}
-								className="h-1 w-full cursor-pointer accent-[var(--lwag-accent)]"
+								className="h-1 w-full cursor-pointer accent-[var(--vibrix-accent)]"
 							/>
 							<div
 								className="flex justify-between text-[11px] tabular-nums"

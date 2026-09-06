@@ -173,7 +173,7 @@ ahogaría. Por eso es una función-que-te-da-la-foto y no un estado de React.
 Caso real: tienes el **editor en una pestaña y el preview en otra**. ¿Quién
 captura el audio? Solo una. La que captura **transmite** su snapshot ~30
 veces por segundo por un canal de difusión del navegador
-(`BroadcastChannel` llamado `lwag-audio-sync`), y las demás pestañas lo
+(`BroadcastChannel` llamado `vibrix-audio-sync`), y las demás pestañas lo
 reciben como **réplica remota**. Detalles finos: la réplica caduca a los
 250 ms sin noticias (para no quedarse bailando con música fantasma), y el
 `timeDomain` **no se transmite** (pesa mucho y solo lo usa el oscilloscope —
@@ -279,7 +279,7 @@ de responder a ciegas:
 - **`AudioSnapshot`:** la foto del sonido por frame: bins + canales +
   amplitud + pico.
 - **`BroadcastChannel`:** el walkie-talkie entre pestañas del navegador
-  (canal `lwag-audio-sync`, ~30 Hz).
+  (canal `vibrix-audio-sync`, ~30 Hz).
 - **Crossfade:** fundido cruzado entre dos pistas (dos "platos" a la vez).
 - **Envelope (envolvente):** el amortiguador attack/release/peak/punch que
   convierte números crudos en movimiento con cuerpo.

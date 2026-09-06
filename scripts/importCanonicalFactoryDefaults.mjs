@@ -14,13 +14,17 @@ const targetPath = resolve(projectRoot, 'src/lib/canonicalFactoryPresets.ts');
 const targetSource = readFileSync(targetPath, 'utf8');
 const settingsEnvelope = JSON.parse(readFileSync(resolve(sourcePath), 'utf8'));
 
+// Both tags: `lwag-settings` is what exports carried before the Vibrix rename,
+// and the canonical defaults on disk may still be one of those files.
+const ACCEPTED_FORMATS = ['vibrix-settings', 'lwag-settings'];
+
 if (
-	settingsEnvelope.format !== 'lwag-settings' ||
+	!ACCEPTED_FORMATS.includes(settingsEnvelope.format) ||
 	typeof settingsEnvelope.state !== 'object' ||
 	settingsEnvelope.state === null
 ) {
 	throw new Error(
-		'Expected an lwag-settings JSON export with a state object.'
+		`Expected a JSON export (${ACCEPTED_FORMATS.join(' or ')}) with a state object.`
 	);
 }
 

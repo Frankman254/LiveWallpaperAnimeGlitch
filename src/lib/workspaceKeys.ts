@@ -5,7 +5,7 @@ import type { WallpaperState } from '@/types/wallpaper';
  *
  * These keys live in the same store as the project (moving them out would be a
  * large refactor of `wallpaperStore` for little gain), but they must never
- * travel inside a `.lwag`. Before this list, all 51 were exported: opening
+ * travel inside a `.vibrix`. Before this list, all 51 were exported: opening
  * someone else's project silently replaced your editor theme, UI scale,
  * sidebar state, HUD size and position, and every diagnostic toggle.
  *

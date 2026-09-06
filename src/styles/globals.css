@@ -15,8 +15,8 @@ body,
 	background: #000;
 }
 
-html.lwag-output-hide-cursor,
-html.lwag-output-hide-cursor * {
+html.vibrix-output-hide-cursor,
+html.vibrix-output-hide-cursor * {
 	cursor: none !important;
 }
 

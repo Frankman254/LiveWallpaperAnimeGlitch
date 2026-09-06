@@ -158,7 +158,7 @@ High-risk/high-reward:
 
 ## 6. Preset / Project Sharing Model
 
-Current `.lwag` package is a good start, but MVP sharing needs explicit bundle
+Current `.vibrix` package is a good start, but MVP sharing needs explicit bundle
 structure and dependencies.
 
 Recommended project bundle v2:

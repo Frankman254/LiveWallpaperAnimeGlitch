@@ -40,7 +40,7 @@ import {
 // ── Persistent tab view ────────────────────────────────────────────────────
 type ParticleView = 'look' | 'motion' | 'audio';
 
-const PARTICLE_VIEW_KEY = 'lwag-particle-view';
+const PARTICLE_VIEW_KEY = 'vibrix-particle-view';
 
 function readView(): ParticleView {
 	if (typeof window === 'undefined') return 'look';

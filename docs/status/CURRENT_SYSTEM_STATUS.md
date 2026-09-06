@@ -127,7 +127,7 @@ Does **not** include an internal video encoder — see Recording subsystem.
   live above the selector labelled _Global / both_
 - **Shared active target** (`activeSpectrumTarget`): editor + HUD use one
   selector, kept in sync; UI-only, not persisted in the project (localStorage
-  pref `lwag-spectrum-target`)
+  pref `vibrix-spectrum-target`)
 - HUD has **one** target-bound spectrum bank (`[S1|S2]` + toggles incl.
   pixelate) — no separate "clone" bank; `clone` naming retired from live UI
 - Profile slots and Randomize / Reset are **per-target**
@@ -158,7 +158,7 @@ See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
 **Status: Stable**
 
 - Scenes, setlists, profile slots (looks, spectrum, logo, etc.)
-- Project package `.lwag` export/import (`PROJECT_SCHEMA_VERSION = 1`)
+- Project package `.vibrix` export/import (reads `.lwag` too) (`PROJECT_SCHEMA_VERSION = 1`)
 - Settings JSON (`SETTINGS_SCHEMA_VERSION = 1`)
 - Feature profiles round-trip spectrum pixel settings (v96 keys)
 

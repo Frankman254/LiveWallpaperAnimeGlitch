@@ -6,10 +6,10 @@ Tras analizar la arquitectura actual de **LiveWallpaperAnimeGlitch**, estas son 
 
 ## 👩‍💻 Para el Usuario Final (Mejoras de Producto y UX)
 
-### 1. Sistema de Exportación/Importación "Todo en Uno" (.zip / .lwag)
+### 1. Sistema de Exportación/Importación "Todo en Uno" (.zip / .vibrix)
 
 - **El Problema Actual**: `projectSettings.ts` exporta bien la configuración (JSON), pero las imágenes binarias, logos y overlays viven aislados en `IndexedDB`.
-- **La Mejora**: Crear un empaquetador que tome el JSON del `store` + los Blobs de `IndexedDB` y los comprima usando algo como `JSZip`. De esta forma, los usuarios podrían compartir sus creaciones completas (animación + música + imágenes personalizadas) como un solo archivo `.lwag` en Reddit o Discord.
+- **La Mejora**: Crear un empaquetador que tome el JSON del `store` + los Blobs de `IndexedDB` y los comprima usando algo como `JSZip`. De esta forma, los usuarios podrían compartir sus creaciones completas (animación + música + imágenes personalizadas) como un solo archivo `.vibrix` en Reddit o Discord.
 
 ### 2. Historial de Deshacer/Rehacer (Undo / Redo)
 

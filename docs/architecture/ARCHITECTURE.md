@@ -60,7 +60,7 @@ que ya tiene el proyecto; protegela.
 **4 · Persistencia**
 
 ```
-CONFIGURACIÓN → IndexedDB (Zustand persist, versionado, db `lwag-store`)
+CONFIGURACIÓN → IndexedDB (Zustand persist, versionado, db `vibrix-store`)
 ASSETS        → IndexedDB (imágenes, audio, binarios)
 
 persist → cerrar → abrir → migrate → rehydrate → restore assets → render

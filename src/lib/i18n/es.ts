@@ -841,7 +841,7 @@ export const es: Record<TranslationKey, string> = {
 	hint_recording_mode:
 		'Misma salida limpia con ajustes de sesión orientados a grabación. Usa captura de ventana OBS o la grabación legacy abajo.',
 	section_window_tools: 'Modos de Ventana',
-	section_project_package: 'Paquete de Proyecto (.lwag)',
+	section_project_package: 'Paquete de Proyecto (.vibrix)',
 	section_project_library: 'Biblioteca local de proyectos',
 	local_project_library_title: 'Proyectos guardados',
 	local_project_library_subtitle: 'Snapshots locales rápidos con assets',
@@ -916,7 +916,7 @@ export const es: Record<TranslationKey, string> = {
 	offline_btn_test_analysis: 'Probar análisis de audio offline',
 	// Selección del paquete de proyecto
 	project_pkg_selective_caption:
-		'La exportación selectiva omite los módulos deseleccionados y sus blobs de assets correspondientes del paquete `.lwag`.',
+		'La exportación selectiva omite los módulos deseleccionados y sus blobs de assets correspondientes del paquete `.vibrix`.',
 	project_pkg_preset_full: 'Proyecto completo',
 	project_pkg_preset_no_images: 'Sin imágenes',
 	project_pkg_preset_spectrum_only: 'Solo espectro',
@@ -955,7 +955,7 @@ export const es: Record<TranslationKey, string> = {
 	hint_settings_assets:
 		'El JSON de ajustes guarda solo configuración. Usa el paquete de proyecto cuando necesites incluir imágenes, logo, overlays y audio.',
 	hint_project_package:
-		'Exporta la escena actual junto con fondos, overlays, logo, fondo global y el audio subido en un solo archivo portable .lwag.',
+		'Exporta la escena actual junto con fondos, overlays, logo, fondo global y el audio subido en un solo archivo portable .vibrix.',
 	hint_project_package_audio:
 		'Si el proyecto tiene un MP3 cargado, también se incrusta y se restaura al importar el paquete.',
 	dialog_import_project_title: '¿Reemplazar el proyecto actual?',

@@ -425,7 +425,7 @@ Ademas concentra:
 ### Config
 
 - `wallpaperStore.ts` persistiendo en `localStorage`
-- key: `lwag-state`
+- key: `vibrix-state`
 
 ### Assets binarios
 

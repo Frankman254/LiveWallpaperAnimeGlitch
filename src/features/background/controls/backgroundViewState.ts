@@ -1,6 +1,6 @@
 export type BgView = 'pool' | 'active' | 'audio' | 'global';
 
-const MODERN_BG_VIEW_STORAGE_KEY = 'lwag-modern-bg-view';
+const MODERN_BG_VIEW_STORAGE_KEY = 'vibrix-bg-view';
 
 function isBgView(value: unknown): value is BgView {
 	return (

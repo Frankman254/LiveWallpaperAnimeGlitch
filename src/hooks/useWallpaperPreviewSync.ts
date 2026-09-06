@@ -5,7 +5,7 @@ import { partializeWallpaperStore } from '@/store/wallpaperStorePersistence';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { isMiniPlayerWindowOpen } from '@/hooks/useWindowPresentationControls';
 
-const PREVIEW_SYNC_CHANNEL = 'lwag-preview-sync';
+const PREVIEW_SYNC_CHANNEL = 'vibrix-preview-sync';
 const PREVIEW_SYNC_REQUEST = 'request-snapshot';
 const PREVIEW_SYNC_STATE = 'state-snapshot';
 const PREVIEW_SYNC_PRESENCE_TTL_MS = 10000;
@@ -200,7 +200,7 @@ export function useReceiveWallpaperChanges(): void {
 		};
 
 		const handleStorage = (event: StorageEvent) => {
-			if (event.key === 'lwag-state') {
+			if (event.key === 'vibrix-state') {
 				void runSync();
 			}
 		};

@@ -15,6 +15,33 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### El proyecto pasa a llamarse Vibrix
+
+Renombre completo de identificadores, no sólo del título. Lo que importa es que
+nadie pierda nada en el camino, así que **cada cosa que el usuario ya tiene
+guardada se sigue leyendo**:
+
+- **Estado persistido.** La base pasa a `vibrix-store` y la clave a
+  `vibrix-state`. En la primera lectura, si no hay nada bajo el nombre nuevo, se
+  adopta lo que haya en `lwag-store` / `lwag-state` (IndexedDB o localStorage).
+  La copia vieja **no se borra**: es la vuelta atrás si hace falta un build
+  anterior al renombre.
+- **Archivos de proyecto.** Las exportaciones nuevas se escriben como `.vibrix`
+  con `format: 'vibrix-project'` / `'vibrix-settings'`. Los `.lwag` ya
+  exportados se importan igual, para siempre — el selector de archivos acepta
+  las dos extensiones y el parser acepta las cuatro etiquetas.
+- **Canales y preferencias.** `BroadcastChannel` (`vibrix-audio-sync`,
+  `vibrix-preview-sync`), eventos de salida, el token CSS `--vibrix-accent` y el
+  prefijo de log `[vibrix]`. Las preferencias de vista del editor se renombran
+  sin migración a propósito: perder qué acordeón estaba abierto cuesta un clic,
+  y `spectrum-target` sí mantiene su cadena de fallbacks.
+- **Caché del AI Director.** `vibrix-ai-director`; la base vieja se borra en el
+  primer uso porque su contenido se recalcula desde las imágenes.
+
+Sin tocar todavía: `lwag-images`, `lwag-sync` y `lwag-folders` (guardan los
+blobs reales — imágenes, proyectos y handles de carpetas), y el repositorio de
+GitHub.
+
 ### Lyrics: el bundle de Lyrixa como contrato externo de verdad
 
 Lyrixa es la herramienta de autoría y este proyecto el renderer. El parser ya

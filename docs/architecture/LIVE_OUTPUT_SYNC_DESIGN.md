@@ -6,13 +6,13 @@
 
 The legacy preview path (`#/preview`, Document PiP, popup window) used:
 
-| Mechanism                               | Location                           | Issue                                                  |
-| --------------------------------------- | ---------------------------------- | ------------------------------------------------------ |
-| `BroadcastChannel('lwag-preview-sync')` | `useWallpaperPreviewSync.ts`       | Partial state snapshots, not full runtime              |
-| `partializeWallpaperStore`              | `wallpaperStorePersistence.ts`     | Strips blob URLs; receiver must rehydrate assets       |
-| Polling / presence TTL                  | Preview sync                       | 3s ping, 10s TTL — stale window detection              |
-| Separate window                         | `useWindowPresentationControls.ts` | **Duplicated React tree**, separate audio context risk |
-| iframe to `#/preview?mini=1`            | PiP/popup                          | Third isolation boundary                               |
+| Mechanism                                 | Location                           | Issue                                                  |
+| ----------------------------------------- | ---------------------------------- | ------------------------------------------------------ |
+| `BroadcastChannel('vibrix-preview-sync')` | `useWallpaperPreviewSync.ts`       | Partial state snapshots, not full runtime              |
+| `partializeWallpaperStore`                | `wallpaperStorePersistence.ts`     | Strips blob URLs; receiver must rehydrate assets       |
+| Polling / presence TTL                    | Preview sync                       | 3s ping, 10s TTL — stale window detection              |
+| Separate window                           | `useWindowPresentationControls.ts` | **Duplicated React tree**, separate audio context risk |
+| iframe to `#/preview?mini=1`              | PiP/popup                          | Third isolation boundary                               |
 
 ### Root causes of sync drift
 

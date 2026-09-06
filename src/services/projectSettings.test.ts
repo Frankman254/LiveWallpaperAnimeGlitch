@@ -6,6 +6,7 @@ import {
 import { DEFAULT_STATE } from '@/store/defaultState';
 import { FACTORY_DEFAULT_STATE } from '@/store/factoryDefaults';
 import { WORKSPACE_ONLY_KEYS } from '@/lib/workspaceKeys';
+import { SETTINGS_FORMAT } from '@/lib/version';
 import type { WallpaperState } from '@/types/wallpaper';
 
 describe('project settings export normalization', () => {
@@ -170,5 +171,38 @@ describe('workspace state never travels inside a project', () => {
 		expect(imported.spectrumRadialSharpness).toBe(0.55);
 		expect(imported.logoBaseSize).toBe(240);
 		expect(imported.defaultSceneSlotId).toBe('scene-x');
+	});
+});
+
+describe('settings file format compatibility', () => {
+	const envelope = (format: string) =>
+		JSON.stringify({
+			format,
+			version: 1,
+			state: { ...DEFAULT_STATE, spectrumBarCount: 96 }
+		});
+
+	it('reads the current format tag', () => {
+		const parsed = parseWallpaperSettingsJson(
+			envelope(SETTINGS_FORMAT)
+		) as unknown as Record<string, unknown>;
+		expect(parsed.spectrumBarCount).toBe(96);
+	});
+
+	it('still reads files exported before the Vibrix rename', () => {
+		// Anything a user exported as `.lwag` has to keep opening; refusing it
+		// would strand their saved projects on a name change.
+		for (const legacy of ['lwag-settings', 'lwag-project']) {
+			const parsed = parseWallpaperSettingsJson(
+				envelope(legacy)
+			) as unknown as Record<string, unknown>;
+			expect(parsed.spectrumBarCount).toBe(96);
+		}
+	});
+
+	it('rejects a format tag from another app', () => {
+		expect(() =>
+			parseWallpaperSettingsJson(envelope('someone-else'))
+		).toThrow('invalid-settings-file');
 	});
 });

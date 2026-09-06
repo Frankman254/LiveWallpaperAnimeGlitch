@@ -171,7 +171,7 @@ Zustand (un "middleware" es un complemento que envuelve al store y le añade
 una habilidad; aquí, la de guardarse solo).
 
 Cada vez que cambias algo, `persist` escribe el estado al cajón de texto del
-navegador (**localStorage**) bajo la etiqueta **`lwag-state`**, junto con un
+navegador (**localStorage**) bajo la etiqueta **`vibrix-state`**, junto con un
 número de versión (**`STORE_PERSIST_VERSION = 108`**, definido en
 `src/lib/version.ts`). Al volver a abrir la app, lo lee y **rehidrata** el
 almacén.
@@ -370,7 +370,7 @@ cajón. Es el error clásico.
 > El estado es **un archivador plano de cientos de cajones con prefijo**
 > (ficha técnica en `types/wallpaper.ts`, valores de fábrica en
 > `constants.ts`); lo modifican **12 cuadrillas de acciones** (slices); se
-> guarda solo en localStorage como `lwag-state` v85 **menos lo efímero y las
+> guarda solo en localStorage como `vibrix-state` v85 **menos lo efímero y las
 > blob URLs** (partialize); al arrancar, **un restaurador universal** lo
 > actualiza (migraciones) y **el encargado del trastero** (imageDb +
 > useRestoreWallpaperAssets) reimprime los tickets de tus imágenes.

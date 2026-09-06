@@ -835,7 +835,7 @@ export const en = {
 	label_import_settings: 'Import Settings JSON',
 	label_export_project: 'Export Project',
 	label_import_project: 'Import Project',
-	section_project_package: 'Project Package (.lwag)',
+	section_project_package: 'Project Package (.vibrix)',
 	section_project_library: 'Local Project Library',
 	local_project_library_title: 'Saved projects',
 	local_project_library_subtitle: 'Fast local snapshots with assets',
@@ -910,7 +910,7 @@ export const en = {
 	offline_btn_test_analysis: 'Test Offline Audio Analysis',
 	// Project package selection
 	project_pkg_selective_caption:
-		'Selective export omits deselected modules and their matching asset blobs from the `.lwag` package.',
+		'Selective export omits deselected modules and their matching asset blobs from the `.vibrix` package.',
 	project_pkg_preset_full: 'Full Project',
 	project_pkg_preset_no_images: 'No Images',
 	project_pkg_preset_spectrum_only: 'Spectrum Only',
@@ -945,7 +945,7 @@ export const en = {
 	hint_settings_assets:
 		'Settings JSON saves config only. Use the project package when you need bundled images, logo, overlays, and audio.',
 	hint_project_package:
-		'Exports the current scene plus bundled backgrounds, overlays, logo, global background, and uploaded audio into one portable .lwag file.',
+		'Exports the current scene plus bundled backgrounds, overlays, logo, global background, and uploaded audio into one portable .vibrix file.',
 	hint_project_package_audio:
 		'If an MP3 is loaded in the project, it is bundled too and restored on import as part of the scene package.',
 	dialog_import_project_title: 'Replace Current Project?',

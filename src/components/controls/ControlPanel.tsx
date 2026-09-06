@@ -116,7 +116,7 @@ type EditorScrollPosition = {
 
 type EditorScrollMap = Record<string, EditorScrollPosition>;
 
-const MODERN_EDITOR_SCROLL_STORAGE_KEY = 'lwag-modern-editor-scroll-map';
+const MODERN_EDITOR_SCROLL_STORAGE_KEY = 'vibrix-editor-scroll-map';
 
 function readEditorScrollMap(): EditorScrollMap {
 	if (typeof window === 'undefined') return {};
@@ -228,7 +228,7 @@ export default function ControlPanel({
 }: ControlPanelProps) {
 	// Restored from the workspace, not the project: reopening the editor should
 	// land where the user left off, and that preference must not travel inside
-	// a `.lwag`. Unknown ids fall back rather than restoring a dead tab.
+	// a `.vibrix`. Unknown ids fall back rather than restoring a dead tab.
 	const [tab, setTab] = useState<MainTabId>(() =>
 		restoreMainTab(readWorkspaceState())
 	);
@@ -853,7 +853,7 @@ export default function ControlPanel({
 											height: 22,
 											borderRadius:
 												'var(--editor-radius-md)',
-											background: 'var(--lwag-accent)',
+											background: 'var(--vibrix-accent)',
 											color: 'var(--editor-active-fg)'
 										}}
 									>

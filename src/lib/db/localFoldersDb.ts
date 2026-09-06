@@ -135,7 +135,7 @@ export async function getVirtualFileBlob(
 		return file;
 	} catch (error) {
 		console.warn(
-			`[lwag] Missing virtual file: ${fileName} in ${folderId}`,
+			`[vibrix] Missing virtual file: ${fileName} in ${folderId}`,
 			error
 		);
 		return null;

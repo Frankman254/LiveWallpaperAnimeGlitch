@@ -21,7 +21,8 @@ selector read and write it, so they always stay in sync — changing the target 
 one surface changes it in the other. It is **UI selection only** (it never alters
 visual settings) and is **excluded from project persistence** (like
 `controlPanelActiveTab`); it persists as a localStorage UI preference under
-`lwag-spectrum-target`, falling back to the legacy `lwag-modern-spectrum-target`.
+`vibrix-spectrum-target`, falling back to the pre-rename `lwag-spectrum-target`
+and then to the older `lwag-modern-spectrum-target`.
 
 The HUD exposes **one** target-bound spectrum bank (`buildSpectrumActions`):
 the `[S1 | S2]` selector plus Visible / Mirror / Peak / Follow logo / Fit logo /

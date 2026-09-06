@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export type RuntimeUiMode = 'edit' | 'presentation' | 'recording';
 
-const SESSION_KEY = 'lwag-runtime-ui-mode';
+const SESSION_KEY = 'vibrix-runtime-ui-mode';
 
 function readSessionMode(): RuntimeUiMode | null {
 	if (typeof sessionStorage === 'undefined') return null;

@@ -154,6 +154,9 @@ export default function PerformanceTab() {
 
 	async function handleClearStorage() {
 		if (!(await confirmClearStorage(confirm, t))) return;
+		// Both names: the pre-rename key is still readable as a fallback, so
+		// leaving it behind would let the old state come back on the next load.
+		localStorage.removeItem('vibrix-state');
 		localStorage.removeItem('lwag-state');
 		useWallpaperStore.setState({ ...DEFAULT_STATE });
 	}

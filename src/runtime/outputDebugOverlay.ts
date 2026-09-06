@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-export const OUTPUT_FPS_DEBUG_STORAGE_KEY = 'lwag-output-debug-fps';
-export const OUTPUT_FPS_DEBUG_EVENT = 'lwag-output-debug-fps-change';
+export const OUTPUT_FPS_DEBUG_STORAGE_KEY = 'vibrix-output-debug-fps';
+export const OUTPUT_FPS_DEBUG_EVENT = 'vibrix-output-debug-fps-change';
 
 /**
  * Pure: is the output FPS overlay requested via URL? Supports both a top-level

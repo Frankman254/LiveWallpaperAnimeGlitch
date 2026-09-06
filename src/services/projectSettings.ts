@@ -8,6 +8,9 @@ import {
 } from '@/store/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
+	LEGACY_PROJECT_FORMATS,
+	LEGACY_SETTINGS_FORMATS,
+	PROJECT_FORMAT,
 	SETTINGS_FORMAT,
 	SETTINGS_SCHEMA_VERSION,
 	STORE_PERSIST_VERSION
@@ -515,22 +518,34 @@ export function createWallpaperSettingsJson(): string {
 	return JSON.stringify(buildWallpaperSettingsExport(), null, 2);
 }
 
+/** Every format tag an import may carry: the current pair plus the pre-rename
+ *  tags. A project envelope's tag is accepted here too — that has always been
+ *  the case, and the `state` guard below is what actually decides the shape. */
+const READABLE_SETTINGS_FORMATS: readonly string[] = [
+	SETTINGS_FORMAT,
+	PROJECT_FORMAT,
+	...LEGACY_SETTINGS_FORMATS,
+	...LEGACY_PROJECT_FORMATS
+];
+
+function isReadableSettingsFormat(format: unknown): boolean {
+	return (
+		typeof format === 'string' && READABLE_SETTINGS_FORMATS.includes(format)
+	);
+}
+
 export function parseWallpaperSettingsJson(raw: string): WallpaperState {
 	const parsed = JSON.parse(raw) as unknown;
 	if (!isRecord(parsed)) {
 		throw new Error('invalid-settings-file');
 	}
 
-	if (
-		'format' in parsed &&
-		parsed.format !== SETTINGS_FORMAT &&
-		parsed.format !== 'lwag-project'
-	) {
+	if ('format' in parsed && !isReadableSettingsFormat(parsed.format)) {
 		throw new Error('invalid-settings-file');
 	}
 
 	const candidate =
-		parsed.format === SETTINGS_FORMAT && isRecord(parsed.state)
+		isReadableSettingsFormat(parsed.format) && isRecord(parsed.state)
 			? (parsed.state as Partial<WallpaperState>)
 			: (parsed as Partial<WallpaperState>);
 

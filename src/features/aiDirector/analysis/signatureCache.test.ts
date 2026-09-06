@@ -43,7 +43,7 @@ describe('signatureCache', () => {
 		// Simulate a version bump by writing a row with a stale version through
 		// the same store the cache reads from.
 		const db = await new Promise<IDBDatabase>(resolve => {
-			const request = indexedDB.open('lwag-ai-director', 1);
+			const request = indexedDB.open('vibrix-ai-director', 1);
 			request.onsuccess = () => resolve(request.result);
 		});
 		await new Promise<void>(resolve => {

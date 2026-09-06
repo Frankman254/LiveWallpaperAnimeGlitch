@@ -224,7 +224,7 @@ no confundirlos:
 
 1. **localStorage** → un cajón pequeño para **texto**. Aquí se guarda **tu
    configuración** (colores, ajustes, qué está encendido). Es ligero. La
-   "etiqueta" de ese cajón se llama `lwag-state`.
+   "etiqueta" de ese cajón se llama `vibrix-state`.
 
 2. **IndexedDB** → un cajón grande para **archivos pesados**. Aquí van **las
    imágenes, el logo, los audios** que subes. ¿Por qué separado? Porque las

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useRuntimeUiMode } from '@/runtime/useRuntimeUiMode';
 import { useOutputPerformanceStore } from '@/runtime/outputPerformanceStore';
 
-const CURSOR_HIDE_CLASS = 'lwag-output-hide-cursor';
+const CURSOR_HIDE_CLASS = 'vibrix-output-hide-cursor';
 const IDLE_MS = 2500;
 
 export default function OutputPresentationCursorPolicy() {

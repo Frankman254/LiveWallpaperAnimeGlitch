@@ -24,13 +24,15 @@ describe('persistenceStatus', () => {
 		const listener = vi.fn();
 		const unsubscribe = subscribePersistenceFailure(listener);
 
-		reportPersistenceFailure('lwag-state', { name: 'QuotaExceededError' });
+		reportPersistenceFailure('vibrix-state', {
+			name: 'QuotaExceededError'
+		});
 		const failure = getPersistenceFailureSnapshot();
 		expect(failure).toMatchObject({
-			storageName: 'lwag-state',
+			storageName: 'vibrix-state',
 			kind: 'quota'
 		});
-		reportPersistenceFailure('lwag-state', new Error('repeat'));
+		reportPersistenceFailure('vibrix-state', new Error('repeat'));
 		expect(listener).toHaveBeenCalledTimes(1);
 
 		clearPersistenceFailure(failure?.id);

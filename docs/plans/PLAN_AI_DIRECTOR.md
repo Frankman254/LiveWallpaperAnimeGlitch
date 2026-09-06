@@ -53,7 +53,7 @@ Con 200 imágenes, hasta 120 slots de spectrum, 60 por familia y 100 setlists,
 los ~5 MB de `localStorage` se alcanzan. **Esa es la firma exacta de un bug
 "sin repro": no falla al guardar, falla al recargar.** Hipótesis fuerte, no
 confirmada — se confirma reproduciendo con el pool cargado y mirando la consola
-por `[lwag] Failed to persist`.
+por `[vibrix] Failed to persist`.
 
 Arreglo correcto: mover el persist de escena a IndexedDB (los assets ya viven
 ahí). No es opcional para 200 imágenes.

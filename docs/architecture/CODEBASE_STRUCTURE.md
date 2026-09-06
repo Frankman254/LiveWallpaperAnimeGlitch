@@ -114,7 +114,8 @@ is the bug. The three panels that still fail that test are listed in
   ~11.6k LOC. What is left there is composition shells, which belong to the
   editor by design.
 
-> Persisted `localStorage` keys (`lwag-modern-editor-scroll-map`,
-> `lwag-modern-spectrum-view`, `lwag-modern-spectrum-target`) and the
+> Persisted `localStorage` keys (`vibrix-editor-scroll-map`,
+> `vibrix-spectrum-target`, plus the pre-rename `lwag-modern-*` names still
+> read as fallbacks) and the
 > `MODERN_*_STORAGE_KEY` constants that hold them keep their historical names on
 > purpose — renaming them would break existing users' saved state.

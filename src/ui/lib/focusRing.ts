@@ -6,4 +6,4 @@
  * mouse-driven UI is visually unchanged.
  */
 export const FOCUS_RING =
-	'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--lwag-accent,#67e8f9)] focus-visible:ring-offset-0';
+	'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vibrix-accent,#67e8f9)] focus-visible:ring-offset-0';

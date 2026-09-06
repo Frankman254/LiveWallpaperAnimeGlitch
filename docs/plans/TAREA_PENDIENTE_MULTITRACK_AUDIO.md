@@ -67,7 +67,7 @@ Capacidades:
 - reordenarlos
 - borrar tracks
 - reproducir siguiente / anterior
-- guardar todo dentro del `.lwag`
+- guardar todo dentro del `.vibrix`
 
 Valor:
 
@@ -255,7 +255,7 @@ audioMixMode: 'manual' | 'sequential' | 'energy-aware';
 ## Orden recomendado de implementación
 
 1. Playlist persistente con múltiples tracks
-2. Export/import de esos tracks dentro del `.lwag`
+2. Export/import de esos tracks dentro del `.vibrix`
 3. Crossfade simple entre track actual y siguiente
 4. Reactividad de audio mezclada durante crossfade
 5. Pre-análisis por track

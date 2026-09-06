@@ -1,10 +1,21 @@
 export const APP_VERSION = '0.3.0-alpha.1';
 
-export const SETTINGS_FORMAT = 'lwag-settings';
+export const SETTINGS_FORMAT = 'vibrix-settings';
 export const SETTINGS_SCHEMA_VERSION = 1;
 
-export const PROJECT_FORMAT = 'lwag-project';
+export const PROJECT_FORMAT = 'vibrix-project';
 export const PROJECT_SCHEMA_VERSION = 1;
+
+/** The file extension exports write today. */
+export const PROJECT_FILE_EXTENSION = 'vibrix';
+
+// The app was called Live Wallpaper Anime Glitch until 2026-09-06, and every
+// file exported before that carries the old tags. Exports never write them
+// again; imports accept them forever, because the alternative is a user's
+// saved project silently refusing to open.
+export const LEGACY_SETTINGS_FORMATS = ['lwag-settings'] as const;
+export const LEGACY_PROJECT_FORMATS = ['lwag-project'] as const;
+export const LEGACY_PROJECT_FILE_EXTENSIONS = ['lwag'] as const;
 
 // v85: added lightsProfileSlots + cameraFxProfileSlots; SceneSlot gained
 // lightsSlotIndex/cameraFxSlotIndex and the 3-state 'off' binding ref.

@@ -45,7 +45,7 @@ describe('runtimeUiModeStore', () => {
 
 	it('persists mode to sessionStorage without touching project data', () => {
 		useRuntimeUiModeStore.getState().enterPresentationMode();
-		expect(sessionStorage.getItem('lwag-runtime-ui-mode')).toBe(
+		expect(sessionStorage.getItem('vibrix-runtime-ui-mode')).toBe(
 			'presentation'
 		);
 		useRuntimeUiModeStore.setState({ mode: 'edit' });

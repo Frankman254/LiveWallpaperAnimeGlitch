@@ -78,7 +78,7 @@ export function useLocalFolders() {
 				}
 			}
 		} catch (e) {
-			console.warn('[lwag] Failed to scan folder content', e);
+			console.warn('[vibrix] Failed to scan folder content', e);
 		}
 		return files;
 	};
@@ -169,7 +169,7 @@ export function useLocalFolders() {
 				}
 			}
 		} catch (e) {
-			console.warn('[lwag] load folders failed', e);
+			console.warn('[vibrix] load folders failed', e);
 		}
 	}, [virtualFoldersEnabled]);
 
@@ -188,7 +188,7 @@ export function useLocalFolders() {
 				loadFolderStates();
 			}
 		} catch (e) {
-			console.warn('[lwag] permission request failed', e);
+			console.warn('[vibrix] permission request failed', e);
 		}
 	};
 
@@ -229,7 +229,7 @@ export function useLocalFolders() {
 			await saveFolderHandle(folderId, handle);
 			loadFolderStates();
 		} catch (e) {
-			console.warn('[lwag] directory selection aborted', e);
+			console.warn('[vibrix] directory selection aborted', e);
 		}
 	};
 

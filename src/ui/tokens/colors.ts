@@ -1,7 +1,7 @@
 /**
  * UI system colors. These are infrastructure tokens for surfaces, strokes, and
  * text — NOT theme accent colors. The theme accent flows in through
- * `--lwag-accent` (aliased from `--editor-accent-color` in editorTheme.ts) and
+ * `--vibrix-accent` (aliased from `--editor-accent-color` in editorTheme.ts) and
  * is exposed below as `accent` so components have a single canonical entry.
  *
  * All values are CSS-var references so the theme pipeline drives them at
@@ -38,14 +38,14 @@ export const UI_COLORS = {
 	thumb: 'var(--editor-control-thumb, rgba(255, 255, 255, 0.96))',
 
 	// Theme accent (single canonical entry — drives every "active" highlight)
-	accent: 'var(--lwag-accent, #67e8f9)',
+	accent: 'var(--vibrix-accent, #67e8f9)',
 	accentSoft:
-		'color-mix(in srgb, var(--lwag-accent, #67e8f9) 14%, transparent)',
+		'color-mix(in srgb, var(--vibrix-accent, #67e8f9) 14%, transparent)',
 	accentBorder:
-		'color-mix(in srgb, var(--lwag-accent, #67e8f9) 42%, transparent)',
+		'color-mix(in srgb, var(--vibrix-accent, #67e8f9) 42%, transparent)',
 	accentFg: 'var(--editor-active-fg, #020617)',
 	focusRing:
-		'0 0 0 3px color-mix(in srgb, var(--lwag-accent, #67e8f9) 16%, transparent)',
+		'0 0 0 3px color-mix(in srgb, var(--vibrix-accent, #67e8f9) 16%, transparent)',
 
 	// Semantic
 	danger: '#ff6b6b',

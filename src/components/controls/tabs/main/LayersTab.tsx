@@ -30,7 +30,7 @@ import ProjectScopeStrip from './ProjectScopeStrip';
 
 type LayersView = 'background' | 'stack' | 'overlays';
 
-const MODERN_LAYERS_VIEW_STORAGE_KEY = 'lwag-modern-layers-view';
+const MODERN_LAYERS_VIEW_STORAGE_KEY = 'vibrix-layers-view';
 
 function isLayersView(value: unknown): value is LayersView {
 	return value === 'background' || value === 'stack' || value === 'overlays';

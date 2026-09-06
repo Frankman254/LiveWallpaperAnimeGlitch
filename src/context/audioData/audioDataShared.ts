@@ -5,7 +5,7 @@ export const supportsDisplayMedia =
 	typeof navigator !== 'undefined' &&
 	typeof navigator.mediaDevices?.getDisplayMedia === 'function';
 
-export const AUDIO_SYNC_CHANNEL = 'lwag-audio-sync';
+export const AUDIO_SYNC_CHANNEL = 'vibrix-audio-sync';
 export const AUDIO_SYNC_STALE_MS = 250;
 export const AUDIO_SYNC_INTERVAL_MS = 33;
 export const AUDIO_TRANSPORT_GRACE_MS = 1500;

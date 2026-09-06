@@ -42,11 +42,11 @@ function variantStyle(variant: ButtonVariant, active: boolean): CSSProperties {
 		case 'primary':
 			return {
 				background:
-					'linear-gradient(180deg, color-mix(in srgb, var(--lwag-accent, #67e8f9) 82%, white 18%), var(--lwag-accent, #67e8f9))',
+					'linear-gradient(180deg, color-mix(in srgb, var(--vibrix-accent, #67e8f9) 82%, white 18%), var(--vibrix-accent, #67e8f9))',
 				color: UI_COLORS.accentFg,
-				border: '1px solid color-mix(in srgb, var(--lwag-accent, #67e8f9) 72%, white 28%)',
+				border: '1px solid color-mix(in srgb, var(--vibrix-accent, #67e8f9) 72%, white 28%)',
 				boxShadow:
-					'0 1px 0 rgba(255,255,255,0.16) inset, 0 5px 14px color-mix(in srgb, var(--lwag-accent, #67e8f9) 18%, transparent)'
+					'0 1px 0 rgba(255,255,255,0.16) inset, 0 5px 14px color-mix(in srgb, var(--vibrix-accent, #67e8f9) 18%, transparent)'
 			};
 		case 'secondary':
 			return {

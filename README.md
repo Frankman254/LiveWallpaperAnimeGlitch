@@ -1,10 +1,13 @@
-# LiveWallpaperAnimeGlitch
+# Vibrix
+
+> Antes `LiveWallpaperAnimeGlitch`. El repositorio de GitHub todavía usa el
+> nombre viejo, así que el badge y los enlaces apuntan ahí.
 
 [![CI](https://github.com/Frankman254/LiveWallpaperAnimeGlitch/actions/workflows/ci.yml/badge.svg)](https://github.com/Frankman254/LiveWallpaperAnimeGlitch/actions/workflows/ci.yml)
 
 **Version: `0.3.0-alpha.1`**
 
-Audio-reactive live wallpaper and music visualizer editor built with Vite, React, Zustand, Three.js, and React Three Fiber.
+Vibrix is an audio-reactive live wallpaper and music visualizer editor built with Vite, React, Zustand, Three.js, and React Three Fiber.
 
 ## Documentation
 

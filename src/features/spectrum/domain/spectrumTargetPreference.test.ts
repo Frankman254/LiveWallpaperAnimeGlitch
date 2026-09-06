@@ -19,7 +19,7 @@ describe('spectrum target localStorage preference', () => {
 	});
 
 	it('reads the new key', () => {
-		mem.set('lwag-spectrum-target', 'instance');
+		mem.set('vibrix-spectrum-target', 'instance');
 		expect(readPersistedSpectrumTarget()).toBe('instance');
 	});
 
@@ -29,14 +29,14 @@ describe('spectrum target localStorage preference', () => {
 	});
 
 	it('prefers the new key over the legacy key', () => {
-		mem.set('lwag-spectrum-target', 'main');
+		mem.set('vibrix-spectrum-target', 'main');
 		mem.set('lwag-modern-spectrum-target', 'instance');
 		expect(readPersistedSpectrumTarget()).toBe('main');
 	});
 
 	it('writes only the new key', () => {
 		writePersistedSpectrumTarget('instance');
-		expect(mem.get('lwag-spectrum-target')).toBe('instance');
+		expect(mem.get('vibrix-spectrum-target')).toBe('instance');
 		expect(mem.get('lwag-modern-spectrum-target')).toBeUndefined();
 	});
 });

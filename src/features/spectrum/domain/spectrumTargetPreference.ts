@@ -1,10 +1,17 @@
 import type { SpectrumProfileTarget } from './spectrumTargetProfile';
 
-/** New UI-preference key for the shared active Spectrum target. */
-const SPECTRUM_TARGET_KEY = 'lwag-spectrum-target';
-/** Legacy key written by the old editor-local selector. Read as a fallback so
- *  a returning user keeps their last selection after the rename. */
-const LEGACY_SPECTRUM_TARGET_KEY = 'lwag-modern-spectrum-target';
+/** Current UI-preference key for the shared active Spectrum target. */
+const SPECTRUM_TARGET_KEY = 'vibrix-spectrum-target';
+/**
+ * Keys this preference used to live under, newest first. Read as fallbacks so
+ * a returning user keeps their last selection across both renames: the
+ * editor-local selector wrote `lwag-modern-*`, the shared one wrote `lwag-*`,
+ * and the product rename to Vibrix moved it again.
+ */
+const LEGACY_SPECTRUM_TARGET_KEYS = [
+	'lwag-spectrum-target',
+	'lwag-modern-spectrum-target'
+] as const;
 
 function isSpectrumTarget(value: unknown): value is SpectrumProfileTarget {
 	return value === 'main' || value === 'instance';
@@ -17,8 +24,10 @@ export function readPersistedSpectrumTarget(): SpectrumProfileTarget {
 	try {
 		const next = localStorage.getItem(SPECTRUM_TARGET_KEY);
 		if (isSpectrumTarget(next)) return next;
-		const legacy = localStorage.getItem(LEGACY_SPECTRUM_TARGET_KEY);
-		if (isSpectrumTarget(legacy)) return legacy;
+		for (const key of LEGACY_SPECTRUM_TARGET_KEYS) {
+			const legacy = localStorage.getItem(key);
+			if (isSpectrumTarget(legacy)) return legacy;
+		}
 	} catch {
 		/* localStorage unavailable */
 	}

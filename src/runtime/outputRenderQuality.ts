@@ -9,7 +9,8 @@ import {
 	type RuntimeUiMode
 } from './runtimeUiModeStore';
 
-export const OUTPUT_RENDER_QUALITY_EVENT = 'lwag-output-render-quality-change';
+export const OUTPUT_RENDER_QUALITY_EVENT =
+	'vibrix-output-render-quality-change';
 
 export type OutputCanvasBacking = {
 	mode: RuntimeUiMode;

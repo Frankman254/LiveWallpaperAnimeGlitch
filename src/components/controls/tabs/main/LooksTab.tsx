@@ -61,7 +61,7 @@ const LOOK_GRADIENTS: Record<FilterLookId, string> = {
 	'glass-mist': 'linear-gradient(135deg, #bae6fd, #c4b5fd)',
 	'infrared-pulse': 'linear-gradient(135deg, #fb923c, #ef4444)',
 	[CUSTOM_FILTER_LOOK_ID]:
-		'linear-gradient(135deg, var(--lwag-accent), var(--editor-tag-bg))'
+		'linear-gradient(135deg, var(--vibrix-accent), var(--editor-tag-bg))'
 };
 
 export default function LooksTab({ onReset }: { onReset: () => void }) {
@@ -341,7 +341,7 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 											: UI_COLORS.raised,
 										color: UI_COLORS.fg,
 										boxShadow: isActive
-											? '0 0 0 1px color-mix(in srgb, var(--lwag-accent) 36%, transparent)'
+											? '0 0 0 1px color-mix(in srgb, var(--vibrix-accent) 36%, transparent)'
 											: 'none'
 									}}
 								>

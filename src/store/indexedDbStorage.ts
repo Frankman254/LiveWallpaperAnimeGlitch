@@ -18,12 +18,30 @@
  *  - **Fallback, never failure.** If IndexedDB is unavailable (private mode,
  *    blocked storage), every operation transparently uses `localStorage`
  *    instead. Losing the bigger quota is much better than losing persistence.
+ *  - **Adoption across the product rename.** The database and key were called
+ *    `lwag-*` before the app became Vibrix. A plain rename would have opened an
+ *    empty database and shown every existing user an empty app, so the old
+ *    names are read once and copied over. See `LEGACY_STORAGE` below.
  */
 import { reportPersistenceFailure } from './persistenceStatus';
 
-const DB_NAME = 'lwag-store';
+const DB_NAME = 'vibrix-store';
 const DB_VERSION = 1;
 const STORE = 'persist';
+
+/**
+ * Where this data lived before the rename to Vibrix.
+ *
+ * Read once, when the new database has nothing under the new name. The old
+ * copy is deliberately **not deleted** — it is a single JSON string, and it is
+ * the escape hatch if a user has to go back to a build from before the rename.
+ * That is the same bargain the localStorage copy above already makes.
+ */
+const LEGACY_STORAGE = {
+	dbName: 'lwag-store',
+	/** New persist name → the name it had before the rename. */
+	keys: { 'vibrix-state': 'lwag-state' } as Record<string, string>
+};
 
 /** Cached open handle — reopening per write would serialize on the upgrade. */
 let dbPromise: Promise<IDBDatabase | null> | null = null;
@@ -67,6 +85,71 @@ export function resetIndexedDbStorageForTests(): void {
 	dbPromise = null;
 }
 
+/**
+ * Read one value out of the pre-rename database, without creating it.
+ *
+ * Opening a database with no version number creates an empty one when it does
+ * not exist. That would litter every fresh install with a stray `lwag-store`,
+ * so a database that turns out to have no `persist` store is deleted again
+ * right away — we know we are the ones who just made it.
+ */
+function readLegacyDb(legacyKey: string): Promise<string | null> {
+	return new Promise(resolve => {
+		if (typeof indexedDB === 'undefined') {
+			resolve(null);
+			return;
+		}
+		let request: IDBOpenDBRequest;
+		try {
+			request = indexedDB.open(LEGACY_STORAGE.dbName);
+		} catch {
+			resolve(null);
+			return;
+		}
+		request.onerror = () => resolve(null);
+		request.onblocked = () => resolve(null);
+		request.onsuccess = () => {
+			const db = request.result;
+			if (!db.objectStoreNames.contains(STORE)) {
+				db.close();
+				try {
+					indexedDB.deleteDatabase(LEGACY_STORAGE.dbName);
+				} catch {
+					/* leaving an empty database behind is harmless */
+				}
+				resolve(null);
+				return;
+			}
+			try {
+				const store = db
+					.transaction(STORE, 'readonly')
+					.objectStore(STORE);
+				const get = store.get(legacyKey);
+				get.onsuccess = () => {
+					db.close();
+					resolve(typeof get.result === 'string' ? get.result : null);
+				};
+				get.onerror = () => {
+					db.close();
+					resolve(null);
+				};
+			} catch {
+				db.close();
+				resolve(null);
+			}
+		};
+	});
+}
+
+/** The value this key held before the rename, from either storage. */
+async function readLegacy(name: string): Promise<string | null> {
+	const legacyKey = LEGACY_STORAGE.keys[name];
+	if (!legacyKey) return null;
+	const fromLocal = validate(legacyKey, readLocalStorage(legacyKey));
+	if (fromLocal) return fromLocal;
+	return validate(legacyKey, await readLegacyDb(legacyKey));
+}
+
 function readLocalStorage(name: string): string | null {
 	try {
 		return localStorage.getItem(name);
@@ -87,7 +170,7 @@ function validate(name: string, raw: string | null): string | null {
 		return raw;
 	} catch (error) {
 		console.error(
-			`[lwag] Corrupted persisted state for ${name}; ignoring it.`,
+			`[vibrix] Corrupted persisted state for ${name}; ignoring it.`,
 			error
 		);
 		return null;
@@ -97,7 +180,12 @@ function validate(name: string, raw: string | null): string | null {
 export const indexedDbStorage = {
 	async getItem(name: string): Promise<string | null> {
 		const db = await openDb();
-		if (!db) return validate(name, readLocalStorage(name));
+		if (!db) {
+			return (
+				validate(name, readLocalStorage(name)) ??
+				(await readLegacy(name))
+			);
+		}
 
 		try {
 			const store = db.transaction(STORE, 'readonly').objectStore(STORE);
@@ -106,14 +194,19 @@ export const indexedDbStorage = {
 
 			// Nothing in IndexedDB yet — adopt whatever localStorage has, so an
 			// existing install keeps its project on first load after the switch.
-			const legacy = validate(name, readLocalStorage(name));
+			const legacy =
+				validate(name, readLocalStorage(name)) ??
+				(await readLegacy(name));
 			if (legacy) {
 				await indexedDbStorage.setItem(name, legacy);
 			}
 			return legacy;
 		} catch (error) {
-			console.error(`[lwag] IndexedDB read failed for ${name}.`, error);
-			return validate(name, readLocalStorage(name));
+			console.error(`[vibrix] IndexedDB read failed for ${name}.`, error);
+			return (
+				validate(name, readLocalStorage(name)) ??
+				(await readLegacy(name))
+			);
 		}
 	},
 
@@ -126,7 +219,7 @@ export const indexedDbStorage = {
 				localStorage.setItem(name, value);
 			} catch (error) {
 				console.error(
-					`[lwag] Failed to persist ${name} (no IndexedDB, localStorage quota exceeded or unavailable). State kept in memory only.`,
+					`[vibrix] Failed to persist ${name} (no IndexedDB, localStorage quota exceeded or unavailable). State kept in memory only.`,
 					error
 				);
 				reportPersistenceFailure(name, error);
@@ -146,7 +239,7 @@ export const indexedDbStorage = {
 			// IndexedDB has its own quota. Report it the same way so the user
 			// still gets the "export before reloading" warning.
 			console.error(
-				`[lwag] Failed to persist ${name} to IndexedDB.`,
+				`[vibrix] Failed to persist ${name} to IndexedDB.`,
 				error
 			);
 			reportPersistenceFailure(name, error);

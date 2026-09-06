@@ -2,7 +2,7 @@
  * PERSISTENCE MODEL — THREE LAYERS
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * Layer 1 — SCENE STATE  (persisted to localStorage, key: 'lwag-state')
+ * Layer 1 — SCENE STATE  (persisted to IndexedDB, key: 'vibrix-state')
  *   All visual settings: filters, spectrum, logo, particles, rain, slideshow,
  *   filters, layer z-indices, presets, editor theme, language.
  *   BackgroundImageItem.url and OverlayImageItem.url are set to null before

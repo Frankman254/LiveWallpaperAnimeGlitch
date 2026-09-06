@@ -218,7 +218,7 @@ export default function ExportTabBody() {
 			<input
 				ref={projectImportRef}
 				type="file"
-				accept=".lwag,application/json"
+				accept=".vibrix,.lwag,application/json"
 				className="hidden"
 				onChange={event =>
 					void projectPackage.handleImportProject(event)

@@ -58,7 +58,7 @@ export const useWallpaperStore = create<WallpaperStore>()(
 			...createAiDirectorSlice(set, get, api)
 		}),
 		{
-			name: 'lwag-state',
+			name: 'vibrix-state',
 			version: STORE_PERSIST_VERSION,
 			migrate: migrateWallpaperStore,
 			partialize: partializeWallpaperStore,

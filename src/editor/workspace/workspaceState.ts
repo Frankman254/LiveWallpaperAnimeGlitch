@@ -1,7 +1,7 @@
 /**
  * Where the user had the editor arranged — tab, subtab, scroll, open sections.
  *
- * Deliberately NOT in the wallpaper store and NOT in the `.lwag`: this is
+ * Deliberately NOT in the wallpaper store and NOT in the `.vibrix`: this is
  * "where I was working", not "what the wallpaper looks like". See
  * `workspaceKeys.ts` for the same boundary applied to the keys that do live in
  * the wallpaper store.
@@ -19,7 +19,7 @@
 
 export const WORKSPACE_PERSIST_VERSION = 1;
 
-const STORAGE_KEY = 'lwag-workspace';
+const STORAGE_KEY = 'vibrix-workspace';
 
 /** Scroll + open sections for one addressable panel. */
 export type PanelWorkspaceState = {

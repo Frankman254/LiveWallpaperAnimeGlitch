@@ -22,7 +22,11 @@ import {
 } from '@/features/export';
 import { cloneFactoryDefaultState } from '@/store/factoryDefaults';
 import { useWallpaperStore } from '@/store/wallpaperStore';
-import { PROJECT_FORMAT, PROJECT_SCHEMA_VERSION } from '@/lib/version';
+import {
+	LEGACY_PROJECT_FORMATS,
+	PROJECT_FORMAT,
+	PROJECT_SCHEMA_VERSION
+} from '@/lib/version';
 import type { WallpaperState } from '@/types/wallpaper';
 
 type ProjectAssetKind =
@@ -472,6 +476,19 @@ export async function createWallpaperProjectPackageJson(options?: {
 	return await blob.text();
 }
 
+/** Projects exported before the Vibrix rename carry the old tag. Reads accept
+ *  it forever; writes only ever emit `PROJECT_FORMAT`. */
+const READABLE_PROJECT_FORMATS: readonly string[] = [
+	PROJECT_FORMAT,
+	...LEGACY_PROJECT_FORMATS
+];
+
+function isReadableProjectFormat(format: unknown): boolean {
+	return (
+		typeof format === 'string' && READABLE_PROJECT_FORMATS.includes(format)
+	);
+}
+
 function createProjectEnvelopeBlobParts(
 	settings: ReturnType<typeof buildWallpaperSettingsExport>,
 	assets: ProjectAssetRecord[],
@@ -625,7 +642,7 @@ export async function applyWallpaperProjectPackage(
 					const parsed = JSON.parse(safeEnvelope);
 					if (
 						!isRecord(parsed) ||
-						parsed.format !== PROJECT_FORMAT ||
+						!isReadableProjectFormat(parsed.format) ||
 						parsed.version !== PROJECT_SCHEMA_VERSION
 					) {
 						throw new Error('invalid-project-envelope');
@@ -649,7 +666,7 @@ export async function applyWallpaperProjectPackage(
 						didClearProject = true;
 					}
 				} catch (e) {
-					console.error('[lwag] parse error', e);
+					console.error('[vibrix] parse error', e);
 					throw new Error('invalid-project-file');
 				}
 			}
@@ -714,7 +731,7 @@ export async function applyWallpaperProjectPackage(
 						await yieldToUi();
 					}
 				} catch (e) {
-					console.error('[lwag] Failed to parse asset line', e);
+					console.error('[vibrix] Failed to parse asset line', e);
 				}
 			}
 		}

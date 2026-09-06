@@ -120,7 +120,7 @@ function pickChromaticAccent(palette: BackgroundPalette): string {
 
 export const DEFAULT_EDITOR_COLOR_VARS = {
 	'--editor-accent-color': '#67e8f9',
-	'--lwag-accent': '#67e8f9',
+	'--vibrix-accent': '#67e8f9',
 	/** Primary foreground for titles / list rows (was referenced as --editor-accent-fg in tabs). */
 	'--editor-accent-fg': '#ffffff',
 	'--editor-accent-soft': '#ffffff',
@@ -317,7 +317,7 @@ function buildChromeVarsFromPalette(
 	const accentBorder = mixHexColors(chromaAccent, '#ffffff', 0.22);
 	return {
 		'--editor-accent-color': chromaAccent,
-		'--lwag-accent': chromaAccent,
+		'--vibrix-accent': chromaAccent,
 		'--editor-accent-fg': accentSoft,
 		'--editor-accent-soft': accentSoft,
 		'--editor-accent-muted': accentMuted,

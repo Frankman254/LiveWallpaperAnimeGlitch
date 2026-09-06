@@ -39,16 +39,42 @@ describe('indexedDbStorage', () => {
 
 	it('adopts an existing localStorage state on first read', async () => {
 		// An install that predates the switch must keep its project.
-		local.set('lwag-state', JSON.stringify({ state: { legacy: true } }));
+		local.set('adopt-me', JSON.stringify({ state: { legacy: true } }));
 
-		const first = await indexedDbStorage.getItem('lwag-state');
+		const first = await indexedDbStorage.getItem('adopt-me');
 		expect(first).toContain('legacy');
 
 		// And it is now in IndexedDB, so a later localStorage wipe is harmless.
 		local.clear();
-		expect(await indexedDbStorage.getItem('lwag-state')).toContain(
-			'legacy'
+		expect(await indexedDbStorage.getItem('adopt-me')).toContain('legacy');
+	});
+
+	it('adopts the pre-rename localStorage key', async () => {
+		// The app was `lwag-*` until the Vibrix rename. Reading the new name
+		// must still find the old payload, or the user's library reads empty.
+		local.set('lwag-state', JSON.stringify({ state: { fromLwag: true } }));
+
+		expect(await indexedDbStorage.getItem('vibrix-state')).toContain(
+			'fromLwag'
 		);
+
+		// Adopted into IndexedDB under the new name, so it survives a wipe of
+		// the old one.
+		local.clear();
+		expect(await indexedDbStorage.getItem('vibrix-state')).toContain(
+			'fromLwag'
+		);
+	});
+
+	it('prefers the new key over the pre-rename one', async () => {
+		// Same key as the test above, and IndexedDB persists between tests, so
+		// the new name has to win over what is already adopted there.
+		local.set('lwag-state', JSON.stringify({ state: { which: 'old' } }));
+		await indexedDbStorage.setItem(
+			'vibrix-state',
+			JSON.stringify({ state: { which: 'new' } })
+		);
+		expect(await indexedDbStorage.getItem('vibrix-state')).toContain('new');
 	});
 
 	it('prefers IndexedDB over a stale localStorage copy', async () => {

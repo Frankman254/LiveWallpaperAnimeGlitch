@@ -53,7 +53,7 @@ describe('shared active spectrum target (editor + HUD)', () => {
 		expect(useWallpaperStore.getState().activeSpectrumTarget).toBe(
 			'instance'
 		);
-		expect(mem.get('lwag-spectrum-target')).toBe('instance');
+		expect(mem.get('vibrix-spectrum-target')).toBe('instance');
 	});
 
 	it('excludes activeSpectrumTarget from project persistence', () => {

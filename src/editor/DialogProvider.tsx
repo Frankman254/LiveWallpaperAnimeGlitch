@@ -26,8 +26,8 @@ type DialogContextValue = {
 
 const DialogContext = createContext<DialogContextValue | null>(null);
 
-const TITLE_ID = 'lwag-confirm-dialog-title';
-const MESSAGE_ID = 'lwag-confirm-dialog-message';
+const TITLE_ID = 'vibrix-confirm-dialog-title';
+const MESSAGE_ID = 'vibrix-confirm-dialog-message';
 
 export function DialogProvider({ children }: { children: ReactNode }) {
 	const resolverRef = useRef<((value: boolean) => void) | null>(null);

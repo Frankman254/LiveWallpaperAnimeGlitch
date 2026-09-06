@@ -8,6 +8,7 @@ import {
 	type ProjectExportSectionId,
 	type ProjectExportSelection
 } from '@/features/export/projectExportSelection';
+import { PROJECT_FILE_EXTENSION } from '@/lib/version';
 import {
 	buildDescriptiveExportFileName,
 	downloadBlobFallback,
@@ -73,11 +74,11 @@ export function useProjectPackageExport({
 				kind: 'project',
 				state: exportNamingState,
 				selection: projectExportSelection,
-				extension: 'lwag'
+				extension: PROJECT_FILE_EXTENSION
 			});
 			const savedWithPicker = await saveBlobWithPicker(blob, fileName, {
-				description: 'Live Wallpaper project package',
-				mimeType: 'application/x-live-wallpaper-project+json'
+				description: 'Vibrix project package',
+				mimeType: 'application/x-vibrix-project+json'
 			});
 			if (!savedWithPicker) {
 				downloadBlobFallback(blob, fileName);

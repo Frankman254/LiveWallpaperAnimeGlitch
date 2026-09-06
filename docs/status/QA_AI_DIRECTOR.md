@@ -89,10 +89,11 @@ En este orden. Los primeros tres son los que más importan.
 
 1. Abrí la app en producción con el fix desplegado.
 2. **El pool debe mostrar las 226 miniaturas.** Si siguen en blanco, abrí la
-   consola y buscá `[lwag]`.
+   consola y buscá `[vibrix]`.
 3. Recargá dos veces más. Debe aguantar.
 4. En DevTools → Application → IndexedDB deberían existir **tres** bases:
-   `lwag-images` (blobs), `lwag-store` (estado), `lwag-ai-director` (caché).
+   `lwag-images` (blobs, nombre sin renombrar a propósito), `vibrix-store`
+   (estado) y `vibrix-ai-director` (caché).
 5. Cargá una imagen nueva, recargá, y confirmá que sigue ahí.
 
 ### B. Captura de escenas (fase 0)
