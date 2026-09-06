@@ -32,6 +32,10 @@ import {
 	createDefaultSpectrumInstance
 } from '@/features/spectrum';
 import { hydrateSpectrumProfileValues } from '@/features/spectrum';
+import {
+	RGB_SHIFT_AUDIO_KEYS,
+	extractRgbShiftAudioSettings
+} from '@/features/filterLooks/filterLooks';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import { normalizeSpectrumSettings } from '@/features/spectrum';
 import {
@@ -2987,7 +2991,40 @@ export function migrateWallpaperStore(
 		);
 	}
 
+	// v109: the ten `rgbShiftAudio*` keys joined the Looks snapshot. Until now
+	// they were globals sitting beside every look, so the honest backfill for a
+	// slot saved earlier is the values that were actually in effect for it —
+	// the current globals — not the factory defaults. Saves stay visually
+	// identical; from here on each slot carries its own routing.
+	if (fromVersion < 109) {
+		backfillLooksRgbShiftAudio(migratedState);
+	}
+
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;
+}
+
+/**
+ * Copy the live `rgbShiftAudio*` values into every stored Looks snapshot that
+ * predates them: the user's saved slots and the legacy single custom look.
+ * Existing keys are never overwritten, so running this twice is a no-op.
+ */
+function backfillLooksRgbShiftAudio(migratedState: WallpaperStore): void {
+	const live = extractRgbShiftAudioSettings(migratedState);
+	const fill = (target: Record<string, unknown> | null | undefined) => {
+		if (!target) return;
+		for (const key of RGB_SHIFT_AUDIO_KEYS) {
+			if (!(key in target)) target[key] = live[key];
+		}
+	};
+	for (const slot of migratedState.looksProfileSlots ?? []) {
+		fill(slot.values as unknown as Record<string, unknown> | null);
+	}
+	fill(
+		migratedState.customFilterLookSettings as unknown as Record<
+			string,
+			unknown
+		> | null
+	);
 }
 
 type LegacyMotionSlot = {

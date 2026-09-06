@@ -14,6 +14,32 @@ export type FilterLookId =
 	| 'infrared-pulse'
 	| typeof CUSTOM_FILTER_LOOK_ID;
 
+/**
+ * The audio-reactive half of the RGB shift.
+ *
+ * These live next to `rgbShift` in the Looks tab and are meaningless without
+ * it — a look that says "shift by 0.01" and a global that says "and make it
+ * follow the hi-hat" are one visual idea, not two. Kept as a named list
+ * because `store/featureProfiles` has to capture exactly the same set.
+ */
+export const RGB_SHIFT_AUDIO_KEYS = [
+	'rgbShiftAudioReactive',
+	'rgbShiftAudioSensitivity',
+	'rgbShiftAudioChannel',
+	'rgbShiftAudioSmoothing',
+	'rgbShiftAudioAttack',
+	'rgbShiftAudioRelease',
+	'rgbShiftAudioReactivitySpeed',
+	'rgbShiftAudioPeakWindow',
+	'rgbShiftAudioPeakFloor',
+	'rgbShiftAudioPunch'
+] as const satisfies ReadonlyArray<keyof WallpaperState>;
+
+export type RgbShiftAudioSettings = Pick<
+	WallpaperState,
+	(typeof RGB_SHIFT_AUDIO_KEYS)[number]
+>;
+
 export type FilterLookPreset = {
 	id: FilterLookId;
 	name: string;
@@ -33,7 +59,8 @@ export type FilterLookPreset = {
 		| 'scanlineMode'
 		| 'scanlineSpacing'
 		| 'scanlineThickness'
-	>;
+	> &
+		RgbShiftAudioSettings;
 };
 
 export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
@@ -54,7 +81,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0.28,
 			scanlineMode: 'always',
 			scanlineSpacing: 640,
-			scanlineThickness: 1.4
+			scanlineThickness: 1.4,
+			rgbShiftAudioReactive: false,
+			rgbShiftAudioSensitivity: 0.004,
+			rgbShiftAudioChannel: 'hihat',
+			rgbShiftAudioSmoothing: 0.2,
+			rgbShiftAudioAttack: 0.5,
+			rgbShiftAudioRelease: 0.2,
+			rgbShiftAudioReactivitySpeed: 0.8,
+			rgbShiftAudioPeakWindow: 1.2,
+			rgbShiftAudioPeakFloor: 0.08,
+			rgbShiftAudioPunch: 0.25
 		}
 	},
 	{
@@ -74,7 +111,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0.12,
 			scanlineMode: 'pulse',
 			scanlineSpacing: 760,
-			scanlineThickness: 1.6
+			scanlineThickness: 1.6,
+			rgbShiftAudioReactive: true,
+			rgbShiftAudioSensitivity: 0.007,
+			rgbShiftAudioChannel: 'bass',
+			rgbShiftAudioSmoothing: 0.38,
+			rgbShiftAudioAttack: 0.3,
+			rgbShiftAudioRelease: 0.35,
+			rgbShiftAudioReactivitySpeed: 0.6,
+			rgbShiftAudioPeakWindow: 1.6,
+			rgbShiftAudioPeakFloor: 0.1,
+			rgbShiftAudioPunch: 0.2
 		}
 	},
 	{
@@ -94,7 +141,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0.08,
 			scanlineMode: 'burst',
 			scanlineSpacing: 900,
-			scanlineThickness: 1.1
+			scanlineThickness: 1.1,
+			rgbShiftAudioReactive: true,
+			rgbShiftAudioSensitivity: 0.011,
+			rgbShiftAudioChannel: 'hihat',
+			rgbShiftAudioSmoothing: 0.14,
+			rgbShiftAudioAttack: 0.65,
+			rgbShiftAudioRelease: 0.16,
+			rgbShiftAudioReactivitySpeed: 1.2,
+			rgbShiftAudioPeakWindow: 1.0,
+			rgbShiftAudioPeakFloor: 0.06,
+			rgbShiftAudioPunch: 0.5
 		}
 	},
 	{
@@ -114,7 +171,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0,
 			scanlineMode: 'always',
 			scanlineSpacing: 800,
-			scanlineThickness: 1.2
+			scanlineThickness: 1.2,
+			rgbShiftAudioReactive: false,
+			rgbShiftAudioSensitivity: 0.003,
+			rgbShiftAudioChannel: 'full',
+			rgbShiftAudioSmoothing: 0.5,
+			rgbShiftAudioAttack: 0.25,
+			rgbShiftAudioRelease: 0.45,
+			rgbShiftAudioReactivitySpeed: 0.4,
+			rgbShiftAudioPeakWindow: 2.2,
+			rgbShiftAudioPeakFloor: 0.12,
+			rgbShiftAudioPunch: 0.15
 		}
 	},
 	{
@@ -134,7 +201,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0.05,
 			scanlineMode: 'always',
 			scanlineSpacing: 840,
-			scanlineThickness: 1
+			scanlineThickness: 1,
+			rgbShiftAudioReactive: false,
+			rgbShiftAudioSensitivity: 0.0,
+			rgbShiftAudioChannel: 'full',
+			rgbShiftAudioSmoothing: 0.2,
+			rgbShiftAudioAttack: 0.5,
+			rgbShiftAudioRelease: 0.2,
+			rgbShiftAudioReactivitySpeed: 1.0,
+			rgbShiftAudioPeakWindow: 1.0,
+			rgbShiftAudioPeakFloor: 0.08,
+			rgbShiftAudioPunch: 0.2
 		}
 	},
 	{
@@ -154,7 +231,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0.18,
 			scanlineMode: 'beat',
 			scanlineSpacing: 720,
-			scanlineThickness: 1.8
+			scanlineThickness: 1.8,
+			rgbShiftAudioReactive: true,
+			rgbShiftAudioSensitivity: 0.022,
+			rgbShiftAudioChannel: 'kick',
+			rgbShiftAudioSmoothing: 0.07,
+			rgbShiftAudioAttack: 0.95,
+			rgbShiftAudioRelease: 0.09,
+			rgbShiftAudioReactivitySpeed: 1.5,
+			rgbShiftAudioPeakWindow: 0.8,
+			rgbShiftAudioPeakFloor: 0.05,
+			rgbShiftAudioPunch: 0.85
 		}
 	},
 	{
@@ -174,7 +261,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0,
 			scanlineMode: 'always',
 			scanlineSpacing: 960,
-			scanlineThickness: 1
+			scanlineThickness: 1,
+			rgbShiftAudioReactive: false,
+			rgbShiftAudioSensitivity: 0.002,
+			rgbShiftAudioChannel: 'full',
+			rgbShiftAudioSmoothing: 0.45,
+			rgbShiftAudioAttack: 0.3,
+			rgbShiftAudioRelease: 0.4,
+			rgbShiftAudioReactivitySpeed: 0.5,
+			rgbShiftAudioPeakWindow: 2.0,
+			rgbShiftAudioPeakFloor: 0.14,
+			rgbShiftAudioPunch: 0.15
 		}
 	},
 	{
@@ -194,7 +291,17 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 			scanlineIntensity: 0.06,
 			scanlineMode: 'pulse',
 			scanlineSpacing: 820,
-			scanlineThickness: 1.2
+			scanlineThickness: 1.2,
+			rgbShiftAudioReactive: true,
+			rgbShiftAudioSensitivity: 0.009,
+			rgbShiftAudioChannel: 'vocal',
+			rgbShiftAudioSmoothing: 0.3,
+			rgbShiftAudioAttack: 0.4,
+			rgbShiftAudioRelease: 0.3,
+			rgbShiftAudioReactivitySpeed: 0.9,
+			rgbShiftAudioPeakWindow: 1.4,
+			rgbShiftAudioPeakFloor: 0.1,
+			rgbShiftAudioPunch: 0.35
 		}
 	}
 ];
@@ -214,7 +321,25 @@ export function extractFilterLookSettingsFromState(
 		scanlineIntensity: state.scanlineIntensity,
 		scanlineMode: state.scanlineMode,
 		scanlineSpacing: state.scanlineSpacing,
-		scanlineThickness: state.scanlineThickness
+		scanlineThickness: state.scanlineThickness,
+		...extractRgbShiftAudioSettings(state)
+	};
+}
+
+export function extractRgbShiftAudioSettings(
+	state: WallpaperState
+): RgbShiftAudioSettings {
+	return {
+		rgbShiftAudioReactive: state.rgbShiftAudioReactive,
+		rgbShiftAudioSensitivity: state.rgbShiftAudioSensitivity,
+		rgbShiftAudioChannel: state.rgbShiftAudioChannel,
+		rgbShiftAudioSmoothing: state.rgbShiftAudioSmoothing,
+		rgbShiftAudioAttack: state.rgbShiftAudioAttack,
+		rgbShiftAudioRelease: state.rgbShiftAudioRelease,
+		rgbShiftAudioReactivitySpeed: state.rgbShiftAudioReactivitySpeed,
+		rgbShiftAudioPeakWindow: state.rgbShiftAudioPeakWindow,
+		rgbShiftAudioPeakFloor: state.rgbShiftAudioPeakFloor,
+		rgbShiftAudioPunch: state.rgbShiftAudioPunch
 	};
 }
 

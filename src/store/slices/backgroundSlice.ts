@@ -659,32 +659,13 @@ export function createBackgroundSlice(
 		setSlideshowManualTimestampsEnabled: v =>
 			set({ slideshowManualTimestampsEnabled: v }),
 		...createBackgroundCollectionActions(set, get),
+		// Derived from the canonical key list instead of a hand-written one.
+		// The hand-written version had drifted: it reset four of the ten
+		// `rgbShiftAudio*` keys and left `scanlinesEnabled` alone, so "reset"
+		// left the tab in a state the user could not reach any other way.
 		resetFiltersToDefaults: () =>
 			set({
-				filterTargets: DEFAULT_STATE.filterTargets,
-				filterOpacity: DEFAULT_STATE.filterOpacity,
-				filterBrightness: DEFAULT_STATE.filterBrightness,
-				filterContrast: DEFAULT_STATE.filterContrast,
-				filterSaturation: DEFAULT_STATE.filterSaturation,
-				filterBlur: DEFAULT_STATE.filterBlur,
-				filterHueRotate: DEFAULT_STATE.filterHueRotate,
-				filterVignette: DEFAULT_STATE.filterVignette,
-				filterBloom: DEFAULT_STATE.filterBloom,
-				filterLumaThreshold: DEFAULT_STATE.filterLumaThreshold,
-				filterLensWarp: DEFAULT_STATE.filterLensWarp,
-				filterHeatDistortion: DEFAULT_STATE.filterHeatDistortion,
-				activeFilterLookId: DEFAULT_STATE.activeFilterLookId,
-				rgbShift: DEFAULT_STATE.rgbShift,
-				rgbShiftAudioReactive: DEFAULT_STATE.rgbShiftAudioReactive,
-				rgbShiftAudioSensitivity:
-					DEFAULT_STATE.rgbShiftAudioSensitivity,
-				rgbShiftAudioChannel: DEFAULT_STATE.rgbShiftAudioChannel,
-				rgbShiftAudioSmoothing: DEFAULT_STATE.rgbShiftAudioSmoothing,
-				noiseIntensity: DEFAULT_STATE.noiseIntensity,
-				scanlineIntensity: DEFAULT_STATE.scanlineIntensity,
-				scanlineMode: DEFAULT_STATE.scanlineMode,
-				scanlineSpacing: DEFAULT_STATE.scanlineSpacing,
-				scanlineThickness: DEFAULT_STATE.scanlineThickness,
+				...extractLooksProfileSettings(DEFAULT_STATE),
 				customFilterLookSettings: DEFAULT_STATE.customFilterLookSettings
 			})
 	} satisfies Partial<WallpaperStore>;

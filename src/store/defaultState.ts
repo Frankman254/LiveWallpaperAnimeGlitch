@@ -16,7 +16,10 @@ import { createDefaultCalibrationProfileSlots } from '@/features/calibration';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import { DEFAULT_SPECTRUM_STATE } from '@/features/spectrum';
 
-export const APP_LOGO_URL = '/favicon.svg';
+// Re-exported so existing importers keep working; the constant itself lives
+// in `config/` because the renderer (a feature) may not import the store.
+import { APP_LOGO_URL } from '@/config/appLogo';
+export { APP_LOGO_URL };
 
 /**
  * Curated starter palette for the global color-favourites strip. A balanced

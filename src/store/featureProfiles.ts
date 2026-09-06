@@ -12,6 +12,7 @@ import {
 	hydrateSpectrumProfileValues,
 	normalizeSpectrumShape
 } from '@/features/spectrum';
+import { RGB_SHIFT_AUDIO_KEYS } from '@/features/filterLooks/filterLooks';
 
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
 export const LOGO_PROFILE_SLOT_COUNT = 3;
@@ -219,9 +220,10 @@ export type CameraFxProfileSettings = Pick<
 >;
 
 /**
- * Looks (filter + post-fx) snapshot. Includes filter stack + RGB / scanline /
- * noise so that a Looks slot captures the full visual-tone pipeline without
- * leaking into other subsystems (spectrum/logo/audio remain untouched).
+ * Looks (filter + post-fx) snapshot. Includes the filter stack, the RGB shift
+ * with its audio routing, scanlines and noise, so that a Looks slot captures
+ * the full visual-tone pipeline without leaking into other subsystems
+ * (spectrum/logo/audio remain untouched).
  */
 export const LOOKS_PROFILE_KEYS = [
 	'filterTargets',
@@ -237,6 +239,11 @@ export const LOOKS_PROFILE_KEYS = [
 	'filterLensWarp',
 	'filterHeatDistortion',
 	'rgbShift',
+	// The audio-reactive half of the RGB shift travels with the look. Without
+	// these ten keys a Looks slot captured "shift by 0.01" and left "and make
+	// it follow the kick" behind as a global, so loading any slot silently
+	// inherited whatever the last one had set.
+	...RGB_SHIFT_AUDIO_KEYS,
 	'noiseIntensity',
 	'scanlinesEnabled',
 	'scanlineIntensity',

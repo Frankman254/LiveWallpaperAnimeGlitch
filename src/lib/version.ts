@@ -74,4 +74,10 @@ export const LEGACY_PROJECT_FILE_EXTENSIONS = ['lwag'] as const;
 // the wallpaper, and it never produced the intended look. The keys are deleted
 // on rehydrate. `hudLiquidGlassEnabled` is a separate CSS-only HUD style and
 // is unaffected.
-export const STORE_PERSIST_VERSION = 108;
+// v109: the ten `rgbShiftAudio*` keys join the Looks snapshot
+// (LOOKS_PROFILE_KEYS + FilterLookPreset). They used to be globals sitting
+// beside every look, so saving a slot captured the shift amount but not
+// whether it followed the kick — and loading any slot inherited whatever the
+// last one had left behind. The migration backfills every stored slot and the
+// legacy custom look from the live globals, so nothing looks different.
+export const STORE_PERSIST_VERSION = 109;

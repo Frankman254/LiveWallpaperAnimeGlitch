@@ -35,9 +35,16 @@ type LogoSettings = Pick<
 	| 'logoRotationSpeed'
 >;
 
-// Cached image element
-let cachedLogoUrl: string | null = null;
-let cachedImg: HTMLImageElement | null = null;
+/**
+ * Loaded logo images, keyed by URL.
+ *
+ * A single slot would be enough for a logo the user picks once, but the app's
+ * own mark now swaps between its vector and pixel versions with the spectrum's
+ * pixelate switch. With one slot every toggle re-decodes the image and drops a
+ * frame of logo; a handful of slots makes the swap instant in both directions.
+ */
+const LOGO_IMAGE_CACHE_MAX = 4;
+const logoImages = new Map<string, HTMLImageElement>();
 
 // Single envelope instance — encapsulates all per-frame smoothing state
 const logoEnvelope = createAudioEnvelope();
@@ -68,11 +75,15 @@ interface LogoRenderState {
 }
 
 function getImage(url: string): HTMLImageElement | null {
-	if (cachedLogoUrl === url && cachedImg) return cachedImg;
+	const cached = logoImages.get(url);
+	if (cached) return cached.complete ? cached : null;
 	const img = new Image();
 	img.src = url;
-	cachedLogoUrl = url;
-	cachedImg = img;
+	if (logoImages.size >= LOGO_IMAGE_CACHE_MAX) {
+		const oldest = logoImages.keys().next().value;
+		if (oldest !== undefined) logoImages.delete(oldest);
+	}
+	logoImages.set(url, img);
 	return img.complete ? img : null;
 }
 
@@ -205,14 +216,8 @@ export function getSmoothedAmplitude(): number {
 
 /** Devuelve la imagen del logo ya cacheada, o null si aún no cargó. */
 export function getCachedLogoImage(url: string): HTMLImageElement | null {
-	if (
-		cachedLogoUrl === url &&
-		cachedImg &&
-		cachedImg.complete &&
-		cachedImg.naturalWidth > 0
-	) {
-		return cachedImg;
-	}
+	const img = logoImages.get(url);
+	if (img && img.complete && img.naturalWidth > 0) return img;
 	return null;
 }
 
