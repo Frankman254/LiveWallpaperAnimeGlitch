@@ -161,7 +161,7 @@ export function SpectrumStylePanel() {
 		if (sp.spectrumGlowIntensity >= 1.8 || sp.spectrumShadowBlur >= 42) {
 			return 'neon';
 		}
-		if (sp.spectrumMaxHeight >= 280 || sp.spectrumBarWidth >= 5) {
+		if (sp.spectrumOpacity >= 0.97 && sp.spectrumGlowIntensity >= 1.1) {
 			return 'massive';
 		}
 		if (sp.spectrumOpacity <= 0.75 || sp.spectrumWaveFillOpacity >= 0.4) {
@@ -174,10 +174,6 @@ export function SpectrumStylePanel() {
 		const presets: Record<
 			SpectrumStyleIntent,
 			{
-				barCount: number;
-				barWidth: number;
-				minHeight: number;
-				maxHeight: number;
 				opacity: number;
 				waveFillOpacity: number;
 				glowIntensity: number;
@@ -185,40 +181,24 @@ export function SpectrumStylePanel() {
 			}
 		> = {
 			clean: {
-				barCount: 96,
-				barWidth: 3,
-				minHeight: 4,
-				maxHeight: 180,
 				opacity: 0.85,
 				waveFillOpacity: 0.15,
 				glowIntensity: 0.5,
 				shadowBlur: 12
 			},
 			neon: {
-				barCount: 112,
-				barWidth: 2.5,
-				minHeight: 6,
-				maxHeight: 220,
 				opacity: 0.95,
 				waveFillOpacity: 0.3,
 				glowIntensity: 2.2,
 				shadowBlur: 48
 			},
 			massive: {
-				barCount: 128,
-				barWidth: 5,
-				minHeight: 8,
-				maxHeight: 330,
 				opacity: 1,
 				waveFillOpacity: 0.2,
 				glowIntensity: 1.2,
 				shadowBlur: 28
 			},
 			soft: {
-				barCount: 80,
-				barWidth: 6,
-				minHeight: 3,
-				maxHeight: 130,
 				opacity: 0.68,
 				waveFillOpacity: 0.45,
 				glowIntensity: 0.8,
@@ -226,34 +206,12 @@ export function SpectrumStylePanel() {
 			}
 		};
 		const preset = presets[intent];
-		(value => update({ spectrumBarCount: value }))(preset.barCount);
-		if (caps.supportsBarWidth)
-			(value => update({ spectrumBarWidth: value }))(preset.barWidth);
-		(value => update({ spectrumMinHeight: value }))(preset.minHeight);
-		(value => update({ spectrumMaxHeight: value }))(preset.maxHeight);
-		(value => update({ spectrumOpacity: value }))(preset.opacity);
-		(value => update({ spectrumWaveFillOpacity: value }))(
-			preset.waveFillOpacity
-		);
-		(value => update({ spectrumGlowIntensity: value }))(
-			preset.glowIntensity
-		);
-		(value => update({ spectrumShadowBlur: value }))(preset.shadowBlur);
-
-		if (isTunnel) {
-			(value => update({ spectrumTunnelRingCount: value }))(
-				intent === 'massive' ? 18 : intent === 'soft' ? 8 : 12
-			);
-			(value => update({ spectrumTunnelDepthFalloff: value }))(
-				intent === 'soft' ? 0.35 : 0.55
-			);
-			(value => update({ spectrumTunnelWallOpacity: value }))(
-				intent === 'neon' ? 0.38 : intent === 'soft' ? 0.16 : 0.25
-			);
-			(value => update({ spectrumTunnelPulseStrength: value }))(
-				intent === 'massive' ? 0.7 : intent === 'neon' ? 0.55 : 0.3
-			);
-		}
+		update({
+			spectrumOpacity: preset.opacity,
+			spectrumWaveFillOpacity: preset.waveFillOpacity,
+			spectrumGlowIntensity: preset.glowIntensity,
+			spectrumShadowBlur: preset.shadowBlur
+		});
 	}
 
 	if (isSimple) {
@@ -307,7 +265,7 @@ export function SpectrumStylePanel() {
 							{
 								value: 'massive',
 								label: 'Massive',
-								description: 'Tall, dense and high-impact.',
+								description: 'Dense, bright and high-impact.',
 								preview: <IntentPreview intent="massive" />
 							},
 							{
@@ -324,8 +282,8 @@ export function SpectrumStylePanel() {
 						ariaLabel="Spectrum visual intent"
 					/>
 					<Caption as="p">
-						Switch to Advanced for exact bar count, glow, blur and
-						family-specific surface controls.
+						These treatments keep the current size and geometry.
+						Switch to Advanced for exact controls.
 					</Caption>
 				</div>
 

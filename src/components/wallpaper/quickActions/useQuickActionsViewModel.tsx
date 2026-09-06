@@ -3,6 +3,7 @@ import {
 	Maximize2,
 	Minimize2,
 	Monitor,
+	Move,
 	Layers,
 	Palette,
 	AudioWaveform,
@@ -13,7 +14,10 @@ import {
 	Image as ImageIcon,
 	Cpu,
 	ImageDown,
-	Grid3x3
+	Grid3x3,
+	FileText,
+	SlidersHorizontal,
+	MousePointer
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import {
@@ -35,13 +39,55 @@ import { filterImageIdsBySetlist } from '@/store/slices/setlistsSlice';
 import type { QuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import type { ExpandPanel } from '@/components/wallpaper/quickActions/quickActionsShared';
 import { resolveSharedColorSource } from '@/editor/colorSourceUtils';
-import type { ColorSourceMode } from '@/types/wallpaper';
+import type { ActiveTool, ColorSourceMode } from '@/types/wallpaper';
 import {
-	CUSTOM_FILTER_LOOK_ID,
-	FILTER_LOOK_PRESETS,
-	type FilterLookPreset
+	buildFilterLookCatalog,
+	findFilterLookCatalogIndex,
+	fromFilterLookSlotSelectionId
 } from '@/features/filterLooks/filterLooks';
 import type { SubsystemCarouselNav } from '@/components/controls/mediaDock/types';
+
+/**
+ * What drag mode can actually move. Mirrors `DRAG_TARGETS` in
+ * `DragInteractionLayer`, plus `hud` (which the HUD drags itself) and `none`
+ * to step back out without leaving drag mode.
+ */
+const DRAG_TOOL_ITEMS: ReadonlyArray<{
+	id: ActiveTool;
+	label: string;
+	icon: React.ReactNode;
+}> = [
+	{
+		id: 'logo',
+		label: 'Logo',
+		icon: <ImageIcon size={11} strokeWidth={2.25} />
+	},
+	{
+		id: 'spectrum',
+		label: 'Spec',
+		icon: <AudioWaveform size={11} strokeWidth={2.25} />
+	},
+	{
+		id: 'track-title',
+		label: 'Track',
+		icon: <TypeIcon size={11} strokeWidth={2.25} />
+	},
+	{
+		id: 'lyrics',
+		label: 'Lyrics',
+		icon: <FileText size={11} strokeWidth={2.25} />
+	},
+	{
+		id: 'hud',
+		label: 'HUD',
+		icon: <SlidersHorizontal size={11} strokeWidth={2.25} />
+	},
+	{
+		id: 'none',
+		label: 'Off',
+		icon: <MousePointer size={11} strokeWidth={2.25} />
+	}
+];
 
 export type QuickColorSourceShortcut = {
 	value: ColorSourceMode | null;
@@ -148,6 +194,18 @@ export function useQuickActionsViewModel({
 		[expandPanel]
 	);
 	const activeLooksSlotIndex = useMemo(() => {
+		// The explicit selection wins. The value diff stays as the fallback for
+		// a look the user has since nudged by hand, where nothing is formally
+		// selected any more but the slot is still what is on screen.
+		const selectedId = fromFilterLookSlotSelectionId(
+			fullStore.activeFilterLookId
+		);
+		if (selectedId !== null) {
+			const bySelection = fullStore.looksProfileSlots.findIndex(
+				slot => slot.id === selectedId
+			);
+			if (bySelection >= 0) return bySelection;
+		}
 		const current = extractLooksProfileSettings(fullStore);
 		return fullStore.looksProfileSlots.findIndex(slot =>
 			doProfileSettingsMatch(current, slot.values)
@@ -789,6 +847,37 @@ export function useQuickActionsViewModel({
 			active: false,
 			onClick: goPresentation
 		});
+		// Drag mode belongs in the always-visible row, not buried in the System
+		// panel: it is the switch you flip between every reposition, and having
+		// to open a sub-panel to reach it is what made it read as missing.
+		actions.push({
+			label: t.qa_drag_mode,
+			title: t.qa_drag_mode_t,
+			icon: <Move size={11} strokeWidth={2.25} />,
+			active: state.enableDragMode,
+			onClick: () => {
+				const next = !state.enableDragMode;
+				state.setEnableDragMode(next);
+				// Drag mode with no tool selected moves nothing, which is what
+				// made the old System-panel toggle read as broken. Opening it
+				// arms the logo; closing it releases the pointer back to the UI.
+				state.setActiveTool(next ? 'logo' : 'none');
+			}
+		});
+		// The tool chips only exist while drag mode is on — the HUD had no way
+		// to choose a drag target at all before, so the toggle was inert unless
+		// the user went to the desktop control panel to pick one.
+		if (state.enableDragMode) {
+			for (const tool of DRAG_TOOL_ITEMS) {
+				actions.push({
+					label: tool.label,
+					title: `${t.qa_drag_mode_t} — ${tool.label}`,
+					icon: tool.icon,
+					active: state.activeTool === tool.id,
+					onClick: () => state.setActiveTool(tool.id)
+				});
+			}
+		}
 		actions.push(
 			{
 				label: t.tab_layers.toUpperCase(),
@@ -1016,119 +1105,63 @@ export function useQuickActionsViewModel({
 		};
 	}, [fullStore, activeSpectrumSlotIndex]);
 
-	// ── Looks carousel: virtual unified list of presets + custom + slots ──
-	// Order: factory presets first (curated baseline), legacy custom preset
-	// if it exists, then user-saved profile slots. Each entry remembers its
-	// origin so applying it uses the right action. Mirrors the spectrum
-	// carousel: empty slots are filtered out and a local cursor compensates
-	// when `activeFilterLookId` / `activeLooksSlotIndex` can't tell us where
-	// we are.
-	type LooksCarouselEntry =
-		| { source: 'preset'; preset: FilterLookPreset }
-		| { source: 'custom'; preset: FilterLookPreset }
-		| { source: 'slot'; index: number; name: string };
+	// ── Looks carousel ────────────────────────────────────────────────────
+	// The same catalog the Looks tab renders — factory presets first, then the
+	// user's populated slots — so the HUD can never disagree with the tab
+	// about what exists or which entry is active. Empty slots are filtered
+	// out, and a local cursor covers the moment after the user has edited a
+	// look by hand and `activeFilterLookId` no longer matches anything.
 	const lastLooksNavKeyRef = useRef<string | null>(null);
 	const looksNav: SubsystemCarouselNav | undefined = useMemo(() => {
-		const entries: LooksCarouselEntry[] = [];
-		for (const preset of FILTER_LOOK_PRESETS) {
-			entries.push({ source: 'preset', preset });
-		}
-		if (fullStore.customFilterLookSettings) {
-			entries.push({
-				source: 'custom',
-				preset: {
-					id: CUSTOM_FILTER_LOOK_ID,
-					name: 'Custom',
-					description: 'Legacy custom look',
-					tags: [],
-					settings: fullStore.customFilterLookSettings
-				}
-			});
-		}
-		fullStore.looksProfileSlots.forEach((slot, index) => {
-			if (slot.values === null) return;
-			entries.push({ source: 'slot', index, name: slot.name });
-		});
+		const entries = buildFilterLookCatalog(
+			fullStore.looksProfileSlots,
+			false
+		);
 		if (entries.length === 0) {
 			lastLooksNavKeyRef.current = null;
 			return undefined;
 		}
-		const keyOf = (e: LooksCarouselEntry) =>
-			e.source === 'slot'
-				? `slot:${e.index}`
-				: `${e.source}:${e.preset.id}`;
-		// Detection: prefer the explicit activeFilterLookId / slot diff. If
-		// neither resolves, fall back to the cursor key the HUD last used.
-		const detectedPos = (() => {
-			if (fullStore.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
-				return entries.findIndex(e => e.source === 'custom');
-			}
-			if (fullStore.activeFilterLookId) {
-				const id = fullStore.activeFilterLookId;
-				return entries.findIndex(
-					e => e.source === 'preset' && e.preset.id === id
-				);
-			}
-			if (activeLooksSlotIndex >= 0) {
-				return entries.findIndex(
-					e => e.source === 'slot' && e.index === activeLooksSlotIndex
-				);
-			}
-			return -1;
-		})();
+		const detectedPos = findFilterLookCatalogIndex(
+			entries,
+			fullStore.activeFilterLookId
+		);
 		const cursorPos =
 			lastLooksNavKeyRef.current != null
-				? entries.findIndex(
-						e => keyOf(e) === lastLooksNavKeyRef.current
-					)
+				? entries.findIndex(e => e.key === lastLooksNavKeyRef.current)
 				: -1;
 		const currentPos = detectedPos >= 0 ? detectedPos : cursorPos;
 		const currentEntry = currentPos >= 0 ? entries[currentPos] : null;
 		const totalLabel = String(entries.length).padStart(2, '0');
 		const indexLabel =
 			currentPos >= 0 ? String(currentPos + 1).padStart(2, '0') : '--';
-		const apply = (entry: LooksCarouselEntry) => {
-			lastLooksNavKeyRef.current = keyOf(entry);
-			if (entry.source === 'slot') {
-				fullStore.loadLooksProfileSlot(entry.index);
+		const apply = (entry: (typeof entries)[number]) => {
+			lastLooksNavKeyRef.current = entry.key;
+			if (entry.kind === 'slot') {
+				fullStore.loadLooksProfileSlot(entry.slotIndex);
 				return;
 			}
 			fullStore.applyFilterLook(entry.preset);
 		};
 		const stepBy = (delta: number) => {
-			if (entries.length === 0) return;
-			let nextPos: number;
-			if (currentPos < 0) {
-				nextPos = delta > 0 ? 0 : entries.length - 1;
-			} else {
-				nextPos =
-					(currentPos + delta + entries.length) % entries.length;
-			}
+			const nextPos =
+				currentPos < 0
+					? delta > 0
+						? 0
+						: entries.length - 1
+					: (currentPos + delta + entries.length) % entries.length;
 			const target = entries[nextPos];
 			if (target) apply(target);
 		};
-		const currentName = currentEntry
-			? currentEntry.source === 'slot'
-				? currentEntry.name
-				: currentEntry.preset.name
-			: '—';
-		const originBadge = currentEntry
-			? currentEntry.source === 'slot'
-				? 'slot'
-				: currentEntry.source === 'custom'
-					? 'custom'
-					: 'preset'
-			: '';
 		return {
 			hasItems: true,
 			label: `LOOK ${indexLabel}/${totalLabel}`,
 			tooltip: currentEntry
-				? `Looks ${originBadge}: ${currentName}`
+				? `Looks ${currentEntry.kind === 'slot' ? 'slot' : 'preset'}: ${currentEntry.name}`
 				: 'Looks — none active yet',
 			onPrev: () => stepBy(-1),
 			onNext: () => stepBy(1)
 		};
-	}, [fullStore, activeLooksSlotIndex]);
+	}, [fullStore]);
 
 	// ── Particles carousel ────────────────────────────────────────────────
 	// Mirrors the spectrum carousel: only populated slots, and the explicit

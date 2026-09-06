@@ -34,7 +34,9 @@ import {
 import { hydrateSpectrumProfileValues } from '@/features/spectrum';
 import {
 	RGB_SHIFT_AUDIO_KEYS,
-	extractRgbShiftAudioSettings
+	CUSTOM_FILTER_LOOK_ID,
+	extractRgbShiftAudioSettings,
+	toFilterLookSlotSelectionId
 } from '@/features/filterLooks/filterLooks';
 import { getCurrentViewportResolution } from '@/features/layout/viewportMetrics';
 import { normalizeSpectrumSettings } from '@/features/spectrum';
@@ -54,6 +56,7 @@ import {
 	createDefaultSpectrumProfileSlots,
 	createDefaultSpectrumSecondProfileSlots,
 	createDefaultTrackTitleProfileSlots,
+	extractLooksProfileSettings,
 	normalizeProfileSlots,
 	BACKGROUND_PROFILE_SLOT_COUNT,
 	MAX_CAMERA_FX_SLOT_COUNT,
@@ -2999,6 +3002,9 @@ export function migrateWallpaperStore(
 	if (fromVersion < 109) {
 		backfillLooksRgbShiftAudio(migratedState);
 	}
+	if (fromVersion < 110) {
+		migrateLegacyCustomLook(migratedState);
+	}
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;
 }
@@ -3025,6 +3031,41 @@ function backfillLooksRgbShiftAudio(migratedState: WallpaperStore): void {
 			unknown
 		> | null
 	);
+}
+
+/**
+ * Fold the old single Custom look into the normal stable-id slot bank and
+ * remove selection metadata from snapshots. The legacy field remains in the
+ * schema so projects exported before v110 can still be imported.
+ */
+function migrateLegacyCustomLook(migratedState: WallpaperStore): void {
+	for (const slot of migratedState.looksProfileSlots ?? []) {
+		if (!slot.values) continue;
+		delete (slot.values as unknown as Record<string, unknown>)
+			.activeFilterLookId;
+	}
+
+	const legacy = migratedState.customFilterLookSettings;
+	if (!legacy) return;
+	const slot = {
+		id: createProfileSlotId(),
+		name: 'Custom Look',
+		values: {
+			...extractLooksProfileSettings(DEFAULT_STATE),
+			...legacy
+		}
+	};
+	if (migratedState.looksProfileSlots.length < MAX_LOOKS_SLOT_COUNT) {
+		migratedState.looksProfileSlots.push(slot);
+		if (migratedState.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
+			migratedState.activeFilterLookId = toFilterLookSlotSelectionId(
+				slot.id
+			);
+		}
+	} else if (migratedState.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
+		migratedState.activeFilterLookId = null;
+	}
+	migratedState.customFilterLookSettings = null;
 }
 
 type LegacyMotionSlot = {

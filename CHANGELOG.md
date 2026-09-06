@@ -15,6 +15,89 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Rendimiento: donde se estaba despilfarrando
+
+- **Lluvia (el peor con diferencia).** El shader recorre hasta 100 gotas **por
+  píxel**, y calculaba seis `random()` —cada uno un `sin`— por gota *antes* de
+  comprobar si esa gota siquiera tocaba el píxel. A 1080p eso es del orden de
+  1.400 millones de `sin` por frame para descartar el 98% del trabajo. Ahora
+  calcula la posición X (un `sin`), rechaza por distancia horizontal contra la
+  cota superior exacta del ancho de gota, y sólo entonces hace el resto. El
+  resultado es idéntico píxel a píxel: la cota no puede descartar una gota que
+  hubiera contribuido.
+- **El filtro de Looks ya no da la vuelta larga cuando no hace nada.** Cualquier
+  capa listada en `filterTargets` pasaba por un canvas offscreen a pantalla
+  completa más un `drawImage` filtrado **cada frame**, incluso con todos los
+  diales en su valor identidad. Con dos spectrums, logo, track y lyrics como
+  targets son cinco limpiezas y cinco composiciones a pantalla completa por
+  frame que producen exactamente la misma imagen.
+- **Las capas apagadas ya no limpian su canvas cada frame.** Se limpia una vez
+  al apagarlas y se deja en paz, igual que ya hacía StageLightsCanvas.
+- **Bug de paso:** el renderer de capas de audio leía `scanlineIntensity`
+  directamente, ignorando `scanlinesEnabled`. Apagar las scanlines en Looks las
+  seguía dibujando sobre logo, spectrum, track y lyrics.
+
+### HUD: el drag mode se activa desde el HUD, y con qué se arrastra
+
+El toggle existía, pero enterrado en el panel _System_ — y **era inerte**: el
+HUD nunca dejaba elegir `activeTool`, así que encenderlo con la herramienta en
+`none` no movía nada. Ahora vive en la fila siempre visible del HUD, y al
+encenderlo aparecen las fichas de destino (Logo / Spec / Track / Lyrics / HUD /
+Off) junto al botón. Encender arma el logo; apagar devuelve el puntero a la UI.
+
+### Spectrum: Visual Intent deja de reescribir la geometría
+
+`clean / neon / massive / soft` reseteaba `barCount`, `barWidth`, `minHeight`,
+`maxHeight` y los cuatro parámetros de túnel, así que aplicar un "intent" sobre
+un spectrum ya afinado lo devolvía a una forma que el usuario no había pedido.
+Ahora sólo toca lo que la palabra promete —opacidad, relleno de onda, glow y
+blur— y la detección de cuál está activo se hace sobre esos mismos valores en
+vez de sobre el tamaño.
+
+### Looks: una sola lista, y el RGB shift deja de ser global (store v109 + v110)
+
+La pestaña tenía **dos sistemas en paralelo**: los presets de fábrica por un
+lado y los slots guardados por otro, más un tercer camino legacy con un único
+look "Custom". De ahí salían todas las incongruencias: guardar encima de un
+preset aplicado creaba un duplicado que la UI ya no podía reconocer como
+activo, y el HUD y la pestaña llevaban cada uno su propia idea de qué look
+estaba puesto.
+
+**Un solo catálogo.** `buildFilterLookCatalog()` produce la lista que consumen
+la pestaña y el HUD: primero los presets de fábrica —presentes en la misma
+lista que los slots, y no borrables— y después los slots del usuario.
+`activeFilterLookId` pasa a ser **un solo espacio de nombres**: un id de
+fábrica, o `slot:<id>`. Un único `findFilterLookCatalogIndex()` resuelve la
+selección para los dos consumidores, así que no pueden volver a divergir.
+
+**Cuatro presets nuevos** (`noir-cinema`, `hologram`, `sunset-film`,
+`ice-signal`), 12 en total.
+
+**El ruteo audio-reactivo del RGB shift entra en el look (v109).** Guardar un
+slot capturaba _cuánto_ se separaban los canales pero no _si seguían al
+bombo_: las diez claves `rgbShiftAudio*` se editaban en Looks y vivían fuera
+del look, así que cargar cualquier slot heredaba en silencio el ruteo del
+anterior. Ahora `RGB_SHIFT_AUDIO_KEYS` es la lista canónica y entra tanto en
+`LOOKS_PROFILE_KEYS` como en `FilterLookPreset['settings']`; cada preset de
+fábrica tiene carácter propio (`club-glitch` late con el kick, `crt` no
+reacciona). La migración rellena cada slot guardado **desde los globales que
+estaban en efecto**, no desde los valores de fábrica — eran los que realmente
+sonaban, así que nada cambia de aspecto al actualizar.
+
+**`resetFiltersToDefaults` se deriva de la lista canónica.** La versión escrita
+a mano se había desincronizado: reseteaba cuatro de las diez claves de audio y
+nunca tocaba `scanlinesEnabled`, dejando la pestaña en un estado al que no se
+llegaba de ninguna otra forma.
+
+**`STORE_PERSIST_VERSION` 108 → 110.** v109 hace el backfill del ruteo; v110
+pliega el look Custom legacy dentro del banco normal de slots y traduce la
+selección. El campo legacy se queda en el esquema para que los proyectos
+exportados antes sigan importándose.
+
+`STORE_PERSIST_VERSION` is at **110**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+
+---
+
 ### El proyecto pasa a llamarse Vibrix
 
 Renombre completo de identificadores, no sólo del título. Lo que importa es que

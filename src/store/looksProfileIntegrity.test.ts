@@ -11,12 +11,10 @@ const mem = new Map<string, string>();
 const { useWallpaperStore } = await import('@/store/wallpaperStore');
 const { DEFAULT_STATE } = await import('@/store/defaultState');
 const { LOOKS_PROFILE_KEYS } = await import('@/store/featureProfiles');
-const { migrateWallpaperStore } = await import(
-	'@/store/wallpaperStoreMigrations'
-);
-const { FILTER_LOOK_PRESETS, RGB_SHIFT_AUDIO_KEYS } = await import(
-	'@/features/filterLooks/filterLooks'
-);
+const { migrateWallpaperStore } =
+	await import('@/store/wallpaperStoreMigrations');
+const { FILTER_LOOK_PRESETS, RGB_SHIFT_AUDIO_KEYS } =
+	await import('@/features/filterLooks/filterLooks');
 
 const store = () => useWallpaperStore.getState();
 
@@ -127,7 +125,7 @@ describe('Looks slots capture the whole RGB shift', () => {
 	});
 });
 
-describe('migration to v109', () => {
+describe('migration to v109 + v110', () => {
 	it('backfills stored slots from the globals that were in effect', () => {
 		const persisted = {
 			...DEFAULT_STATE,
@@ -144,8 +142,11 @@ describe('migration to v109', () => {
 		};
 
 		const migrated = migrateWallpaperStore(persisted, 108) as unknown as {
-			looksProfileSlots: Array<{ values: Record<string, unknown> }>;
-			customFilterLookSettings: Record<string, unknown>;
+			looksProfileSlots: Array<{
+				name: string;
+				values: Record<string, unknown>;
+			}>;
+			customFilterLookSettings: Record<string, unknown> | null;
 		};
 
 		const values = migrated.looksProfileSlots[0]!.values;
@@ -154,8 +155,18 @@ describe('migration to v109', () => {
 		}
 		// The slot's own values are untouched.
 		expect(values.rgbShift).toBe(0.005);
-		expect(migrated.customFilterLookSettings.rgbShiftAudioChannel).toBe(
-			'kick'
+
+		// v110 folds the legacy single Custom look into the same slot bank —
+		// with the routing v109 had just backfilled onto it, not without.
+		expect(migrated.customFilterLookSettings).toBeNull();
+		const folded = migrated.looksProfileSlots.find(
+			slot => slot.name === 'Custom Look'
 		);
+		expect(
+			folded,
+			'the legacy custom look was not folded in'
+		).toBeDefined();
+		expect(folded!.values.rgbShift).toBe(0.002);
+		expect(folded!.values.rgbShiftAudioChannel).toBe('kick');
 	});
 });

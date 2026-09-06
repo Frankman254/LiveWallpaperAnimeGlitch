@@ -3,7 +3,7 @@
 ## `logo-frankman-dev.svg` — monograma F + D
 
 La marca original del proyecto, de cuando se llamaba
-**LiveWallpaperAnimeGlitch** y firmaba como *Frankman Dev*: una F y una D
+**LiveWallpaperAnimeGlitch** y firmaba como _Frankman Dev_: una F y una D
 entrelazadas, con barras de espectro dentro de la D. Estuvo en
 `public/favicon.svg` desde abril de 2026 hasta el **6 de septiembre de 2026**,
 cuando el proyecto pasó a llamarse Vibrix.

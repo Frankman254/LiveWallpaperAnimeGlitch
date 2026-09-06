@@ -1449,6 +1449,11 @@ export const en = {
 		'Independent second spectrum — radial or linear',
 	// Looks tab
 	looks_subtitle_preset_first: 'Preset-first filter workflow',
+	looks_catalog_hint:
+		'Factory presets are locked. Your slots can be overwritten or deleted.',
+	looks_save_current: 'Save current',
+	looks_user_slot: 'Your saved configuration',
+	looks_empty_slot_hint: 'Click to store the current look',
 	looks_subtitle_tone_basic: 'Tone and basic surface filters',
 	looks_section_glitch: 'Glitch',
 	looks_section_cinematic: 'Cinematic FX',

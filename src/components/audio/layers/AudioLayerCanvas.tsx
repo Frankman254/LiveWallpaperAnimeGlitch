@@ -5,6 +5,7 @@ import { useAudioData } from '@/hooks/useAudioData';
 import { resetSpectrum } from '@/features/spectrum/render';
 import { resetLogo } from '@/features/logo';
 import { formatTrackTitle } from '@/lib/audio/trackTitle';
+import { getOverlayLayerById } from '@/lib/layers';
 import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import {
 	createAudioLayerFrameRenderState,
@@ -37,6 +38,7 @@ export default function AudioLayerCanvas({
 	const frameRenderStateRef = useRef(createAudioLayerFrameRenderState());
 	const cachedRawTrackTitleRef = useRef<string>('');
 	const cachedFormattedTrackTitleRef = useRef<string>('');
+	const wasVisibleRef = useRef<boolean>(false);
 	const backgroundPalette = useBackgroundPalette();
 	const paletteRef = useRef(backgroundPalette);
 	const {
@@ -97,7 +99,28 @@ export default function AudioLayerCanvas({
 			const dt = Math.min((time - lastTimeRef.current) / 1000, 0.1);
 			lastTimeRef.current = time;
 			lastDrawTimeRef.current = time;
+
+			// A layer that is switched off used to clear its full-screen
+			// backing store on every frame and only then have
+			// `renderAudioLayerFrame` notice `enabled` was false and return.
+			// Clear once on the way out, then leave it alone — same shape
+			// StageLightsCanvas already uses for its invisible frames.
+			const liveLayer = getOverlayLayerById(state, layerRef.current.id);
+			if (liveLayer?.enabled !== true) {
+				if (wasVisibleRef.current) {
+					ctx.clearRect(
+						0,
+						0,
+						currentCanvas.width,
+						currentCanvas.height
+					);
+					wasVisibleRef.current = false;
+				}
+				rafRef.current = requestAnimationFrame(frame);
+				return;
+			}
 			ctx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
+			wasVisibleRef.current = true;
 
 			// Only use file-derived title in file mode; clear it in live capture modes
 			const rawTrackTitle = captureMode === 'file' ? getFileName() : '';

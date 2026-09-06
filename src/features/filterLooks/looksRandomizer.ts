@@ -1,131 +1,110 @@
+import { randomChoice, randomFloat } from '@/lib/randomize';
+import type { WallpaperState } from '@/types/wallpaper';
+import { FILTER_LOOK_PRESETS, type FilterLookSettings } from './filterLooks';
+
+type LooksRandomPatch = FilterLookSettings &
+	Pick<WallpaperState, 'activeFilterLookId'>;
+
+function mix(a: number, b: number, amount: number): number {
+	return Number((a + (b - a) * amount).toFixed(4));
+}
+
 /**
- * "Randomize look" generator. Produces a believable filter/glitch/cinematic
- * combination — values stay inside the real slider ranges and the screen never
- * goes invisible (brightness/contrast/opacity windows are deliberately tame).
+ * Produces a coherent variation by crossfading two curated factory looks.
+ * Categorical and envelope values come from a real preset as one unit, so a
+ * roll cannot create the disconnected combinations the old raw-value generator
+ * produced.
  */
-
-import {
-	FILTER_RANGES,
-	IMAGE_EFFECT_RANGES,
-	SCANLINE_RANGES
-} from '@/config/ranges';
-import {
-	randomChance,
-	randomChoice,
-	randomInRange,
-	snapToRange
-} from '@/lib/randomize';
-import type { ScanlineMode, WallpaperState } from '@/types/wallpaper';
-
-type LooksRandomPatch = Partial<
-	Pick<
-		WallpaperState,
-		| 'filterOpacity'
-		| 'filterBrightness'
-		| 'filterContrast'
-		| 'filterSaturation'
-		| 'filterBlur'
-		| 'filterHueRotate'
-		| 'filterVignette'
-		| 'filterBloom'
-		| 'filterLumaThreshold'
-		| 'filterLensWarp'
-		| 'filterHeatDistortion'
-		| 'rgbShift'
-		| 'noiseIntensity'
-		| 'scanlinesEnabled'
-		| 'scanlineIntensity'
-		| 'scanlineMode'
-		| 'scanlineSpacing'
-		| 'scanlineThickness'
-		| 'activeFilterLookId'
-	>
->;
-
-const SCANLINE_MODES: ScanlineMode[] = ['always', 'pulse', 'burst', 'beat'];
-
 export function generateRandomLooksProfile(): LooksRandomPatch {
-	// Tone — kept near neutral so the wallpaper stays watchable. We bias toward
-	// the readable middle of each range instead of the dark/blown-out extremes.
-	const bloom = randomChance(0.55)
-		? randomInRange(FILTER_RANGES.bloom, { min: 0.15, max: 0.9 })
-		: 0;
-
-	const scanlinesEnabled = randomChance(0.4);
+	const first = randomChoice(FILTER_LOOK_PRESETS);
+	const alternatives = FILTER_LOOK_PRESETS.filter(
+		preset => preset.id !== first.id
+	);
+	const second = randomChoice(alternatives);
+	const amount = randomFloat(0.28, 0.72);
+	const audio = randomChoice([first.settings, second.settings]);
+	const scanlines = randomChoice([first.settings, second.settings]);
 
 	return {
-		// Opacity stays high — a low filter opacity barely applies the look.
-		filterOpacity: randomInRange(FILTER_RANGES.opacity, {
-			min: 0.85,
-			max: 1
-		}),
-		filterBrightness: randomInRange(FILTER_RANGES.brightness, {
-			min: 0.85,
-			max: 1.35
-		}),
-		filterContrast: randomInRange(FILTER_RANGES.contrast, {
-			min: 0.9,
-			max: 1.45
-		}),
-		filterSaturation: randomInRange(FILTER_RANGES.saturation, {
-			min: 0.7,
-			max: 1.9
-		}),
-		// Blur is mostly off — heavy blur makes the scene unusable. Occasional
-		// light haze only.
-		filterBlur: randomChance(0.3)
-			? randomInRange(FILTER_RANGES.blur, { min: 0.5, max: 2.5 })
-			: 0,
-		filterHueRotate: randomInRange(FILTER_RANGES.hueRotate),
-		filterVignette: randomChance(0.6)
-			? randomInRange(FILTER_RANGES.vignette, { min: 0.1, max: 0.55 })
-			: 0,
-		filterBloom: bloom,
-		// Bloom needs a luma threshold to have anything to lift; keep it 0 when
-		// bloom is off so the slider pairing always makes sense.
-		filterLumaThreshold:
-			bloom > 0
-				? randomInRange(FILTER_RANGES.lumaThreshold, {
-						min: 0.3,
-						max: 0.7
-					})
-				: 0,
-		filterLensWarp: randomChance(0.25)
-			? randomInRange(FILTER_RANGES.lensWarp, { min: 0.03, max: 0.18 })
-			: 0,
-		filterHeatDistortion: randomChance(0.25)
-			? randomInRange(FILTER_RANGES.heatDistortion, {
-					min: 0.05,
-					max: 0.35
-				})
-			: 0,
-		// Glitch — subtle by default so text/logos stay legible.
-		rgbShift: randomChance(0.5)
-			? randomInRange(IMAGE_EFFECT_RANGES.rgbShift, {
-					min: 0.002,
-					max: 0.014
-				})
-			: 0,
-		noiseIntensity: randomChance(0.4)
-			? randomInRange(IMAGE_EFFECT_RANGES.noiseIntensity, {
-					min: 0.03,
-					max: 0.22
-				})
-			: 0,
-		scanlinesEnabled,
-		scanlineIntensity: scanlinesEnabled
-			? randomInRange(SCANLINE_RANGES.intensity, { min: 0.15, max: 0.5 })
-			: 0,
-		scanlineMode: randomChoice(SCANLINE_MODES),
-		scanlineSpacing: snapToRange(
-			randomInRange(SCANLINE_RANGES.spacing, { min: 300, max: 900 }),
-			SCANLINE_RANGES.spacing
+		filterOpacity: mix(
+			first.settings.filterOpacity,
+			second.settings.filterOpacity,
+			amount
 		),
-		scanlineThickness: randomInRange(SCANLINE_RANGES.thickness, {
-			min: 0.5,
-			max: 2.5
-		}),
-		// This is a hand-rolled combination, not one of the named look packs.
+		filterBrightness: mix(
+			first.settings.filterBrightness,
+			second.settings.filterBrightness,
+			amount
+		),
+		filterContrast: mix(
+			first.settings.filterContrast,
+			second.settings.filterContrast,
+			amount
+		),
+		filterSaturation: mix(
+			first.settings.filterSaturation,
+			second.settings.filterSaturation,
+			amount
+		),
+		filterBlur: mix(
+			first.settings.filterBlur,
+			second.settings.filterBlur,
+			amount
+		),
+		filterHueRotate: randomChoice([
+			first.settings.filterHueRotate,
+			second.settings.filterHueRotate
+		]),
+		filterVignette: mix(
+			first.settings.filterVignette,
+			second.settings.filterVignette,
+			amount
+		),
+		filterBloom: mix(
+			first.settings.filterBloom,
+			second.settings.filterBloom,
+			amount
+		),
+		filterLumaThreshold: mix(
+			first.settings.filterLumaThreshold,
+			second.settings.filterLumaThreshold,
+			amount
+		),
+		filterLensWarp: mix(
+			first.settings.filterLensWarp,
+			second.settings.filterLensWarp,
+			amount
+		),
+		filterHeatDistortion: mix(
+			first.settings.filterHeatDistortion,
+			second.settings.filterHeatDistortion,
+			amount
+		),
+		rgbShift: mix(
+			first.settings.rgbShift,
+			second.settings.rgbShift,
+			amount
+		),
+		rgbShiftAudioReactive: audio.rgbShiftAudioReactive,
+		rgbShiftAudioSensitivity: audio.rgbShiftAudioSensitivity,
+		rgbShiftAudioChannel: audio.rgbShiftAudioChannel,
+		rgbShiftAudioSmoothing: audio.rgbShiftAudioSmoothing,
+		rgbShiftAudioAttack: audio.rgbShiftAudioAttack,
+		rgbShiftAudioRelease: audio.rgbShiftAudioRelease,
+		rgbShiftAudioReactivitySpeed: audio.rgbShiftAudioReactivitySpeed,
+		rgbShiftAudioPeakWindow: audio.rgbShiftAudioPeakWindow,
+		rgbShiftAudioPeakFloor: audio.rgbShiftAudioPeakFloor,
+		rgbShiftAudioPunch: audio.rgbShiftAudioPunch,
+		noiseIntensity: mix(
+			first.settings.noiseIntensity,
+			second.settings.noiseIntensity,
+			amount
+		),
+		scanlinesEnabled: scanlines.scanlinesEnabled,
+		scanlineIntensity: scanlines.scanlineIntensity,
+		scanlineMode: scanlines.scanlineMode,
+		scanlineSpacing: scanlines.scanlineSpacing,
+		scanlineThickness: scanlines.scanlineThickness,
 		activeFilterLookId: null
 	};
 }

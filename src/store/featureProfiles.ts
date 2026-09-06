@@ -12,7 +12,7 @@ import {
 	hydrateSpectrumProfileValues,
 	normalizeSpectrumShape
 } from '@/features/spectrum';
-import { RGB_SHIFT_AUDIO_KEYS } from '@/features/filterLooks/filterLooks';
+import { FILTER_LOOK_PRESET_KEYS } from '@/features/filterLooks/filterLooks';
 
 export const BACKGROUND_PROFILE_SLOT_COUNT = 3;
 export const LOGO_PROFILE_SLOT_COUNT = 3;
@@ -28,7 +28,7 @@ export const PARTICLES_PROFILE_SLOT_COUNT = 3;
 export const MAX_PARTICLES_SLOT_COUNT = 60;
 export const RAIN_PROFILE_SLOT_COUNT = 3;
 export const MAX_RAIN_SLOT_COUNT = 60;
-export const LOOKS_PROFILE_SLOT_COUNT = 3;
+export const LOOKS_PROFILE_SLOT_COUNT = 6;
 export const MAX_LOOKS_SLOT_COUNT = 60;
 export const TRACK_TITLE_PROFILE_SLOT_COUNT = 3;
 export const MAX_TRACK_TITLE_SLOT_COUNT = 60;
@@ -227,30 +227,7 @@ export type CameraFxProfileSettings = Pick<
  */
 export const LOOKS_PROFILE_KEYS = [
 	'filterTargets',
-	'filterOpacity',
-	'filterBrightness',
-	'filterContrast',
-	'filterSaturation',
-	'filterBlur',
-	'filterHueRotate',
-	'filterVignette',
-	'filterBloom',
-	'filterLumaThreshold',
-	'filterLensWarp',
-	'filterHeatDistortion',
-	'rgbShift',
-	// The audio-reactive half of the RGB shift travels with the look. Without
-	// these ten keys a Looks slot captured "shift by 0.01" and left "and make
-	// it follow the kick" behind as a global, so loading any slot silently
-	// inherited whatever the last one had set.
-	...RGB_SHIFT_AUDIO_KEYS,
-	'noiseIntensity',
-	'scanlinesEnabled',
-	'scanlineIntensity',
-	'scanlineMode',
-	'scanlineSpacing',
-	'scanlineThickness',
-	'activeFilterLookId'
+	...FILTER_LOOK_PRESET_KEYS
 ] as const satisfies ReadonlyArray<keyof WallpaperState>;
 
 export type LooksProfileSettings = Pick<
@@ -811,6 +788,16 @@ export function extractLooksProfileSettings(
 	state: WallpaperState
 ): LooksProfileSettings {
 	return pickState(state, LOOKS_PROFILE_KEYS);
+}
+
+export function hydrateLooksProfileValues(
+	values: Partial<LooksProfileSettings>,
+	defaults: LooksProfileSettings
+): LooksProfileSettings {
+	return pickState(
+		{ ...defaults, ...values } as WallpaperState,
+		LOOKS_PROFILE_KEYS
+	);
 }
 
 export function extractLightsProfileSettings(

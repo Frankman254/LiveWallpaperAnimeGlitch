@@ -229,6 +229,8 @@ export function useQuickActionsState() {
 			setShowLogoDiagnosticsHud: state.setShowLogoDiagnosticsHud,
 			enableDragMode: state.enableDragMode,
 			setEnableDragMode: state.setEnableDragMode,
+			activeTool: state.activeTool,
+			setActiveTool: state.setActiveTool,
 			showSetlistHud: state.showSetlistHud,
 			setShowSetlistHud: state.setShowSetlistHud,
 			setEditorTheme: state.setEditorTheme

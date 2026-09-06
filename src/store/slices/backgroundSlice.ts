@@ -11,6 +11,7 @@ import {
 	extractBackgroundProfileSettings,
 	extractLogoProfileSettings,
 	extractLooksProfileSettings,
+	hydrateLooksProfileValues,
 	extractParticlesProfileSettings,
 	extractRainProfileSettings,
 	extractSpectrumProfileSettings,
@@ -26,7 +27,9 @@ import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	CUSTOM_FILTER_LOOK_ID,
+	fromFilterLookSlotSelectionId,
 	extractFilterLookSettingsFromState,
+	toFilterLookSlotSelectionId,
 	type FilterLookPreset
 } from '@/features/filterLooks/filterLooks';
 import { generateRandomLooksProfile } from '@/features/filterLooks/looksRandomizer';
@@ -41,24 +44,39 @@ export function createBackgroundSlice(
 	_api: WallpaperApi
 ) {
 	return {
-		setNoiseIntensity: v => set({ noiseIntensity: v }),
-		setRgbShift: v => set({ rgbShift: v }),
-		setRgbShiftAudioReactive: v => set({ rgbShiftAudioReactive: v }),
-		setRgbShiftAudioSensitivity: v => set({ rgbShiftAudioSensitivity: v }),
-		setRgbShiftAudioChannel: v => set({ rgbShiftAudioChannel: v }),
-		setRgbShiftAudioSmoothing: v => set({ rgbShiftAudioSmoothing: v }),
-		setRgbShiftAudioAttack: v => set({ rgbShiftAudioAttack: v }),
-		setRgbShiftAudioRelease: v => set({ rgbShiftAudioRelease: v }),
+		setNoiseIntensity: v =>
+			set({ noiseIntensity: v, activeFilterLookId: null }),
+		setRgbShift: v => set({ rgbShift: v, activeFilterLookId: null }),
+		setRgbShiftAudioReactive: v =>
+			set({ rgbShiftAudioReactive: v, activeFilterLookId: null }),
+		setRgbShiftAudioSensitivity: v =>
+			set({ rgbShiftAudioSensitivity: v, activeFilterLookId: null }),
+		setRgbShiftAudioChannel: v =>
+			set({ rgbShiftAudioChannel: v, activeFilterLookId: null }),
+		setRgbShiftAudioSmoothing: v =>
+			set({ rgbShiftAudioSmoothing: v, activeFilterLookId: null }),
+		setRgbShiftAudioAttack: v =>
+			set({ rgbShiftAudioAttack: v, activeFilterLookId: null }),
+		setRgbShiftAudioRelease: v =>
+			set({ rgbShiftAudioRelease: v, activeFilterLookId: null }),
 		setRgbShiftAudioReactivitySpeed: v =>
-			set({ rgbShiftAudioReactivitySpeed: v }),
-		setRgbShiftAudioPeakWindow: v => set({ rgbShiftAudioPeakWindow: v }),
-		setRgbShiftAudioPeakFloor: v => set({ rgbShiftAudioPeakFloor: v }),
-		setRgbShiftAudioPunch: v => set({ rgbShiftAudioPunch: v }),
-		setScanlinesEnabled: v => set({ scanlinesEnabled: v }),
-		setScanlineIntensity: v => set({ scanlineIntensity: v }),
-		setScanlineMode: v => set({ scanlineMode: v }),
-		setScanlineSpacing: v => set({ scanlineSpacing: v }),
-		setScanlineThickness: v => set({ scanlineThickness: v }),
+			set({ rgbShiftAudioReactivitySpeed: v, activeFilterLookId: null }),
+		setRgbShiftAudioPeakWindow: v =>
+			set({ rgbShiftAudioPeakWindow: v, activeFilterLookId: null }),
+		setRgbShiftAudioPeakFloor: v =>
+			set({ rgbShiftAudioPeakFloor: v, activeFilterLookId: null }),
+		setRgbShiftAudioPunch: v =>
+			set({ rgbShiftAudioPunch: v, activeFilterLookId: null }),
+		setScanlinesEnabled: v =>
+			set({ scanlinesEnabled: v, activeFilterLookId: null }),
+		setScanlineIntensity: v =>
+			set({ scanlineIntensity: v, activeFilterLookId: null }),
+		setScanlineMode: v =>
+			set({ scanlineMode: v, activeFilterLookId: null }),
+		setScanlineSpacing: v =>
+			set({ scanlineSpacing: v, activeFilterLookId: null }),
+		setScanlineThickness: v =>
+			set({ scanlineThickness: v, activeFilterLookId: null }),
 		setParallaxStrength: v => set({ parallaxStrength: v }),
 		setImageUrl: v =>
 			set(state => {
@@ -321,12 +339,20 @@ export function createBackgroundSlice(
 			}),
 		removeLooksProfileSlot: index =>
 			set(state => {
-				if (index < 3 || index >= state.looksProfileSlots.length)
+				if (index < 0 || index >= state.looksProfileSlots.length)
 					return state;
+				const removed = state.looksProfileSlots[index];
+				const activeSlotId = fromFilterLookSlotSelectionId(
+					state.activeFilterLookId
+				);
 				return {
 					looksProfileSlots: state.looksProfileSlots.filter(
 						(_, i) => i !== index
-					)
+					),
+					activeFilterLookId:
+						removed?.id === activeSlotId
+							? null
+							: state.activeFilterLookId
 				};
 			}),
 		saveLooksProfileSlot: index =>
@@ -342,7 +368,12 @@ export function createBackgroundSlice(
 							}
 						: slot
 				);
-				return { looksProfileSlots: nextSlots };
+				return {
+					looksProfileSlots: nextSlots,
+					activeFilterLookId: toFilterLookSlotSelectionId(
+						nextSlots[index]!.id
+					)
+				};
 			}),
 		loadLooksProfileSlot: index =>
 			set(state => {
@@ -351,7 +382,10 @@ export function createBackgroundSlice(
 				const defaults = extractLooksProfileSettings(
 					DEFAULT_STATE as WallpaperStore
 				);
-				return { ...defaults, ...slot.values };
+				return {
+					...hydrateLooksProfileValues(slot.values, defaults),
+					activeFilterLookId: toFilterLookSlotSelectionId(slot.id)
+				};
 			}),
 		setImageLogoProfileSlotIndex: v =>
 			set(state => ({
@@ -555,24 +589,35 @@ export function createBackgroundSlice(
 		setGlobalBackgroundBlur: v => set({ globalBackgroundBlur: v }),
 		setGlobalBackgroundHueRotate: v =>
 			set({ globalBackgroundHueRotate: v }),
-		setFilterTargets: v => set({ filterTargets: v }),
+		setFilterTargets: v =>
+			set({ filterTargets: v, activeFilterLookId: null }),
 		toggleFilterTarget: target =>
 			set(state => ({
 				filterTargets: state.filterTargets.includes(target)
 					? state.filterTargets.filter(item => item !== target)
-					: [...state.filterTargets, target]
+					: [...state.filterTargets, target],
+				activeFilterLookId: null
 			})),
-		setFilterOpacity: v => set({ filterOpacity: v }),
-		setFilterBrightness: v => set({ filterBrightness: v }),
-		setFilterContrast: v => set({ filterContrast: v }),
-		setFilterSaturation: v => set({ filterSaturation: v }),
-		setFilterBlur: v => set({ filterBlur: v }),
-		setFilterHueRotate: v => set({ filterHueRotate: v }),
-		setFilterVignette: v => set({ filterVignette: v }),
-		setFilterBloom: v => set({ filterBloom: v }),
-		setFilterLumaThreshold: v => set({ filterLumaThreshold: v }),
-		setFilterLensWarp: v => set({ filterLensWarp: v }),
-		setFilterHeatDistortion: v => set({ filterHeatDistortion: v }),
+		setFilterOpacity: v =>
+			set({ filterOpacity: v, activeFilterLookId: null }),
+		setFilterBrightness: v =>
+			set({ filterBrightness: v, activeFilterLookId: null }),
+		setFilterContrast: v =>
+			set({ filterContrast: v, activeFilterLookId: null }),
+		setFilterSaturation: v =>
+			set({ filterSaturation: v, activeFilterLookId: null }),
+		setFilterBlur: v => set({ filterBlur: v, activeFilterLookId: null }),
+		setFilterHueRotate: v =>
+			set({ filterHueRotate: v, activeFilterLookId: null }),
+		setFilterVignette: v =>
+			set({ filterVignette: v, activeFilterLookId: null }),
+		setFilterBloom: v => set({ filterBloom: v, activeFilterLookId: null }),
+		setFilterLumaThreshold: v =>
+			set({ filterLumaThreshold: v, activeFilterLookId: null }),
+		setFilterLensWarp: v =>
+			set({ filterLensWarp: v, activeFilterLookId: null }),
+		setFilterHeatDistortion: v =>
+			set({ filterHeatDistortion: v, activeFilterLookId: null }),
 		setActiveFilterLookId: id => set({ activeFilterLookId: id }),
 		saveCustomFilterLookFromCurrent: () =>
 			set(state => ({
@@ -597,29 +642,18 @@ export function createBackgroundSlice(
 					values: extractLooksProfileSettings(state)
 				};
 				return {
-					looksProfileSlots: [...state.looksProfileSlots, nextSlot]
+					looksProfileSlots: [...state.looksProfileSlots, nextSlot],
+					activeFilterLookId: toFilterLookSlotSelectionId(nextSlot.id)
 				};
 			});
 			return createdIndex;
 		},
 		randomizeLooks: () => set(generateRandomLooksProfile()),
+		// Factory looks only. The legacy single Custom look was folded into the
+		// normal slot bank in v110, so there is no second kind of look left to
+		// branch on here.
 		applyFilterLook: (look: FilterLookPreset) =>
-			set(state => {
-				if (look.id === CUSTOM_FILTER_LOOK_ID) {
-					const saved = state.customFilterLookSettings;
-					if (!saved) {
-						return {};
-					}
-					return {
-						...saved,
-						activeFilterLookId: CUSTOM_FILTER_LOOK_ID
-					};
-				}
-				return {
-					...look.settings,
-					activeFilterLookId: look.id
-				};
-			}),
+			set({ ...look.settings, activeFilterLookId: look.id }),
 		setSlideshowEnabled: v => set({ slideshowEnabled: v }),
 		setSlideshowInterval: v => set({ slideshowInterval: v }),
 		setSlideshowTransitionDuration: v =>

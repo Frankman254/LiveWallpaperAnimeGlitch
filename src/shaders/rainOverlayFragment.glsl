@@ -58,16 +58,37 @@ void main() {
   float blur  = max(uRainBlur, 0.0001);
   float variation = clamp(uRainVariation, 0.0, 1.0);
 
+  float n = float(uDropCount);
+  // Widest a drop can get once per-drop variation is applied, plus the feather.
+  // `localHalfW` is `mix(1.0, 0.55 + r * 1.25, variation) * halfW` with r in
+  // [0,1], so this is its exact upper bound — nothing that could contribute is
+  // ever rejected by it.
+  float maxReachX = halfW * mix(1.0, 1.8, variation) + blur;
+
   for (int i = 0; i < 100; i++) {
     if (i >= uDropCount) break;
 
     float fi = float(i);
-    float n  = float(uDropCount);
 
     // Even distribution across full [0,1] width with per-drop jitter
     float dropX = (fi + 0.5 + (random(vec2(fi, 9.3)) - 0.5) * 0.6) / n;
+    float dx = rotUV.x - dropX;
+
+    // Horizontal reject FIRST. This loop runs for every fragment on a
+    // full-screen quad — ~2M times at 1080p — and every `random()` is a `sin`.
+    // The per-drop constants below cost five more of them, and for a typical
+    // pixel only one or two of the drops are anywhere near it, so computing
+    // them before knowing that was ~6x the transcendental work per pixel for
+    // nothing. Every drop type's contribution is bounded by `xW` (dots reach
+    // this bound through `dist >= abs(dx)`), so an early exit here is exact.
+    if (abs(dx) > maxReachX) continue;
 
     float localHalfW = halfW * mix(1.0, 0.55 + random(vec2(fi, 4.1)) * 1.25, variation);
+
+    // Horizontal proximity weight (common to all types)
+    float xW = 1.0 - smoothstep(localHalfW, localHalfW + blur, abs(dx));
+    if (xW <= 0.001) continue;
+
     float localLength = max(0.002, uRainLength * mix(1.0, 0.65 + random(vec2(fi, 6.4)) * 1.1, variation));
     float alphaJitter = mix(1.0, 0.7 + random(vec2(fi, 7.8)) * 0.65, variation);
 
@@ -76,12 +97,7 @@ void main() {
     // headY: leading edge, falls 1→0 (top to bottom in Three.js UV)
     float headY  = 1.0 - fract(uTime * spd * 0.22 + phase);
 
-    float dx      = rotUV.x - dropX;
     float trailDY = rotUV.y - headY; // > 0 means pixel is above head = in trail
-
-    // Horizontal proximity weight (common to all types)
-    float xW = 1.0 - smoothstep(localHalfW, localHalfW + blur, abs(dx));
-    if (xW <= 0.001) continue;
 
     float contrib = 0.0;
 

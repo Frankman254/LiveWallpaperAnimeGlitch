@@ -1462,6 +1462,11 @@ export const es: Record<TranslationKey, string> = {
 		'Segundo espectro independiente — radial o linear',
 	// Pestaña Looks
 	looks_subtitle_preset_first: 'Flujo de filtros priorizando preset',
+	looks_catalog_hint:
+		'Los presets de fábrica están bloqueados. Tus slots se pueden sobrescribir o borrar.',
+	looks_save_current: 'Guardar actual',
+	looks_user_slot: 'Tu configuración guardada',
+	looks_empty_slot_hint: 'Haz clic para guardar el look actual',
 	looks_subtitle_tone_basic: 'Tono y filtros básicos de superficie',
 	looks_section_glitch: 'Glitch',
 	looks_section_cinematic: 'FX cinematográficos',

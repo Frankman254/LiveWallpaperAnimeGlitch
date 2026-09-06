@@ -1,5 +1,12 @@
 import { useShallow } from 'zustand/react/shallow';
-import { Save, RotateCcw, Wand2 } from 'lucide-react';
+import {
+	LockKeyhole,
+	Plus,
+	Save,
+	RotateCcw,
+	Trash2,
+	Wand2
+} from 'lucide-react';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import {
@@ -11,11 +18,11 @@ import {
 } from '@/config/ranges';
 import type { FilterTarget, ScanlineMode } from '@/types/wallpaper';
 import {
-	CUSTOM_FILTER_LOOK_ID,
-	FILTER_LOOK_PRESETS,
-	findFilterLookById,
-	type FilterLookId
+	buildFilterLookCatalog,
+	findFilterLookCatalogIndex,
+	type FactoryFilterLookId
 } from '@/features/filterLooks/filterLooks';
+import { MAX_LOOKS_SLOT_COUNT } from '@/store/featureProfiles';
 import {
 	Button,
 	Caption,
@@ -24,12 +31,12 @@ import {
 	EditorTabLayout,
 	EnumButtonGroup as EnumButtons,
 	FeatureGate,
+	IconButton,
 	SectionCard,
 	UI_COLORS,
 	ICON_SIZE
 } from '@/ui';
 import { CollapsibleSection } from '@/editor';
-import { ProfileSlotsEditor } from '@/editor';
 import SliderControl from '@/editor/SliderControl';
 import ToggleControl from '@/editor/ToggleControl';
 import AudioChannelSelector from '@/editor/AudioChannelSelector';
@@ -51,7 +58,7 @@ const FILTER_TARGETS: FilterTarget[] = [
 
 const SCANLINE_MODES: ScanlineMode[] = ['always', 'pulse', 'burst', 'beat'];
 
-const LOOK_GRADIENTS: Record<FilterLookId, string> = {
+const LOOK_GRADIENTS: Record<FactoryFilterLookId, string> = {
 	crt: 'linear-gradient(135deg, #22d3ee, #6366f1)',
 	vhs: 'linear-gradient(135deg, #64748b, #f59e0b)',
 	'cyber-neon': 'linear-gradient(135deg, #06b6d4, #ec4899)',
@@ -60,8 +67,10 @@ const LOOK_GRADIENTS: Record<FilterLookId, string> = {
 	'club-glitch': 'linear-gradient(135deg, #f43f5e, #8b5cf6)',
 	'glass-mist': 'linear-gradient(135deg, #bae6fd, #c4b5fd)',
 	'infrared-pulse': 'linear-gradient(135deg, #fb923c, #ef4444)',
-	[CUSTOM_FILTER_LOOK_ID]:
-		'linear-gradient(135deg, var(--vibrix-accent), var(--editor-tag-bg))'
+	'noir-cinema': 'linear-gradient(135deg, #09090b, #71717a)',
+	hologram: 'linear-gradient(135deg, #22d3ee, #a5f3fc)',
+	'sunset-film': 'linear-gradient(135deg, #fb7185, #fbbf24)',
+	'ice-signal': 'linear-gradient(135deg, #2563eb, #cffafe)'
 };
 
 export default function LooksTab({ onReset }: { onReset: () => void }) {
@@ -92,7 +101,6 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 			selectedOverlayId: s.selectedOverlayId,
 			filterTargets: s.filterTargets,
 			activeFilterLookId: s.activeFilterLookId,
-			customFilterLookSettings: s.customFilterLookSettings,
 			filterOpacity: s.filterOpacity,
 			filterBrightness: s.filterBrightness,
 			filterContrast: s.filterContrast,
@@ -125,7 +133,6 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 			toggleFilterTarget: s.toggleFilterTarget,
 			setFilterTargets: s.setFilterTargets,
 			resetFiltersToDefaults: s.resetFiltersToDefaults,
-			saveCustomFilterLookFromCurrent: s.saveCustomFilterLookFromCurrent,
 			saveCurrentLooksAsNewSlot: s.saveCurrentLooksAsNewSlot,
 			randomizeLooks: s.randomizeLooks,
 			applyFilterLook: s.applyFilterLook,
@@ -159,7 +166,6 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 			setScanlineThickness: s.setScanlineThickness,
 			loadLooksProfileSlot: s.loadLooksProfileSlot,
 			saveLooksProfileSlot: s.saveLooksProfileSlot,
-			addLooksProfileSlot: s.addLooksProfileSlot,
 			removeLooksProfileSlot: s.removeLooksProfileSlot
 		}))
 	);
@@ -173,15 +179,13 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 	const allTargetsEnabled = availableTargets.every(target =>
 		store.filterTargets.includes(target)
 	);
-	const customLookPreset = store.customFilterLookSettings
-		? findFilterLookById(
-				CUSTOM_FILTER_LOOK_ID,
-				store.customFilterLookSettings
-			)
-		: undefined;
-	const lookPackButtons = customLookPreset
-		? [...FILTER_LOOK_PRESETS, customLookPreset]
-		: FILTER_LOOK_PRESETS;
+	const lookCatalog = buildFilterLookCatalog(store.looksProfileSlots);
+	const activeCatalogIndex = findFilterLookCatalogIndex(
+		lookCatalog,
+		store.activeFilterLookId
+	);
+	const activeCatalogEntry =
+		activeCatalogIndex >= 0 ? lookCatalog[activeCatalogIndex] : undefined;
 
 	function toggleTarget(target: FilterTarget) {
 		if (target === 'selected-overlay' && !selectedOverlay) return;
@@ -196,6 +200,31 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 		store.setFilterTargets([...availableTargets]);
 	}
 
+	function saveCurrentAsSlot() {
+		const emptyIndex = store.looksProfileSlots.findIndex(
+			slot => slot.values === null
+		);
+		if (emptyIndex >= 0) {
+			store.saveLooksProfileSlot(emptyIndex);
+			return;
+		}
+		store.saveCurrentLooksAsNewSlot();
+	}
+
+	async function deleteLooksSlot(index: number, name: string) {
+		const approved = await confirm({
+			title: t.confirm_delete_profile_slot_title,
+			message: t.confirm_delete_profile_slot_named.replace(
+				'{name}',
+				name
+			),
+			confirmLabel: t.label_delete_slot,
+			cancelLabel: t.label_cancel,
+			tone: 'danger'
+		});
+		if (approved) store.removeLooksProfileSlot(index);
+	}
+
 	return (
 		<EditorTabLayout
 			header={
@@ -206,25 +235,186 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 			}
 			savedProfiles={
 				<SectionCard
-					title={t.section_saved_profiles}
-					subtitle={t.hint_saved_profiles}
+					title={t.label_look_packs}
+					subtitle={t.looks_catalog_hint}
 					density="compact"
+					action={
+						<Button
+							type="button"
+							onClick={saveCurrentAsSlot}
+							disabled={
+								store.looksProfileSlots.length >=
+									MAX_LOOKS_SLOT_COUNT &&
+								store.looksProfileSlots.every(
+									slot => slot.values !== null
+								)
+							}
+							size="sm"
+							density="compact"
+							variant="primary"
+							icon={<Plus size={ICON_SIZE.xs} />}
+						>
+							{t.looks_save_current}
+						</Button>
+					}
 				>
-					<ProfileSlotsEditor
-						title=""
-						hint={t.hint_saved_profiles}
-						slots={store.looksProfileSlots}
-						activeIndex={null}
-						onLoad={store.loadLooksProfileSlot}
-						onSave={store.saveLooksProfileSlot}
-						onAdd={store.addLooksProfileSlot}
-						onDelete={store.removeLooksProfileSlot}
-						loadLabel={t.label_load_profile}
-						saveLabel={t.label_save_profile}
-						slotLabel={t.label_profile_slot}
-						emptyLabel={t.profile_slot_empty}
-						activeLabel={t.profile_slot_active}
-					/>
+					<div className="flex flex-col gap-2">
+						{activeCatalogEntry ? (
+							<div
+								className="rounded-[var(--editor-radius-md)] border px-2 py-1.5 text-[11px]"
+								style={{
+									background: UI_COLORS.raised,
+									borderColor: UI_COLORS.accentBorder
+								}}
+							>
+								<span style={{ color: UI_COLORS.fgMute }}>
+									{t.label_active_look_prefix}{' '}
+								</span>
+								<strong style={{ color: UI_COLORS.accent }}>
+									{activeCatalogEntry.name}
+								</strong>
+							</div>
+						) : null}
+						<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+							{lookCatalog.map(entry => {
+								const isFactory = entry.kind === 'factory';
+								const hasValues = entry.values !== null;
+								const isActive =
+									entry.key === activeCatalogEntry?.key;
+								return (
+									<div
+										key={entry.key}
+										className="group relative flex min-w-0 flex-col overflow-hidden"
+										style={{
+											borderRadius:
+												'var(--editor-radius-lg)',
+											border: `1px solid ${
+												isActive
+													? UI_COLORS.accentBorder
+													: UI_COLORS.border
+											}`,
+											background: isActive
+												? UI_COLORS.accentSoft
+												: UI_COLORS.raised,
+											boxShadow: isActive
+												? '0 0 0 1px color-mix(in srgb, var(--vibrix-accent) 36%, transparent)'
+												: 'none'
+										}}
+									>
+										<button
+											type="button"
+											onClick={() => {
+												if (entry.kind === 'factory') {
+													store.applyFilterLook(
+														entry.preset
+													);
+												} else if (entry.values) {
+													store.loadLooksProfileSlot(
+														entry.slotIndex
+													);
+												} else {
+													store.saveLooksProfileSlot(
+														entry.slotIndex
+													);
+												}
+											}}
+											className="flex min-w-0 flex-1 flex-col text-left"
+										>
+											<div
+												aria-hidden
+												className="m-2 mb-1.5 h-9 rounded-[var(--editor-radius-md)]"
+												style={{
+													background: isFactory
+														? LOOK_GRADIENTS[
+																entry.preset.id
+															]
+														: 'linear-gradient(135deg, var(--editor-tag-bg), var(--editor-panel-bg))',
+													border: `1px solid ${UI_COLORS.hairline}`,
+													opacity: hasValues
+														? 1
+														: 0.45
+												}}
+											/>
+											<div className="min-w-0 px-2 pb-2">
+												<div className="flex items-center gap-1">
+													{isFactory ? (
+														<LockKeyhole
+															size={10}
+															style={{
+																color: UI_COLORS.fgMute
+															}}
+														/>
+													) : null}
+													<div
+														className="min-w-0 flex-1 truncate text-[12px] font-semibold"
+														style={{
+															color: isActive
+																? UI_COLORS.accent
+																: UI_COLORS.fg
+														}}
+													>
+														{hasValues
+															? entry.name
+															: t.profile_slot_empty}
+													</div>
+												</div>
+												<Caption
+													as="div"
+													className="line-clamp-2"
+												>
+													{isFactory
+														? entry.preset
+																.description
+														: hasValues
+															? t.looks_user_slot
+															: t.looks_empty_slot_hint}
+												</Caption>
+											</div>
+										</button>
+										{entry.kind === 'slot' &&
+										entry.values ? (
+											<div className="absolute right-1 top-1 flex gap-0.5 rounded-md bg-black/40 p-0.5">
+												<IconButton
+													onClick={() =>
+														store.saveLooksProfileSlot(
+															entry.slotIndex
+														)
+													}
+													size="sm"
+													density="compact"
+													title={t.label_save_profile}
+													aria-label={
+														t.label_save_profile
+													}
+												>
+													<Save size={ICON_SIZE.xs} />
+												</IconButton>
+												<IconButton
+													onClick={() =>
+														void deleteLooksSlot(
+															entry.slotIndex,
+															entry.name
+														)
+													}
+													size="sm"
+													density="compact"
+													variant="destructive"
+													title={t.label_delete_slot}
+													aria-label={
+														t.label_delete_slot
+													}
+												>
+													<Trash2
+														size={ICON_SIZE.xs}
+													/>
+												</IconButton>
+											</div>
+										) : null}
+									</div>
+								);
+							})}
+						</div>
+					</div>
 				</SectionCard>
 			}
 			footer={
@@ -279,107 +469,6 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 				>
 					{t.btn_randomize}
 				</Button>
-			</SectionCard>
-
-			<SectionCard
-				title={t.label_look_packs}
-				subtitle={t.looks_subtitle_preset_first}
-				density="compact"
-				action={
-					<Button
-						type="button"
-						title="Save current look as a new slot below"
-						onClick={() => store.saveCurrentLooksAsNewSlot()}
-						size="sm"
-						density="compact"
-						variant="primary"
-						icon={<Save size={ICON_SIZE.xs} />}
-					>
-						Save as slot
-					</Button>
-				}
-			>
-				<div className="flex flex-col gap-2">
-					{store.activeFilterLookId ? (
-						<div
-							className="rounded-[var(--editor-radius-md)] border px-2 py-1.5 text-[11px]"
-							style={{
-								background: UI_COLORS.raised,
-								borderColor: UI_COLORS.accentBorder
-							}}
-						>
-							<span style={{ color: UI_COLORS.fgMute }}>
-								{t.label_active_look_prefix}{' '}
-							</span>
-							<strong style={{ color: UI_COLORS.accent }}>
-								{findFilterLookById(
-									store.activeFilterLookId,
-									store.customFilterLookSettings
-								)?.name ?? store.activeFilterLookId}
-							</strong>
-						</div>
-					) : null}
-					<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-						{lookPackButtons.map(look => {
-							const isActive =
-								store.activeFilterLookId === look.id;
-							return (
-								<button
-									key={look.id}
-									type="button"
-									onClick={() => store.applyFilterLook(look)}
-									className="group flex min-w-0 flex-col overflow-hidden text-left"
-									style={{
-										borderRadius: 'var(--editor-radius-lg)',
-										border: `1px solid ${
-											isActive
-												? UI_COLORS.accentBorder
-												: UI_COLORS.border
-										}`,
-										background: isActive
-											? UI_COLORS.accentSoft
-											: UI_COLORS.raised,
-										color: UI_COLORS.fg,
-										boxShadow: isActive
-											? '0 0 0 1px color-mix(in srgb, var(--vibrix-accent) 36%, transparent)'
-											: 'none'
-									}}
-								>
-									<div
-										aria-hidden
-										className="m-2 mb-1.5 h-10 rounded-[var(--editor-radius-md)]"
-										style={{
-											background:
-												LOOK_GRADIENTS[look.id] ??
-												'linear-gradient(135deg, var(--editor-tag-bg), var(--editor-panel-bg))',
-											border: `1px solid ${UI_COLORS.hairline}`
-										}}
-									/>
-									<div className="min-w-0 px-2 pb-2">
-										<div
-											className="truncate text-[12px] font-semibold"
-											style={{
-												color: isActive
-													? UI_COLORS.accent
-													: UI_COLORS.fg
-											}}
-										>
-											{look.id === CUSTOM_FILTER_LOOK_ID
-												? t.label_custom_look_name
-												: look.name}
-										</div>
-										<Caption
-											as="div"
-											className="line-clamp-2"
-										>
-											{look.description}
-										</Caption>
-									</div>
-								</button>
-							);
-						})}
-					</div>
-				</div>
 			</SectionCard>
 
 			<AdvancedOnly>

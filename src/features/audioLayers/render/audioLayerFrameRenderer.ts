@@ -68,6 +68,33 @@ function isFilterTargetActive(
 	);
 }
 
+/**
+ * True when the Looks stack would change nothing for this layer.
+ *
+ * Being a filter target used to be enough to send the layer through a
+ * full-screen offscreen canvas and a filtered `drawImage` every frame — even
+ * with every dial at its identity value. With two spectrums plus logo, track
+ * and lyrics all listed as targets that is five needless full-screen clears
+ * and composites per frame, and the frame looks byte-for-byte the same either
+ * way.
+ */
+export function isLayerFilterInert(
+	state: WallpaperState,
+	scanlineAmount: number
+): boolean {
+	return (
+		state.filterOpacity >= 0.999 &&
+		Math.abs(state.filterBrightness - 1) < 0.001 &&
+		Math.abs(state.filterContrast - 1) < 0.001 &&
+		Math.abs(state.filterSaturation - 1) < 0.001 &&
+		state.filterBlur < 0.01 &&
+		Math.abs(state.filterHueRotate) < 0.01 &&
+		state.rgbShift <= 0.0001 &&
+		state.noiseIntensity <= 0.001 &&
+		scanlineAmount <= 0.001
+	);
+}
+
 function ensurePostProcessCanvas(
 	existing: HTMLCanvasElement | null,
 	width: number,
@@ -121,7 +148,20 @@ export function renderAudioLayerFrame(
 		input.state.filterTargets
 	);
 
-	if (!filterActive) {
+	// `scanlinesEnabled` is the switch every other renderer honours; this one
+	// read `scanlineIntensity` straight through, so turning scanlines off in
+	// the Looks tab still drew them over the logo, spectrum, track and lyrics
+	// layers whenever those were filter targets.
+	const scanlineAmount = input.state.scanlinesEnabled
+		? getScanlineAmount(
+				input.state.scanlineMode,
+				input.state.scanlineIntensity,
+				input.timeMs,
+				input.audio.amplitude
+			)
+		: 0;
+
+	if (!filterActive || isLayerFilterInert(input.state, scanlineAmount)) {
 		drawOverlayLayer(nextLayer, {
 			ctx: input.ctx,
 			...drawContext
@@ -155,12 +195,6 @@ export function renderAudioLayerFrame(
 	input.ctx.filter = `brightness(${input.state.filterBrightness}) contrast(${input.state.filterContrast}) saturate(${input.state.filterSaturation}) blur(${input.state.filterBlur}px) hue-rotate(${input.state.filterHueRotate}deg)`;
 	input.ctx.drawImage(snapshotCanvas, 0, 0);
 	input.ctx.filter = 'none';
-	const scanlineAmount = getScanlineAmount(
-		input.state.scanlineMode,
-		input.state.scanlineIntensity,
-		input.timeMs,
-		input.audio.amplitude
-	);
 	input.ctx.globalCompositeOperation = 'source-atop';
 	if (input.state.rgbShift > 0.0001) {
 		input.ctx.save();
