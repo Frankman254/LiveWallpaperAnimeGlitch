@@ -1,7 +1,7 @@
 # Onboarding — Entender el código de cero a complejo
 
-Esta carpeta es una **ruta de aprendizaje progresiva** del proyecto
-`LiveWallpaperAnimeGlitch`. Está pensada para leerse en orden: cada nivel
+Esta carpeta es una **ruta de aprendizaje progresiva** de **Vibrix**. Está
+pensada para leerse en orden: cada nivel
 asume lo del anterior y sube en complejidad.
 
 No es una guía de "cómo usar la app". Es una guía de **cómo está hecho el
@@ -14,7 +14,7 @@ código y cómo pensarlo** — para que puedas ubicar cualquier feature sin abri
 > avísame.
 
 > Fecha de la serie: 2026-06 · Versión del proyecto: `0.3.0-alpha` ·
-> `STORE_PERSIST_VERSION = 110` (see `src/lib/version.ts`).
+> `STORE_PERSIST_VERSION = 111` (see `src/lib/version.ts`).
 
 ---
 

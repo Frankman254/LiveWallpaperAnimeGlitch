@@ -17,7 +17,7 @@
 
 ## 1. El sistema en 60 segundos
 
-LiveWallpaperAnimeGlitch es un **editor de escenas audiovisuales dirigido por un
+Vibrix es un **editor de escenas audiovisuales dirigido por un
 documento de escena central**. Cinco flujos y ya lo entendés:
 
 **1 · Arranque**

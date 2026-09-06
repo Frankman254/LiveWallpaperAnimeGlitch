@@ -27,6 +27,8 @@
  */
 
 import { DEFAULT_STATE } from '@/store/defaultState';
+import { APP_LOGO_URL, LEGACY_APP_LOGO_URL } from '@/config/appLogo';
+import { CANONICAL_FACTORY_LOGO_URL } from '@/lib/canonicalFactoryPresets';
 import {
 	convertLegacySpectrumCloneState,
 	createDefaultSpectrumInstance
@@ -3004,6 +3006,14 @@ export function migrateWallpaperStore(
 	}
 	if (fromVersion < 110) {
 		migrateLegacyCustomLook(migratedState);
+	}
+	if (
+		fromVersion < 111 &&
+		!migratedState.logoId &&
+		(migratedState.logoUrl === LEGACY_APP_LOGO_URL ||
+			migratedState.logoUrl === CANONICAL_FACTORY_LOGO_URL)
+	) {
+		migratedState.logoUrl = APP_LOGO_URL;
 	}
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;

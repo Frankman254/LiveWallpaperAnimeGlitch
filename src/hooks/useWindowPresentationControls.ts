@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { APP_MINI_PLAYER_TITLE, APP_NAME } from '@/config/brand';
 
 type MiniPlayerMode = 'closed' | 'document-pip' | 'popup';
 
@@ -10,8 +11,8 @@ type DocumentPictureInPictureApi = {
 	}) => Promise<Window>;
 };
 
-const WINDOW_MODE_EVENT = 'wallpaper-window-mode-change';
-const MINI_PLAYER_WINDOW_NAME = 'live-wallpaper-mini-player';
+const WINDOW_MODE_EVENT = 'vibrix-window-mode-change';
+const MINI_PLAYER_WINDOW_NAME = 'vibrix-mini-player';
 
 let miniPlayerWindowRef: Window | null = null;
 let miniPlayerModeRef: MiniPlayerMode = 'closed';
@@ -89,7 +90,7 @@ async function openDocumentMiniPlayer(): Promise<void> {
 	});
 
 	const doc = pipWindow.document;
-	doc.title = 'Live Wallpaper Mini Player';
+	doc.title = APP_MINI_PLAYER_TITLE;
 	doc.body.style.margin = '0';
 	doc.body.style.width = '100vw';
 	doc.body.style.height = '100vh';
@@ -98,7 +99,7 @@ async function openDocumentMiniPlayer(): Promise<void> {
 
 	const iframe = doc.createElement('iframe');
 	iframe.src = getPreviewUrl(true);
-	iframe.title = 'Live Wallpaper Window';
+	iframe.title = `${APP_NAME} preview`;
 	iframe.allow = 'fullscreen';
 	iframe.style.width = '100%';
 	iframe.style.height = '100%';

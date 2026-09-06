@@ -1,8 +1,9 @@
 import type { TranslationKey } from './en';
+import { APP_NAME } from '@/config/brand';
 
 export const es: Record<TranslationKey, string> = {
 	// Panel
-	title: 'Fondo Animado',
+	title: APP_NAME,
 	autoSaved: 'guardado automático',
 	// Pestañas
 	tab_presets: 'Fondo',

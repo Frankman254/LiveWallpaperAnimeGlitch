@@ -30,7 +30,7 @@ import {
 	clearDebugSpectrumClone,
 	setDebugLogoAudio
 } from '@/lib/debug/frameAudioDebugSnapshot';
-import { resolveAppLogoUrl } from '@/config/appLogo';
+import { resolveAppLogoUrl, shouldUsePixelAppLogo } from '@/config/appLogo';
 import type { OverlayLayer } from '@/types/layers';
 import type {
 	ResolvedAudioReactiveChannel,
@@ -206,7 +206,7 @@ function resolveLogoColorState(
 		// A smooth mark floating over a pixelated spectrum reads as a mistake,
 		// so the app's own logo follows the pixelate switch. A logo the user
 		// uploaded is left exactly as they set it.
-		logoUrl: resolveAppLogoUrl(state.logoUrl, state.spectrumPixelate)
+		logoUrl: resolveAppLogoUrl(state.logoUrl, shouldUsePixelAppLogo(state))
 	};
 }
 

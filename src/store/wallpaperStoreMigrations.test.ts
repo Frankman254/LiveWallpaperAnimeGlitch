@@ -4,6 +4,8 @@ import {
 	SPECTRUM_INSTANCE_SETTING_KEYS
 } from '@/features/spectrum';
 import type { SpectrumInstance } from '@/types/wallpaper';
+import { APP_LOGO_URL, LEGACY_APP_LOGO_URL } from '@/config/appLogo';
+import { CANONICAL_FACTORY_LOGO_URL } from '@/lib/canonicalFactoryPresets';
 import { migrateWallpaperStore } from './wallpaperStoreMigrations';
 
 describe('migrateWallpaperStore spectrum instances', () => {
@@ -388,5 +390,27 @@ describe('migrateWallpaperStore — spectrumRadialSharpness sanitising', () => {
 		expect(
 			migrateWallpaperStore({} as never, 105).spectrumRadialSharpness
 		).toBe(0);
+	});
+});
+
+describe('migrateWallpaperStore v111 factory logo', () => {
+	it.each([LEGACY_APP_LOGO_URL, CANONICAL_FACTORY_LOGO_URL])(
+		'migrates the previous factory mark %s to the cache-safe Vibrix URL',
+		logoUrl => {
+			const migrated = migrateWallpaperStore(
+				{ logoId: null, logoUrl } as never,
+				110
+			);
+			expect(migrated.logoUrl).toBe(APP_LOGO_URL);
+		}
+	);
+
+	it('does not replace a user-uploaded logo', () => {
+		const migrated = migrateWallpaperStore(
+			{ logoId: 'user-logo', logoUrl: 'blob:user-logo' } as never,
+			110
+		);
+		expect(migrated.logoUrl).toBe('blob:user-logo');
+		expect(migrated.logoId).toBe('user-logo');
 	});
 });

@@ -1,4 +1,4 @@
-# Arquitectura General de LiveWallpaperAnimeGlitch
+# Arquitectura General de Vibrix
 
 ## Estado de esta guia (2026-04)
 
@@ -33,7 +33,7 @@ Es una guia de "como pensar el codigo".
 
 ## 1. Que tipo de proyecto es
 
-LiveWallpaperAnimeGlitch es un **editor de wallpapers audio-reactivos en navegador**.
+Vibrix es un **editor de wallpapers audio-reactivos en navegador**.
 
 No es solo un visualizer.
 Hoy ya tiene piezas de editor real:

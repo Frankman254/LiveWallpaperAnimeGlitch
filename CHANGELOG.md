@@ -15,10 +15,21 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Identidad Vibrix completa (store v111)
+
+- El nombre visible del editor, mini-player, Media Session y fallback del HUD
+  usa Vibrix; se eliminan las etiquetas de producto anteriores del runtime.
+- El navegador recibe favicon vectorial con URL nueva, PNG 192/512, manifest,
+  Apple touch icon y metadatos de aplicación/Open Graph para que las miniaturas
+  no reutilicen el icono anterior desde caché.
+- El logo de fábrica migra a `/vibrix-logo.svg` sin tocar logos subidos. Su
+  variante pixel se activa cuando Spectrum 1 o Spectrum 2 usa bloques pixel,
+  pixelado global o una capa Liquid pixelada.
+
 ### Rendimiento: donde se estaba despilfarrando
 
 - **Lluvia (el peor con diferencia).** El shader recorre hasta 100 gotas **por
-  píxel**, y calculaba seis `random()` —cada uno un `sin`— por gota *antes* de
+  píxel**, y calculaba seis `random()` —cada uno un `sin`— por gota _antes_ de
   comprobar si esa gota siquiera tocaba el píxel. A 1080p eso es del orden de
   1.400 millones de `sin` por frame para descartar el 98% del trabajo. Ahora
   calcula la posición X (un `sin`), rechaza por distancia horizontal contra la
@@ -94,7 +105,7 @@ pliega el look Custom legacy dentro del banco normal de slots y traduce la
 selección. El campo legacy se queda en el esquema para que los proyectos
 exportados antes sigan importándose.
 
-`STORE_PERSIST_VERSION` is at **110**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **111**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

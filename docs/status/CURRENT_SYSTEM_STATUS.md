@@ -1,12 +1,12 @@
 # Current System Status
 
-**As of:** `672f1ec` (`main`) · App `0.3.0-alpha.1` · Store persist **v110**
+**As of:** `3dbf86a4` (`main`) · App `0.3.0-alpha.1` · Store persist **v111**
 
 This document describes the product **as implemented in code**, not aspirational roadmaps.
 
 ## Product summary
 
-**LiveWallpaperAnimeGlitch** is a browser-based, audio-reactive live wallpaper editor. Users compose scenes (backgrounds, spectrum, logo, particles, rain, stage FX), preview them in real time, and export clean output for OBS or experimental in-browser screen recording.
+**Vibrix** is a browser-based, audio-reactive visual scene editor. Users compose scenes (backgrounds, spectrum, logo, particles, rain, stage FX), preview them in real time, and export clean output for OBS or experimental in-browser screen recording.
 
 | Area                                   | Status                                   |
 | -------------------------------------- | ---------------------------------------- |
@@ -25,7 +25,7 @@ This document describes the product **as implemented in code**, not aspirational
 | -------------------------------- | ------ | ----------------------------------------------------------- |
 | Vite + React 19 SPA              | Stable | HashRouter (`#/edit`, `#/present`, `#/record`, `#/preview`) |
 | Shared `WallpaperAppProviders`   | Stable | Single `AudioDataProvider` above route shells               |
-| Zustand + `localStorage` persist | Stable | `STORE_PERSIST_VERSION = 110`                               |
+| Zustand + `localStorage` persist | Stable | `STORE_PERSIST_VERSION = 111`                               |
 | IndexedDB assets                 | Stable | Images, audio blobs                                         |
 | Vitest + GitHub Actions CI       | Stable | format, lint, types, tests, docs:check, build               |
 
@@ -169,7 +169,7 @@ See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
 | Constant                  | Value           | Location                                    |
 | ------------------------- | --------------- | ------------------------------------------- |
 | `APP_VERSION`             | `0.3.0-alpha.1` | `src/lib/version.ts`, `package.json`        |
-| `STORE_PERSIST_VERSION`   | **110**         | Migrations in `wallpaperStoreMigrations.ts` |
+| `STORE_PERSIST_VERSION`   | **111**         | Migrations in `wallpaperStoreMigrations.ts` |
 | `PROJECT_SCHEMA_VERSION`  | 1               |                                             |
 | `SETTINGS_SCHEMA_VERSION` | 1               |                                             |
 
@@ -186,6 +186,8 @@ Recent schema steps (full history in `src/lib/version.ts` and `CHANGELOG.md`):
 | v104    | Scene/per-image bindings reference slots by stable `id`, never by index |
 | v105    | Per-liquid-layer retro pixelate (`spectrumLiquidLayer{1,2,3}Pixelate`)  |
 | v106    | Radial shapes normalized + 6 retired; `spectrumRadialSharpness`         |
+| v107–10 | Retired FX cleanup + unified Looks catalog and audio routing            |
+| v111    | Cache-safe Vibrix factory logo URL and legacy logo migration            |
 
 ---
 

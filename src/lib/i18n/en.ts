@@ -1,6 +1,8 @@
+import { APP_NAME } from '@/config/brand';
+
 export const en = {
 	// Panel
-	title: 'Live Wallpaper',
+	title: APP_NAME,
 	autoSaved: 'auto-saved',
 	// Tabs
 	tab_presets: 'BG',

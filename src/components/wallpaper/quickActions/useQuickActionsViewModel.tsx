@@ -20,6 +20,7 @@ import {
 	MousePointer
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { APP_NAME } from '@/config/brand';
 import {
 	doProfileSettingsMatch,
 	extractCameraFxProfileSettings,
@@ -179,7 +180,7 @@ export function useQuickActionsViewModel({
 		if (audio.captureMode === 'desktop') return 'LIVE INPUT';
 		const runtimeName = audio.getFileName().trim();
 		const raw = runtimeName || activeTrack?.name?.trim() || '';
-		if (!raw) return 'Live Wallpaper Mix';
+		if (!raw) return `${APP_NAME} Mix`;
 		// Strip file extension (.mp3/.wav/.flac/…) for display only.
 		return raw.replace(/\.[^/.]+$/, '');
 	}, [activeTrack?.name, audio]);

@@ -282,8 +282,8 @@ export function useAudioPlaybackEffects({
 					mediaSessionEnabled
 						? {
 								title: activeTrack.name.replace(/\.[^.]+$/, ''),
-								artist: 'Anime Glitch',
-								album: 'Live Wallpaper'
+								artist: 'Vibrix',
+								album: 'Vibrix'
 							}
 						: {
 								title: activeTrack.name.replace(/\.[^.]+$/, '')

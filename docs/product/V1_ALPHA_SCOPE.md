@@ -12,7 +12,7 @@ _Última actualización: 2026-06-16._
 
 ## Objetivo de la alpha
 
-`LiveWallpaperAnimeGlitch 0.3.0-alpha.1` debe ser **estable, coherente y distribuible**,
+`Vibrix 0.3.0-alpha.1` debe ser **estable, coherente y distribuible**,
 no más completo. El foco pasa de _features_ a:
 
 - **Confianza** — tests de lógica pura + CI verde.

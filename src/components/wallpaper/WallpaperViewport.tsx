@@ -134,6 +134,9 @@ export default function WallpaperViewport({
 					audioLyricsVisibleLineCount:
 						state.audioLyricsVisibleLineCount,
 					spectrumEnabled: state.spectrumEnabled,
+					spectrumMainVisible: state.spectrumMainVisible,
+					spectrumInstances: state.spectrumInstances,
+					spectrumFamily: state.spectrumFamily,
 					spectrumOpacity: state.spectrumOpacity,
 					spectrumPositionX: state.spectrumPositionX,
 					spectrumPositionY: state.spectrumPositionY,
@@ -141,6 +144,13 @@ export default function WallpaperViewport({
 					spectrumLinearOrientation: state.spectrumLinearOrientation,
 					spectrumRadialShape: state.spectrumRadialShape,
 					spectrumShape: state.spectrumShape,
+					spectrumPixelate: state.spectrumPixelate,
+					spectrumLiquidLayer1Pixelate:
+						state.spectrumLiquidLayer1Pixelate,
+					spectrumLiquidLayer2Pixelate:
+						state.spectrumLiquidLayer2Pixelate,
+					spectrumLiquidLayer3Pixelate:
+						state.spectrumLiquidLayer3Pixelate,
 					spectrumFollowLogo: state.spectrumFollowLogo,
 					spectrumBandMode: state.spectrumBandMode
 				}) satisfies Partial<WallpaperState>

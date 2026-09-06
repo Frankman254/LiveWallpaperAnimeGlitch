@@ -85,4 +85,6 @@ export const LEGACY_PROJECT_FILE_EXTENSIONS = ['lwag'] as const;
 // v110: factory Looks and user slots share one catalog; the legacy single
 // Custom look migrates into a normal stable-id slot, and active preset metadata
 // is removed from slot snapshots so HUD/editor selection cannot collide.
-export const STORE_PERSIST_VERSION = 110;
+// v111: the factory logo moved to a new cache-safe Vibrix URL. Existing factory
+// logo references migrate without touching user-uploaded logo assets.
+export const STORE_PERSIST_VERSION = 111;

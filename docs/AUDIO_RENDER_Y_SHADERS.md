@@ -1,4 +1,4 @@
-# Audio, Render y Shaders en LiveWallpaperAnimeGlitch
+# Audio, Render y Shaders en Vibrix
 
 ## Estado de esta guia (2026-04)
 
