@@ -43,6 +43,44 @@ export {
 	translationLanguages
 } from './domain/lyrixaBundle';
 
+// ── domain: which layers to show (roles + languages) ────────────────────────
+export {
+	describeLyrixaLayers,
+	matchLyricsLayers,
+	selectLyricsLayerIds,
+	lyricsLanguageOptions,
+	languageMatches,
+	buildLyricsClipIndex,
+	groupLyricsClipsBySource,
+	hasWordTimings
+} from './domain/lyricsLayerSelection';
+export type {
+	LyricsClipIndex,
+	LyricsDisplaySelection,
+	LyricsLayerDescriptor,
+	LyricsLayerQuery,
+	LyricsLineGroup
+} from './domain/lyricsLayerSelection';
+
+// ── domain: getting a bundle in, transport-agnostic ─────────────────────────
+export {
+	loadLyricsBundleFromFile,
+	loadLyricsBundleFromText,
+	loadLyricsBundleFromUrl,
+	registerLyricsBundleProvider,
+	listLyricsBundleProviders,
+	getLyricsBundleProvider,
+	LyricsBundleLoadError
+} from './domain/lyricsBundleLoader';
+export type {
+	LyricsBundleLoadFailure,
+	LyricsBundleLoadResult,
+	LyricsBundleOrigin,
+	LyricsBundleProvider,
+	LyricsBundleSourceKind,
+	LyricsBundleTextSource
+} from './domain/lyricsBundleLoader';
+
 // ── domain: plain / LRC text ────────────────────────────────────────────────
 export {
 	hasLrcTimestamps,

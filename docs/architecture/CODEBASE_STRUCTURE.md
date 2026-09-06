@@ -52,7 +52,7 @@ The editor's tab UI lives under `src/components/controls/`:
 
 **"Where does X live?" should be answerable with one folder.** If it isn't, that
 is the bug. The three panels that still fail that test are listed in
-[ARCHITECTURE.md](ARCHITECTURE.md) §6.8; everything else is at home.
+[ARCHITECTURE.md](ARCHITECTURE.md) §6.9; everything else is at home.
 
 ## Where renderers and engines live
 
@@ -93,7 +93,8 @@ is the bug. The three panels that still fail that test are listed in
 | Output / Recording        | `tabs/main/OutputTab.tsx` + `src/runtime/` + `src/features/recording/`            |
 | AI Director               | `src/features/aiDirector/` (fachadas: `@/features/aiDirector`, `.../ui`)          |
 | Calibración               | `src/features/calibration/` (fachadas: `@/features/calibration`, `.../ui`)        |
-| Track Title / Now Playing | `src/features/audioLayers/` + `tabs/main/TrackTitleTab.tsx` (§6.8)                |
+| Track Title / Now Playing | `src/features/audioLayers/` + `tabs/main/TrackTitleTab.tsx` (§6.9)                |
+| Lyrics (contrato Lyrixa)  | `src/features/lyrics/domain/` — parser, loader, selección por rol/idioma          |
 
 ## Tests & docs
 

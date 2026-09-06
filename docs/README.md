@@ -27,6 +27,7 @@
 | ---------------------------------------------------------------- | ------------------------------------ |
 | [features/SPECTRUM_ENGINE.md](features/SPECTRUM_ENGINE.md)       | Spectrum families, instances         |
 | [features/SPECTRUM_PIXEL_ART.md](features/SPECTRUM_PIXEL_ART.md) | Pixel shape vs pixelate post-process |
+| [features/LYRIXA_CONTRACT.md](features/LYRIXA_CONTRACT.md)       | Roles, idiomas, sourceId, words[]    |
 
 ## Guides & audits
 
@@ -38,7 +39,7 @@
 
 ## Onboarding (developer)
 
-`onboarding/` — deep dives; verify `STORE_PERSIST_VERSION` against `src/lib/version.ts` (currently **107**).
+`onboarding/` — deep dives; verify `STORE_PERSIST_VERSION` against `src/lib/version.ts` (currently **108**).
 
 ## Archive
 

@@ -25,9 +25,57 @@ export type LyrixaLayerRole =
 	| 'primary'
 	| 'translation'
 	| 'transliteration'
+	| 'romanization'
 	| 'backing'
 	| 'fx'
 	| 'annotation';
+
+/**
+ * Roles that mean "the same words, written in another script".
+ *
+ * Lyrixa has emitted both spellings: `transliteration` is the general term and
+ * `romanization` the Latin-script special case that Japanese/Korean/Cyrillic
+ * workflows actually produce. They are kept as distinct values rather than
+ * collapsed, because a viewer choosing a secondary line cares which one they
+ * are getting — but every consumer that only asks "is this the same words in
+ * another script?" should use this set instead of comparing to one literal.
+ */
+export const LYRIXA_SCRIPT_ROLES: ReadonlySet<LyrixaLayerRole> = new Set([
+	'transliteration',
+	'romanization'
+]);
+
+/** Every role this build understands, in the order a UI should offer them. */
+export const LYRIXA_LAYER_ROLES: readonly LyrixaLayerRole[] = [
+	'primary',
+	'translation',
+	'transliteration',
+	'romanization',
+	'backing',
+	'fx',
+	'annotation'
+];
+
+/**
+ * One word (or syllable) inside a clip, with its own timing.
+ *
+ * Lyrixa's transcription stage can produce these; this renderer does not draw
+ * them yet. They are parsed and preserved anyway, because the alternative is
+ * that a user imports a word-timed bundle, saves the project, and the timings
+ * are silently gone — the import is lossy in a way nothing surfaces.
+ *
+ * Times are seconds from the start of the track, matching `LyrixaLyricClip`,
+ * NOT offsets from the clip's own start. A word may carry `score` (the
+ * transcriber's confidence, 0–1) which a future karaoke pass can use to decide
+ * whether a word is trustworthy enough to highlight on its own.
+ */
+export interface LyrixaLyricWord {
+	text: string;
+	startTime: number;
+	endTime: number;
+	/** Transcriber confidence 0–1, when the producing tool reported one. */
+	score?: number;
+}
 
 export type LyrixaLyricTransitionPreset =
 	| 'none'
@@ -191,6 +239,11 @@ export interface LyrixaLyricClip {
 	 * a renderer can offer the original script without a second bundle.
 	 */
 	originalText?: string;
+	/**
+	 * Word-level timings, when the authoring chain produced them. Nothing draws
+	 * these yet — see `LyrixaLyricWord` for why they are carried anyway.
+	 */
+	words?: LyrixaLyricWord[];
 	styleId?: string;
 	styleOverride?: Partial<LyrixaLyricVisualStyle>;
 	animationOverride?: Partial<LyrixaLyricAnimationConfig>;
@@ -260,8 +313,25 @@ export interface LyrixaLyricLayer {
 	layerType: LyrixaLayerType;
 	/** What this layer carries. Absent on bundles authored before v1.1. */
 	role?: LyrixaLayerRole;
-	/** ISO/BCP-47 code of the text on this layer, when the author knew it. */
+	/**
+	 * The role string exactly as the bundle spelled it, kept whenever it did
+	 * not match a role this build knows.
+	 *
+	 * Dropping it would make the import lossy in the one direction that
+	 * matters: Lyrixa is a separate, faster-moving project, so a role this
+	 * renderer has never heard of is the *expected* case for a newer authoring
+	 * tool — not corrupt data. Narrowed consumers keep reading `role`; a UI
+	 * that wants to say "layer carries: karaoke (unknown to this version)"
+	 * reads this.
+	 */
+	roleRaw?: string;
+	/**
+	 * BCP-47 code of the text on this layer, normalised (`ja`, `es-419`,
+	 * `zh-Hant`), when the author declared one.
+	 */
 	language?: string;
+	/** The language string exactly as written, when normalisation changed it. */
+	languageRaw?: string;
 	color: string;
 	visible: boolean;
 	locked: boolean;

@@ -15,6 +15,40 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Lyrics: el bundle de Lyrixa como contrato externo de verdad
+
+Lyrixa es la herramienta de autoría y este proyecto el renderer. El parser ya
+preservaba `role`, `language`, `sourceId` y `originalText`; lo que faltaba era
+todo lo que se hace **con** esos campos, y un agujero de datos.
+
+- **Un rol desconocido ya no se descarta.** Había un test que celebraba el
+  descarte. Estaba mal en la dirección más cara: Lyrixa avanza a su propio
+  ritmo, así que `role: 'karaoke'` desde un build más nuevo es el caso
+  esperado, no dato corrupto — y al borrarlo la capa caía al camino legacy por
+  `layerType` y adivinaba algo que el bundle **sí había declarado**. Ahora se
+  conserva en `roleRaw`.
+- **`words[]` se preserva.** Nada los dibuja todavía. Se parsean porque la
+  alternativa es que alguien importe un bundle con timing por palabra, guarde
+  el proyecto y los timings desaparezcan sin que nada lo diga.
+- **`romanization`** entra como rol propio junto a `transliteration`; los
+  idiomas se canonizan a BCP-47 (`zh-hant` → `zh-Hant`) conservando la
+  escritura del autor.
+- **`sourceId` deja de ser decorativo:** `groupLyricsClipsBySource` empareja
+  cada línea con sus traducciones y romanizaciones. Emparejar por posición en
+  el array se rompe apenas un traductor fusiona dos líneas, que es justo lo que
+  hacen los traductores.
+- **`lyricsLayerSelection`** resuelve qué capas mostrar por rol e idioma, en dos
+  slots (principal / secundaria). La UI sigue con el switch binario de
+  traducción: cambiarla necesita key persistida y es una fase aparte.
+- **`lyricsBundleLoader`** separa el transporte del contenido. Antes
+  `handleImportLyrixaBundle` hacía `JSON.parse(await file.text())` **dentro de
+  un componente React**, o sea que el componente era dueño del transporte; con
+  IPC de escritorio eso terminaba en un componente React que sabe de IPC.
+
+32 tests nuevos (1016 en total). Docs:
+`docs/features/LYRIXA_CONTRACT.md` y `docs/plans/DESKTOP_SUITE_READINESS.md`
+(barreras Windows/macOS + candidatos de nombre; **no se renombró nada**).
+
 ### Arquitectura: cero aristas de deuda en runtime (deuda 10 → 5)
 
 Segunda ronda. Las cinco que sobreviven son posiciones de tipo

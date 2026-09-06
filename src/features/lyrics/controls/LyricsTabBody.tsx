@@ -33,10 +33,10 @@ import {
 } from '@/lib/canvasText/trackTitleOptions';
 import {
 	hasTranslationLayer,
-	parseLyrixaLyricsBundleEnvelope,
 	resolveLyrixaBundlePreviewText,
 	translationLanguages
 } from '@/features/lyrics/domain/lyrixaBundle';
+import { loadLyricsBundleFromFile } from '@/features/lyrics/domain/lyricsBundleLoader';
 import ToggleControl from '@/editor/ToggleControl';
 import SliderControl from '@/editor/SliderControl';
 import LabeledSection from '@/editor/LabeledSection';
@@ -311,8 +311,9 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 		if (!file || !selectedAssetId) return;
 		try {
 			setLyrixaImportError(null);
-			const raw = JSON.parse(await file.text()) as unknown;
-			const bundle = parseLyrixaLyricsBundleEnvelope(raw);
+			// Transport lives in the loader, not here: a file today, a desktop
+			// IPC channel tomorrow, same result shape either way.
+			const { bundle } = await loadLyricsBundleFromFile(file);
 			store.upsertAudioLyricsTrackEntry(selectedAssetId, {
 				mode: 'lrc',
 				rawText: '',

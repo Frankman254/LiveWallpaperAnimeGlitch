@@ -3,6 +3,7 @@ import type {
 	LyrixaLyricAnimationConfig,
 	LyrixaLyricClip,
 	LyrixaLyricFxConfig,
+	LyrixaLyricWord,
 	LyrixaLyricLayer,
 	LyrixaLyricTransitionPreset,
 	LyrixaLyricVisualStyle,
@@ -17,6 +18,7 @@ import type {
 } from './lyrixaBundleTypes';
 import {
 	DEFAULT_LYRIXA_LYRIC_STYLE,
+	LYRIXA_LAYER_ROLES,
 	LYRIXA_LYRICS_BUNDLE_APP,
 	LYRIXA_LYRICS_BUNDLE_KIND,
 	LYRIXA_LYRICS_BUNDLE_SCHEMA_VERSION
@@ -72,13 +74,101 @@ function isLyrixaLayerType(value: unknown): value is LyrixaLayerType {
 
 function isLyrixaLayerRole(value: unknown): value is LyrixaLayerRole {
 	return (
-		value === 'primary' ||
-		value === 'translation' ||
-		value === 'transliteration' ||
-		value === 'backing' ||
-		value === 'fx' ||
-		value === 'annotation'
+		typeof value === 'string' &&
+		(LYRIXA_LAYER_ROLES as readonly string[]).includes(value)
 	);
+}
+
+/**
+ * Split a declared role into the narrowed value and the raw string.
+ *
+ * A role this build does not know is NOT an error and NOT noise: Lyrixa ships
+ * on its own schedule, so `role: 'karaoke'` from a newer authoring build is the
+ * expected shape of the future. Narrowing it away would silently downgrade the
+ * layer to "no role at all", which then falls through to the legacy
+ * `layerType`-based guess — the worst outcome, because the bundle DID say what
+ * the layer was and we chose to forget.
+ *
+ * So: `role` stays strictly typed for the code that switches on it, and
+ * `roleRaw` carries the author's word whenever the two differ.
+ */
+function normalizeRole(value: unknown): {
+	role?: LyrixaLayerRole;
+	roleRaw?: string;
+} {
+	if (typeof value !== 'string') return {};
+	const trimmed = value.trim();
+	if (!trimmed) return {};
+	const lower = trimmed.toLowerCase();
+	if (isLyrixaLayerRole(lower)) {
+		return lower === trimmed
+			? { role: lower }
+			: { role: lower, roleRaw: trimmed };
+	}
+	return { roleRaw: trimmed };
+}
+
+/**
+ * Canonicalise a BCP-47 tag (`JA` → `ja`, `zh-hant` → `zh-Hant`).
+ *
+ * Normalising matters because language is about to become a *selector*: a user
+ * picking "Español" must match a layer whether Lyrixa wrote `es`, `ES` or
+ * `es-419`. `languageRaw` keeps the author's spelling for display, and is only
+ * set when canonicalisation actually changed something.
+ *
+ * `Intl.getCanonicalLocales` throws on structurally invalid tags (`ja_JP`,
+ * `español`). Those are kept verbatim rather than dropped — an odd tag is still
+ * a distinguishable one, and losing it would merge two layers that the author
+ * meant to keep apart.
+ */
+function normalizeLanguage(value: unknown): {
+	language?: string;
+	languageRaw?: string;
+} {
+	if (typeof value !== 'string') return {};
+	const trimmed = value.trim();
+	if (!trimmed) return {};
+	let canonical = trimmed;
+	try {
+		canonical = Intl.getCanonicalLocales(trimmed)[0] ?? trimmed;
+	} catch {
+		canonical = trimmed;
+	}
+	return canonical === trimmed
+		? { language: canonical }
+		: { language: canonical, languageRaw: trimmed };
+}
+
+/**
+ * Word-level timings, when the bundle carries them.
+ *
+ * Nothing draws these yet. They are parsed anyway so that importing a
+ * word-timed bundle and saving the project is not a lossy round trip — see
+ * `LyrixaLyricWord`. Words that are unusable (no text, non-finite times) are
+ * dropped individually rather than failing the clip: a transcriber emitting one
+ * bad word should not cost the user the whole line.
+ */
+function parseWords(value: unknown): LyrixaLyricWord[] | undefined {
+	if (!Array.isArray(value)) return undefined;
+	const words: LyrixaLyricWord[] = [];
+	for (const entry of value) {
+		if (!isObject(entry)) continue;
+		const text = typeof entry.text === 'string' ? entry.text : '';
+		if (!text) continue;
+		const startTime = toOptionalNumber(entry.startTime);
+		const endTime = toOptionalNumber(entry.endTime);
+		if (startTime === undefined || endTime === undefined) continue;
+		const start = Math.max(0, startTime);
+		const word: LyrixaLyricWord = {
+			text,
+			startTime: start,
+			endTime: Math.max(start, endTime)
+		};
+		const score = toOptionalNumber(entry.score);
+		if (score !== undefined) word.score = Math.min(1, Math.max(0, score));
+		words.push(word);
+	}
+	return words.length > 0 ? words : undefined;
 }
 
 /**
@@ -93,7 +183,7 @@ export function translationLayerIds(
 	bundle: LyrixaLyricsBundleEnvelope | null | undefined
 ): Set<string> {
 	const layers = bundle?.project.layers ?? [];
-	const declared = layers.some(layer => layer.role);
+	const declared = layers.some(layer => layer.role || layer.roleRaw);
 	return new Set(
 		layers
 			.filter(layer =>
@@ -271,6 +361,7 @@ function parseClip(value: unknown, index: number): LyrixaLyricClip | null {
 			typeof value.originalText === 'string' && value.originalText
 				? value.originalText
 				: undefined,
+		words: parseWords(value.words),
 		styleId: typeof value.styleId === 'string' ? value.styleId : undefined,
 		styleOverride: parseStyle(value.styleOverride),
 		animationOverride: parseAnimation(value.animationOverride),
@@ -316,11 +407,8 @@ function parseLayer(value: unknown, index: number): LyrixaLyricLayer | null {
 		layerType: isLyrixaLayerType(value.layerType)
 			? value.layerType
 			: 'lyrics',
-		role: isLyrixaLayerRole(value.role) ? value.role : undefined,
-		language:
-			typeof value.language === 'string' && value.language
-				? value.language
-				: undefined,
+		...normalizeRole(value.role),
+		...normalizeLanguage(value.language),
 		color:
 			typeof value.color === 'string' && value.color
 				? value.color

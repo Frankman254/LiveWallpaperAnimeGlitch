@@ -156,7 +156,11 @@ describe('bundle parsing of the translation contract', () => {
 		expect(clip?.originalText).toBe('kimi no na wa wasurenai');
 	});
 
-	it('drops a role it does not understand instead of forwarding it', () => {
+	it('keeps a role it does not understand instead of dropping it', () => {
+		// This used to assert the opposite. Discarding the role made the import
+		// lossy exactly where Lyrixa is most likely to move ahead of this
+		// renderer, and worse, it made the layer fall through to the legacy
+		// layerType guess — throwing away a declaration the bundle had made.
 		const parsed = parseLyrixaLyricsBundleEnvelope({
 			schemaVersion: 1,
 			app: 'Lyrixa',
@@ -170,5 +174,17 @@ describe('bundle parsing of the translation contract', () => {
 			}
 		});
 		expect(parsed.project.layers[0]?.role).toBeUndefined();
+		expect(parsed.project.layers[0]?.roleRaw).toBe('karaoke');
+	});
+
+	it('does not fall back to legacy inference once any role is declared', () => {
+		// A bundle whose only declaration is one this build cannot narrow still
+		// counts as a roles-era bundle: backing means backing vocals, not
+		// translation.
+		const envelope = bundle([
+			layer({ id: 'layer-main', roleRaw: 'karaoke' }),
+			layer({ id: 'layer-backing', layerType: 'backing', order: 1 })
+		]);
+		expect(hasTranslationLayer(envelope)).toBe(false);
 	});
 });

@@ -652,7 +652,36 @@ sido churn disfrazado de rigor.
 
 ---
 
-### 6.8 · Lo que sigue
+### 6.8 · `lyrics`: separar el contrato externo del render (2026-09-06)
+
+No fue una mudanza de zona — `features/lyrics/` ya estaba en su sitio. Fue
+aplicar dentro del dominio la misma regla que rige entre zonas: **el que sabe
+de dónde vienen los bytes no es el que los dibuja.**
+
+`domain/` gana dos módulos:
+
+- **`lyricsBundleLoader.ts`** — transporte. Antes,
+  `handleImportLyrixaBundle` hacía `JSON.parse(await file.text())` **dentro de
+  `LyricsTabBody.tsx`**: un componente React dueño del transporte. Con un
+  segundo transporte eso es una rama; con IPC de escritorio, un componente
+  React que sabe de IPC. Hoy `file`, `text` y `url` devuelven la misma forma, y
+  hay un registro de providers vacío a propósito para que el shell de
+  escritorio se enchufe sin tocar la UI.
+- **`lyricsLayerSelection.ts`** — qué capas mostrar, por rol e idioma. Sin
+  canvas, sin store, sin React. La inferencia legacy (`layerType: 'backing'`
+  significaba traducción antes de que existieran los roles) queda en **una sola
+  función**; ningún otro archivo lee `layer.role` para decidir qué carga una
+  capa.
+
+El contrato en sí está documentado aparte, porque es una frontera con **otro
+proyecto** y no con otra zona: `docs/features/LYRIXA_CONTRACT.md`. La regla que
+sostiene esa frontera es que Lyrixa y este renderer se hablan **por el bundle**,
+nunca por tipos compartidos — un paquete común volvería el contrato una
+dependencia.
+
+---
+
+### 6.9 · Lo que sigue
 
 Arquitectura de zonas: **terminada**. 0 aristas de runtime, 0 ciclos. Lo que
 queda son mudanzas de ownership puntuales y una decisión de producto.
