@@ -1,15 +1,6 @@
-<svg width="128" height="128" viewBox="0 0 128 128" fill="none"
+<svg width="128" height="128" viewBox="16 16 96 96" fill="none"
      xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vibrix">
   <title>Vibrix (pixel)</title>
-  <defs>
-    <linearGradient id="tile" x1="18" y1="16" x2="112" y2="114" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#12161d"/>
-      <stop offset="0.55" stop-color="#08090c"/>
-      <stop offset="1" stop-color="#0d1219"/>
-    </linearGradient>
-  </defs>
-  <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#tile)"/>
-  <rect x="10.5" y="10.5" width="107" height="107" rx="27.5" fill="none" stroke="#243043" stroke-width="1.6"/>
   <g transform="translate(16 16) scale(1.5)" shape-rendering="crispEdges">
       <rect x="26.667" y="2.667" width="10.667" height="2.667" fill="#F2F3F5"/>
       <rect x="18.667" y="5.333" width="10.667" height="2.667" fill="#F2F3F5"/>

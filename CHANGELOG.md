@@ -15,6 +15,38 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Spectrum: por qué el glow manual reventaba el frame
+
+- **La causa real no era el blur, era una copia de objeto por barra.**
+  `resolveManualGlow()` construía un clon completo de `SpectrumSettings`
+  (~155 claves) en cada llamada, solo para reemplazar cinco colores — y se
+  llama una vez por barra y por pasada. Un spectrum a 256 barras copiaba
+  ~119 000 propiedades por frame, y con el segundo spectrum encendido el doble.
+  La función sale antes cuando Manual Glow está apagado, que es exactamente por
+  qué el mismo dibujo iba fluido sin el toggle y se caía con él. Ahora arma una
+  vista de cinco claves; el clon completo se conserva solo para los generadores
+  de degradado, que corren una vez por figura y no por barra.
+- **Shape `pixel` con relleno en degradado/arcoíris: 240 blurs → 16.** La rama
+  que traza las celdas reales cortaba la serie de dibujo al cambiar el color de
+  relleno _exacto_, así que cualquier modo de color no sólido rompía la serie en
+  **cada** barra: un `fill()` con sombra por barra, cada uno trazando la columna
+  LED entera. Ahora la pasada borrosa se separa y se agrupa por el color de glow
+  cuantizado (tope `GLOW_COLOR_STEPS`), y los rellenos nítidos —sin sombra, que
+  son órdenes de magnitud más baratos— siguen conservando el color exacto de
+  cada barra. El caso sólido no cambia: ahí una sola pasada ya era óptima.
+- **Paleta `complete-rotate` sin basura por barra.** Construía un array nuevo en
+  cada `getColor()`; ahora se cachea contra la identidad del array de origen.
+- **Buffers de viewport que no se liberaban.** `pixelateSceneCanvas`,
+  `oscilloscopePhosphorCanvas` y `liquidLayerPixelateCanvas` sobrevivían el
+  resto de la sesión una vez usados: probar Retro Pixelate una vez, o pasear por
+  las familias, dejaba hasta tres backing stores de 1080p vivos **por
+  instancia**. Se sueltan cuando su efecto o su familia no están activos, igual
+  que `feedbackCanvas` ya hacía.
+- Tests de regresión: el conteo de fills borrosos de `drawLinearPixel` deja de
+  escalar con el número de barras, y una sonda de lectura sobre
+  `SpectrumSettings` falla si `resolveManualGlow` vuelve a recorrer el objeto
+  entero.
+
 ### Logo Vibrix y variantes (store v112)
 
 - El logo integrado ahora tiene modos Vector, Pixel y Auto. Auto sigue

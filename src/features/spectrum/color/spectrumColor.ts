@@ -54,10 +54,21 @@ export function resolveRotatePalette(
 	}
 ): string[] {
 	const palette = settings.spectrumRainbowColors ?? [];
-	return settings.spectrumColorMode === 'complete-rotate'
-		? completeRotatePalette(palette)
-		: palette;
+	if (settings.spectrumColorMode !== 'complete-rotate') return palette;
+	// `getColor` runs once per bar per pass, so building the extended palette
+	// here allocated a fresh array on every one of those — up to ~1.5k throwaway
+	// arrays a frame across two 256-bar spectrums. The palette only changes when
+	// the source array is replaced (store arrays are replaced, never mutated in
+	// place), so caching on its identity is enough.
+	if (completeRotateSource !== palette) {
+		completeRotateSource = palette;
+		completeRotateResult = completeRotatePalette(palette);
+	}
+	return completeRotateResult;
 }
+
+let completeRotateSource: string[] | null = null;
+let completeRotateResult: string[] = [];
 
 export function visibleSpectrumColor(t: number): string {
 	const wrapped = ((t % 1) + 1) % 1;
@@ -86,7 +97,25 @@ export function getLoopGradientColor(
 	return `rgb(${Math.round(r1 + (r2 - r1) * mirroredT)}, ${Math.round(g1 + (g2 - g1) * mirroredT)}, ${Math.round(b1 + (b2 - b1) * mirroredT)})`;
 }
 
-export function getColor(settings: SpectrumSettings, t: number): string {
+/**
+ * The only fields `getColor` reads.
+ *
+ * Declared separately so the glow can build a colour view without cloning the
+ * whole `SpectrumSettings`. That clone used to run once per bar per pass —
+ * `SpectrumSettings` has ~155 keys, so a 256-bar spectrum with manual glow on
+ * copied ~119k properties per instance per frame, purely to change five of
+ * them. Widening the parameter is safe for every existing caller: they all
+ * pass a full `SpectrumSettings`, which still satisfies this.
+ */
+export type SpectrumColorInput = Pick<
+	SpectrumSettings,
+	| 'spectrumMode'
+	| 'spectrumColorMode'
+	| 'spectrumPrimaryColor'
+	| 'spectrumSecondaryColor'
+> & { spectrumRainbowColors?: string[] };
+
+export function getColor(settings: SpectrumColorInput, t: number): string {
 	const { spectrumColorMode, spectrumPrimaryColor, spectrumSecondaryColor } =
 		settings;
 	const phase = normalizeSpectrumPhase(t);

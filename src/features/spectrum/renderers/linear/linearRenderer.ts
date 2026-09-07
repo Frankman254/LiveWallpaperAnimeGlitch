@@ -1124,11 +1124,19 @@ export function drawLinearPixel(
 		}
 	};
 
-	if (!glowUsesColumnHull) {
-		// Original single pass: consecutive bars sharing a fill AND a glow
-		// colour merge into one shadowed fill. Splitting glow from fill only
-		// pays off when the hull can shrink the blurred geometry — measured,
-		// tracing every cell twice costs more than the blurs it saves.
+	// Whether the crisp fill colour actually changes from bar to bar. The single
+	// pass below merges on fill AND glow colour together, so a sweeping fill
+	// breaks the run on EVERY bar — at 256 bars that is 256 blurred fills, each
+	// tracing a whole LED column. That is the "pixel + glow está pésimo" case,
+	// and it is why the strategy is picked here rather than by the hull alone.
+	const fillSweepsPerBar = settings.spectrumColorMode !== 'solid';
+	const splitGlowFromFill = glowUsesColumnHull || fillSweepsPerBar;
+
+	if (!splitGlowFromFill) {
+		// Solid fill: consecutive bars share a fill AND a glow colour, so the
+		// whole spectrum collapses into a single shadowed fill. Splitting the
+		// passes here would only trace every cell twice for nothing — measured,
+		// that costs more than the blurs it saves.
 		let runColor: string | null = null;
 		let runGlow: string | null = null;
 		let runOpen = false;
@@ -1161,7 +1169,13 @@ export function drawLinearPixel(
 		}
 		flushRun();
 	} else {
-		ctx.shadowOffsetX = HULL_SHADOW_OFFSET;
+		// Two passes. The blurred one is keyed on the QUANTIZED glow colour, so
+		// it costs at most `GLOW_COLOR_STEPS` fills no matter how many bars
+		// there are; the crisp one below then repaints every bar in its exact
+		// colour with no shadow. `addGlowPath` traces the column hull when the
+		// blur is wide enough to bridge the cell gaps, and the real cells
+		// otherwise — the shadow-offset trick only applies to the hull.
+		if (glowUsesColumnHull) ctx.shadowOffsetX = HULL_SHADOW_OFFSET;
 		const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
 		for (let i = 0; i < barCount; i++) {
 			const litCells = litCellsAt(i);
@@ -1178,7 +1192,7 @@ export function drawLinearPixel(
 			coreGlow.add(glow, () => addGlowPath(i, litCells));
 		}
 		coreGlow.flush();
-		ctx.shadowOffsetX = 0;
+		if (glowUsesColumnHull) ctx.shadowOffsetX = 0;
 
 		ctx.shadowBlur = 0;
 		ctx.shadowColor = 'rgba(0,0,0,0)';

@@ -157,6 +157,25 @@ export function drawSpectrum(
 			ctx = sceneCtx;
 			canvas = runtime.pixelateSceneCanvas;
 		}
+	} else if (runtime.pixelateSceneCanvas) {
+		// Release it. This is a full-viewport backing store (~8 MB at 1080p)
+		// held per instance, and it used to survive for the rest of the session
+		// once pixelate had been enabled a single time — so a user who tried
+		// the toggle on both spectrums and switched it back off kept paying for
+		// two of them. `feedbackCanvas` already drops itself the same way when
+		// its effect is off; this one was the outlier.
+		runtime.pixelateSceneCanvas = null;
+	}
+
+	// Family-owned scratch buffers, same rule. Both are full-viewport and both
+	// were kept for the life of the session once their family had rendered
+	// once, so cycling through the families left three dead 1080p backing
+	// stores alive per instance.
+	if (settings.spectrumFamily !== 'oscilloscope') {
+		runtime.oscilloscopePhosphorCanvas = null;
+	}
+	if (settings.spectrumFamily !== 'liquid') {
+		runtime.liquidLayerPixelateCanvas = null;
 	}
 
 	const bins = audio.bins;

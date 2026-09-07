@@ -524,3 +524,72 @@ describe('core glow batching — blurred draws stay flat as bars grow', () => {
 		expect(rec.counts.fill).toBe(2);
 	});
 });
+
+describe('drawLinearPixel — a sweeping fill must not cost one blur per bar', () => {
+	// The LED column shape has a second, cheaper strategy that only applies
+	// when the blur is wide enough to bridge the gaps between cells. Below
+	// that it traces the real cells — and that path used to break its draw run
+	// on the exact (unquantized) fill colour, so any gradient / rainbow /
+	// rotate fill fragmented into one blurred fill per bar, each one tracing a
+	// whole column of cell subpaths. At 256 bars that is 256 blurs a frame per
+	// instance. Chunky cells with a visible gap and a modest blur are exactly
+	// the configuration that lands there.
+	const chunkyLed = (patch: Partial<SpectrumSettings> = {}) =>
+		settingsWith({
+			spectrumMode: 'linear',
+			spectrumLedCellSize: 2,
+			spectrumLedCellGap: 1.2,
+			spectrumLedAngle: 0,
+			spectrumShadowBlur: 8,
+			spectrumGlowIntensity: 1,
+			...patch
+		});
+
+	const blurredAt = (barCount: number, patch: Partial<SpectrumSettings>) => {
+		const rec = createRecordingContext();
+		drawLinearPixel(
+			rec.ctx,
+			CANVAS,
+			tallHeights(barCount, 400),
+			barCount,
+			chunkyLed({ spectrumBarCount: barCount, ...patch })
+		);
+		return rec.blurredFills.length;
+	};
+
+	it('stays bounded by the colour steps when the fill sweeps', () => {
+		expect(
+			blurredAt(240, { spectrumColorMode: 'gradient' })
+		).toBeLessThanOrEqual(GLOW_COLOR_STEPS);
+	});
+
+	it('costs the same at 24 and 240 bars with a sweeping fill', () => {
+		expect(blurredAt(240, { spectrumColorMode: 'rainbow' })).toBe(
+			blurredAt(24, { spectrumColorMode: 'rainbow' })
+		);
+	});
+
+	it('keeps the single-pass merge when the fill is solid', () => {
+		// Solid loses nothing by staying in one pass, and splitting would only
+		// trace every cell twice — so that case must NOT change.
+		expect(blurredAt(240, { spectrumColorMode: 'solid' })).toBe(1);
+	});
+
+	it('still paints a crisp fill per colour once the passes split', () => {
+		const rec = createRecordingContext();
+		const barCount = 48;
+		drawLinearPixel(
+			rec.ctx,
+			CANVAS,
+			tallHeights(barCount, 400),
+			barCount,
+			chunkyLed({
+				spectrumBarCount: barCount,
+				spectrumColorMode: 'gradient'
+			})
+		);
+		// Blurred runs are quantized; the crisp pass keeps every bar's exact
+		// colour, so the total fills exceed the blurred ones.
+		expect(rec.counts.fill).toBeGreaterThan(rec.blurredFills.length);
+	});
+});

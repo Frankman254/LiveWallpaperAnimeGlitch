@@ -14,6 +14,8 @@ import { drawLinearPixel } from './linearRenderer';
  */
 function createRecordingContext() {
 	const counts = { fill: 0, fillRect: 0, beginPath: 0, save: 0 };
+	/** Fills that happened while a shadow blur was actually set. */
+	const blurredFills: number[] = [];
 	const ctx = {
 		canvas: { width: 1920, height: 1080 },
 		fillStyle: '' as unknown,
@@ -34,6 +36,7 @@ function createRecordingContext() {
 		roundRect: () => {},
 		fill: () => {
 			counts.fill++;
+			if (ctx.shadowBlur > 0) blurredFills.push(ctx.shadowBlur);
 		},
 		stroke: () => {},
 		fillRect: () => {
@@ -50,7 +53,11 @@ function createRecordingContext() {
 		createLinearGradient: () => ({ addColorStop: () => {} }),
 		createRadialGradient: () => ({ addColorStop: () => {} })
 	};
-	return { ctx: ctx as unknown as CanvasRenderingContext2D, counts };
+	return {
+		ctx: ctx as unknown as CanvasRenderingContext2D,
+		counts,
+		blurredFills
+	};
 }
 
 const CANVAS = { width: 1920, height: 1080 } as HTMLCanvasElement;
@@ -141,11 +148,15 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 		expect(counts.fill).toBeLessThanOrEqual(16);
 	});
 
-	it('falls back to per-bar fills when colours sweep, never worse', () => {
-		// Sweeping modes give every bar its own colour, so runs cannot merge.
-		// The guarantee is only that it never exceeds one fill per bar.
+	it('splits the passes when colours sweep, so only the crisp fills scale', () => {
+		// Sweeping modes give every bar its own colour, so the crisp fills
+		// cannot merge — one per bar is the floor. What must NOT scale is the
+		// blurred pass: it keys on the quantized glow colour, so it stays a
+		// constant no matter how many bars there are. The total fill count goes
+		// slightly UP in exchange, which is the trade that matters: an
+		// unshadowed fill is orders of magnitude cheaper than a blurred one.
 		const barCount = 16;
-		const { ctx, counts } = createRecordingContext();
+		const { ctx, counts, blurredFills } = createRecordingContext();
 		drawLinearPixel(
 			ctx,
 			CANVAS,
@@ -157,7 +168,8 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 			})
 		);
 		expect(counts.fill).toBeGreaterThan(0);
-		expect(counts.fill).toBeLessThanOrEqual(barCount);
+		expect(counts.fill - blurredFills.length).toBeLessThanOrEqual(barCount);
+		expect(blurredFills.length).toBeLessThanOrEqual(16);
 	});
 
 	it('skips bars with no lit cells entirely', () => {

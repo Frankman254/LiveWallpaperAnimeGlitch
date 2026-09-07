@@ -3,6 +3,7 @@ import {
 	getColor,
 	normalizeSpectrumPhase
 } from '../color/spectrumColor';
+import type { SpectrumColorInput } from '../color/spectrumColor';
 import type { SpectrumLinearOrientation } from '@/types/wallpaper';
 import type { SpectrumSettings } from '../runtime/spectrumRuntime';
 
@@ -32,7 +33,7 @@ export function resolveManualGlow(
 	if (!settings.spectrumManualGlow) {
 		return { core: fallbackColor, halo: fallbackColor, peak: null };
 	}
-	const glowView = asGlowColorSettings(settings);
+	const glowView = glowColorView(settings);
 	const primary = glowView.spectrumPrimaryColor;
 	const isSolid = glowView.spectrumColorMode === 'solid';
 	// `solid` means exactly one color, so every layout renders monochrome —
@@ -78,8 +79,28 @@ const GLOW_HALO_PHASE_OFFSET = 0.12;
 export function asGlowColorSettings(
 	settings: SpectrumSettings
 ): SpectrumSettings {
+	return { ...settings, ...glowColorView(settings) };
+}
+
+/**
+ * The five colour fields, remapped to the glow's — without cloning the other
+ * ~150.
+ *
+ * This is the per-bar path. `resolveManualGlow` runs once per bar per pass, so
+ * a 256-bar spectrum with manual glow on called it 768 times a frame, and
+ * every one of those built a full `SpectrumSettings` clone (~119k property
+ * copies per instance per frame, doubled by the second spectrum, plus the
+ * garbage). That is why "manual glow + bar count al máximo" fell off a cliff
+ * while the same figure with the glow off stayed smooth: the early return
+ * above skips this entirely when the toggle is off.
+ *
+ * `asGlowColorSettings` still hands back a full settings object because the
+ * gradient builders need one — but that runs once per figure, not once per
+ * bar, and it is now written in terms of this so the two cannot drift.
+ */
+function glowColorView(settings: SpectrumSettings): SpectrumColorInput {
 	return {
-		...settings,
+		spectrumMode: settings.spectrumMode,
 		spectrumColorMode: settings.spectrumGlowColorMode,
 		spectrumPrimaryColor:
 			settings.spectrumGlowPrimaryColor ?? settings.spectrumPrimaryColor,
