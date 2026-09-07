@@ -20,6 +20,7 @@ export type EditorThemeOption = (typeof EDITOR_THEMES)[number];
 
 export type ExpandPanel =
 	| 'layers'
+	| 'drag'
 	| 'looks'
 	| 'looks_slots'
 	| 'spectrum'

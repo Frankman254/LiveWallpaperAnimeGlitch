@@ -414,3 +414,38 @@ describe('migrateWallpaperStore v111 factory logo', () => {
 		expect(migrated.logoId).toBe('user-logo');
 	});
 });
+
+describe('migrateWallpaperStore v112 logo variant', () => {
+	it('backfills the automatic variant in live state and saved logo snapshots', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				logoProfileSlots: [
+					{ id: 'logo-slot', name: 'Logo 1', values: {} }
+				],
+				backgroundImages: [
+					{
+						assetId: 'image-1',
+						logoOverride: {}
+					}
+				]
+			} as never,
+			111
+		);
+
+		expect(migrated.logoVariantMode).toBe('auto');
+		expect(migrated.logoProfileSlots[0]?.values?.logoVariantMode).toBe(
+			'auto'
+		);
+		expect(
+			migrated.backgroundImages[0]?.logoOverride?.logoVariantMode
+		).toBe('auto');
+	});
+
+	it('preserves an explicitly selected variant', () => {
+		const migrated = migrateWallpaperStore(
+			{ logoVariantMode: 'pixel' } as never,
+			111
+		);
+		expect(migrated.logoVariantMode).toBe('pixel');
+	});
+});

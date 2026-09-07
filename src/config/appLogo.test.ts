@@ -12,9 +12,6 @@ const BASE_STATE = {
 	spectrumFamily: 'classic' as const,
 	spectrumShape: 'bars' as const,
 	spectrumPixelate: false,
-	spectrumLiquidLayer1Pixelate: false,
-	spectrumLiquidLayer2Pixelate: false,
-	spectrumLiquidLayer3Pixelate: false,
 	spectrumInstances: []
 };
 
@@ -25,17 +22,20 @@ describe('Vibrix app logo variant', () => {
 		).toBe(true);
 	});
 
-	it('uses the pixel mark for global or liquid-layer pixel effects', () => {
+	it('uses the pixel mark for the spectrum-wide retro pixel effect', () => {
 		expect(
 			shouldUsePixelAppLogo({ ...BASE_STATE, spectrumPixelate: true })
 		).toBe(true);
+	});
+
+	it('ignores pixelated liquid sublayers until the spectrum-wide effect is enabled', () => {
 		expect(
 			shouldUsePixelAppLogo({
 				...BASE_STATE,
 				spectrumFamily: 'liquid',
-				spectrumLiquidLayer2Pixelate: true
+				spectrumShape: 'bars'
 			})
-		).toBe(true);
+		).toBe(false);
 	});
 
 	it('also follows an enabled pixelated Spectrum 2', () => {
@@ -43,10 +43,7 @@ describe('Vibrix app logo variant', () => {
 			enabled: true,
 			spectrumFamily: 'classic' as const,
 			spectrumShape: 'pixel' as const,
-			spectrumPixelate: false,
-			spectrumLiquidLayer1Pixelate: false,
-			spectrumLiquidLayer2Pixelate: false,
-			spectrumLiquidLayer3Pixelate: false
+			spectrumPixelate: false
 		};
 		expect(
 			shouldUsePixelAppLogo({
@@ -57,9 +54,20 @@ describe('Vibrix app logo variant', () => {
 		).toBe(true);
 	});
 
+	it('supports vector, pixel, and automatic built-in variants', () => {
+		expect(resolveAppLogoUrl(APP_LOGO_URL, 'vector', true)).toBe(
+			APP_LOGO_URL
+		);
+		expect(resolveAppLogoUrl(APP_LOGO_URL, 'pixel', false)).toBe(
+			APP_LOGO_PIXEL_URL
+		);
+		expect(resolveAppLogoUrl(APP_LOGO_URL, 'auto', true)).toBe(
+			APP_LOGO_PIXEL_URL
+		);
+	});
+
 	it('never replaces a user logo', () => {
-		expect(resolveAppLogoUrl(APP_LOGO_URL, true)).toBe(APP_LOGO_PIXEL_URL);
-		expect(resolveAppLogoUrl('blob:user-logo', true)).toBe(
+		expect(resolveAppLogoUrl('blob:user-logo', 'pixel', true)).toBe(
 			'blob:user-logo'
 		);
 	});

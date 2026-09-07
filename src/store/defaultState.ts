@@ -282,6 +282,7 @@ export const DEFAULT_STATE: WallpaperState = {
 	// Logo
 	logoEnabled: true,
 	logoUrl: APP_LOGO_URL,
+	logoVariantMode: 'auto',
 	logoBaseSize: 80,
 	logoPositionX: 0,
 	logoPositionY: 0,

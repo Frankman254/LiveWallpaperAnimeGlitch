@@ -6,7 +6,7 @@
  * `APP_LOGO_PIXEL_URL` is the same mark sampled on a 24×24 grid — the same
  * radii, stroke widths and ±3 RGB split, one cell wide.
  */
-import type { WallpaperState } from '@/types/wallpaper';
+import type { LogoVariantMode, WallpaperState } from '@/types/wallpaper';
 
 export const LEGACY_APP_LOGO_URL = '/favicon.svg';
 export const APP_LOGO_URL = '/vibrix-logo.svg';
@@ -14,12 +14,7 @@ export const APP_LOGO_PIXEL_URL = '/logo-pixel.svg';
 
 type PixelLogoSpectrumSettings = Pick<
 	WallpaperState,
-	| 'spectrumFamily'
-	| 'spectrumShape'
-	| 'spectrumPixelate'
-	| 'spectrumLiquidLayer1Pixelate'
-	| 'spectrumLiquidLayer2Pixelate'
-	| 'spectrumLiquidLayer3Pixelate'
+	'spectrumFamily' | 'spectrumShape' | 'spectrumPixelate'
 > & { enabled: boolean };
 
 type PixelLogoWallpaperSettings = Pick<
@@ -29,9 +24,6 @@ type PixelLogoWallpaperSettings = Pick<
 	| 'spectrumFamily'
 	| 'spectrumShape'
 	| 'spectrumPixelate'
-	| 'spectrumLiquidLayer1Pixelate'
-	| 'spectrumLiquidLayer2Pixelate'
-	| 'spectrumLiquidLayer3Pixelate'
 > & {
 	spectrumInstances: PixelLogoSpectrumSettings[];
 };
@@ -42,11 +34,7 @@ function usesPixelSurface(
 	return (
 		settings.spectrumPixelate ||
 		(settings.spectrumFamily === 'classic' &&
-			settings.spectrumShape === 'pixel') ||
-		(settings.spectrumFamily === 'liquid' &&
-			(settings.spectrumLiquidLayer1Pixelate ||
-				settings.spectrumLiquidLayer2Pixelate ||
-				settings.spectrumLiquidLayer3Pixelate))
+			settings.spectrumShape === 'pixel')
 	);
 }
 
@@ -68,12 +56,21 @@ export function shouldUsePixelAppLogo(
  * uploaded is theirs, and silently replacing it with ours would be a bug, not
  * a feature.
  */
+export function isBuiltInAppLogoUrl(logoUrl: string | null): boolean {
+	return (
+		logoUrl === APP_LOGO_URL ||
+		logoUrl === APP_LOGO_PIXEL_URL ||
+		logoUrl === LEGACY_APP_LOGO_URL
+	);
+}
+
 export function resolveAppLogoUrl(
 	logoUrl: string | null,
-	pixelated: boolean
+	variantMode: LogoVariantMode,
+	autoPixelated: boolean
 ): string | null {
-	if (!pixelated) return logoUrl;
-	return logoUrl === APP_LOGO_URL || logoUrl === LEGACY_APP_LOGO_URL
+	if (!isBuiltInAppLogoUrl(logoUrl)) return logoUrl;
+	return variantMode === 'pixel' || (variantMode === 'auto' && autoPixelated)
 		? APP_LOGO_PIXEL_URL
-		: logoUrl;
+		: APP_LOGO_URL;
 }

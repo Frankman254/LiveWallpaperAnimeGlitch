@@ -343,8 +343,17 @@ export function createSystemSlice(
 		setSleepModeActive: v => set({ sleepModeActive: v }),
 		setVirtualFoldersEnabled: v => set({ virtualFoldersEnabled: v }),
 		setUIMode: v => set({ uiMode: v }),
-		setEnableDragMode: v => set({ enableDragMode: v }),
+		setEnableDragMode: v =>
+			set(state => ({
+				enableDragMode: v,
+				activeTool: v
+					? state.activeTool === 'none'
+						? 'logo'
+						: state.activeTool
+					: 'none'
+			})),
 		setActiveTool: v => set({ activeTool: v }),
+		setDragTool: v => set({ activeTool: v, enableDragMode: v !== 'none' }),
 		setLayerZIndex: (id, zIndex) =>
 			set(state => ({
 				layerZIndices: {

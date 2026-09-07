@@ -6,6 +6,7 @@ import {
 	MAX_LOGO_SLOT_COUNT
 } from '@/store/featureProfiles';
 import { DEFAULT_STATE } from '@/store/defaultState';
+import { APP_LOGO_URL } from '@/config/appLogo';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 
 type WallpaperSet = Parameters<StateCreator<WallpaperStore>>[0];
@@ -22,6 +23,11 @@ export function createLogoSlice(
 		setLogoEnabled: v => set({ logoEnabled: v }),
 		setLogoUrl: v => set({ logoUrl: v }),
 		setLogoId: v => set({ logoId: v }),
+		setLogoVariantMode: v => set({ logoVariantMode: v }),
+		setLogoAsset: (id, url) =>
+			set({ logoId: id, logoUrl: url, logoEnabled: true }),
+		restoreFactoryLogo: () =>
+			set({ logoId: null, logoUrl: APP_LOGO_URL, logoEnabled: true }),
 		setLogoBaseSize: v => set({ logoBaseSize: v }),
 		setLogoPositionX: v => set({ logoPositionX: v }),
 		setLogoPositionY: v => set({ logoPositionY: v }),

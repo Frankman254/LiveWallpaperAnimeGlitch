@@ -59,6 +59,10 @@ export function useQuickActionsState() {
 			editorCornerRadius: state.editorCornerRadius,
 			editorControlCornerRadius: state.editorControlCornerRadius,
 			logoUrl: state.logoUrl,
+			logoId: state.logoId,
+			logoVariantMode: state.logoVariantMode,
+			setLogoVariantMode: state.setLogoVariantMode,
+			restoreFactoryLogo: state.restoreFactoryLogo,
 			backgroundImages: state.backgroundImages,
 			activeImageId: state.activeImageId,
 			setActiveImageId: state.setActiveImageId,
@@ -231,6 +235,7 @@ export function useQuickActionsState() {
 			setEnableDragMode: state.setEnableDragMode,
 			activeTool: state.activeTool,
 			setActiveTool: state.setActiveTool,
+			setDragTool: state.setDragTool,
 			showSetlistHud: state.showSetlistHud,
 			setShowSetlistHud: state.setShowSetlistHud,
 			setEditorTheme: state.setEditorTheme

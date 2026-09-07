@@ -3,6 +3,7 @@ import type { AudioLyricsTrackEntry } from '@/features/lyrics/domain/types';
 
 export type PerformanceMode = 'low' | 'medium' | 'high';
 export type UIMode = 'simple' | 'advanced';
+export type LogoVariantMode = 'vector' | 'pixel' | 'auto';
 export type ActiveTool =
 	| 'none'
 	| 'logo'
@@ -790,6 +791,7 @@ export type SpectrumSpiralDotShape =
 
 export interface LogoProfileSettings {
 	logoEnabled: boolean;
+	logoVariantMode: LogoVariantMode;
 	logoBaseSize: number;
 	logoPositionX: number;
 	logoPositionY: number;
@@ -1314,6 +1316,8 @@ export type WallpaperState = {
 	// Logo
 	logoEnabled: boolean;
 	logoUrl: string | null;
+	/** Variant used by the built-in Vibrix mark. Custom uploads are untouched. */
+	logoVariantMode: LogoVariantMode;
 	logoBaseSize: number;
 	logoPositionX: number;
 	logoPositionY: number;

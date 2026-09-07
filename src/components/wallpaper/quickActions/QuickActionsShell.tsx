@@ -67,7 +67,7 @@ export default function QuickActionsShell({
 							{panelChildren}
 						</div>
 						{panelOverlayChildren ? (
-							<div className="absolute inset-0 z-20">
+							<div className="pointer-events-none absolute inset-0 z-20">
 								{panelOverlayChildren}
 							</div>
 						) : null}

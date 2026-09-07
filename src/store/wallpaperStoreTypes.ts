@@ -517,6 +517,11 @@ export type WallpaperStore = WallpaperState & {
 	setLogoEnabled: (v: boolean) => void;
 	setLogoUrl: (v: string | null) => void;
 	setLogoId: (v: string | null) => void;
+	setLogoVariantMode: (
+		v: import('@/types/wallpaper').LogoVariantMode
+	) => void;
+	setLogoAsset: (id: string, url: string) => void;
+	restoreFactoryLogo: () => void;
 	setLogoBaseSize: (v: number) => void;
 	setLogoPositionX: (v: number) => void;
 	setLogoPositionY: (v: number) => void;
@@ -853,6 +858,7 @@ export type WallpaperStore = WallpaperState & {
 	setUIMode: (v: import('@/types/wallpaper').UIMode) => void;
 	setEnableDragMode: (v: boolean) => void;
 	setActiveTool: (v: import('@/types/wallpaper').ActiveTool) => void;
+	setDragTool: (v: import('@/types/wallpaper').ActiveTool) => void;
 	setLayerZIndex: (id: BuiltInLayerId, zIndex: number) => void;
 	resetLayerZIndices: () => void;
 	backgroundFallbackVisible: boolean;

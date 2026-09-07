@@ -87,4 +87,6 @@ export const LEGACY_PROJECT_FILE_EXTENSIONS = ['lwag'] as const;
 // is removed from slot snapshots so HUD/editor selection cannot collide.
 // v111: the factory logo moved to a new cache-safe Vibrix URL. Existing factory
 // logo references migrate without touching user-uploaded logo assets.
-export const STORE_PERSIST_VERSION = 111;
+// v112: built-in logo variant mode (vector/pixel/auto), including Logo profile
+// snapshots and per-image Logo overrides.
+export const STORE_PERSIST_VERSION = 112;

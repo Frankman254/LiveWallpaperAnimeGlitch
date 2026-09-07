@@ -35,6 +35,8 @@ import { useQuickActionsLayout } from '@/components/wallpaper/quickActions/useQu
 import { useQuickActionsState } from '@/components/wallpaper/quickActions/useQuickActionsState';
 import { useQuickActionsViewModel } from '@/components/wallpaper/quickActions/useQuickActionsViewModel';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { APP_LOGO_URL } from '@/config/appLogo';
+import { Move } from 'lucide-react';
 
 type HudDragState = {
 	kind: 'panel' | 'launcher';
@@ -269,6 +271,7 @@ export default function QuickActionsPanel() {
 		spectrumActions,
 		spectrumSlots,
 		motionActions,
+		dragActions,
 		particlesSlots,
 		rainSlots,
 		lightsSlots,
@@ -321,7 +324,7 @@ export default function QuickActionsPanel() {
 				boxShadow:
 					'0 22px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)'
 			}}
-			panelContentClassName="relative flex min-h-0 w-full flex-col px-5 py-4"
+			panelContentClassName={`relative flex min-h-0 w-full flex-col px-5 pb-4 ${hudDragEnabled ? 'pt-11' : 'pt-4'}`}
 			launcherRef={launcherRef}
 			launcherStyle={{
 				...launcherStyle,
@@ -354,15 +357,18 @@ export default function QuickActionsPanel() {
 						}
 						aria-label={t.hud_drag_tooltip}
 						title={t.hud_drag_tooltip}
-						className="h-full w-full"
+						className="pointer-events-auto absolute left-2 right-2 top-2 flex h-7 items-center justify-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider"
 						style={{
-							borderRadius: 'var(--editor-radius-xl)',
+							borderRadius: 'var(--editor-radius-sm)',
 							cursor: 'grab',
 							background:
-								'color-mix(in srgb, var(--editor-active-bg) 10%, transparent)',
+								'color-mix(in srgb, var(--editor-active-bg) 88%, var(--editor-shell-bg))',
 							border: '1px dashed color-mix(in srgb, var(--editor-accent-color) 55%, transparent)'
 						}}
-					/>
+					>
+						<Move size={11} strokeWidth={2.25} />
+						{t.qa_drag_hud_handle}
+					</div>
 				) : undefined
 			}
 			panelChildren={
@@ -380,6 +386,19 @@ export default function QuickActionsPanel() {
 							compact
 						/>
 					</div>
+
+					{expandPanel === 'drag' && (
+						<QuickActionsGroupedPanel
+							groups={[
+								{
+									label: t.qa_drag_select_target,
+									actions: dragActions
+								}
+							]}
+							isRainbow={usesRainbowChrome}
+							dense
+						/>
+					)}
 
 					{expandPanel === 'layers' && (
 						<QuickActionsLayersPanel
@@ -550,29 +569,16 @@ export default function QuickActionsPanel() {
 				</div>
 			}
 			launcherChildren={
-				state.logoUrl ? (
-					<img
-						src={state.logoUrl}
-						alt=""
-						className="rounded-full object-cover opacity-95 ring-1"
-						style={{
-							width: launcherIconPx,
-							height: launcherIconPx,
-							borderColor: 'var(--editor-shell-border)'
-						}}
-					/>
-				) : (
-					<span
-						className="font-semibold leading-none"
-						style={{
-							fontSize: Math.round(
-								(Number(launcherStyle.width) || 48) * 0.28
-							)
-						}}
-					>
-						{isOpen ? '×' : '◌'}
-					</span>
-				)
+				<img
+					src={APP_LOGO_URL}
+					alt=""
+					className="rounded-full object-contain opacity-95 ring-1"
+					style={{
+						width: launcherIconPx,
+						height: launcherIconPx,
+						borderColor: 'var(--editor-shell-border)'
+					}}
+				/>
 			}
 			launcherOverlayChildren={
 				hudDragEnabled ? (

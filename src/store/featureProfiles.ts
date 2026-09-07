@@ -500,6 +500,7 @@ export const SPECTRUM_PROFILE_KEYS = [
 
 const LOGO_PROFILE_KEYS = [
 	'logoEnabled',
+	'logoVariantMode',
 	'logoBaseSize',
 	'logoPositionX',
 	'logoPositionY',

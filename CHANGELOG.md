@@ -15,6 +15,16 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Logo Vibrix y variantes (store v112)
+
+- El logo integrado ahora tiene modos Vector, Pixel y Auto. Auto sigue
+  cualquier Spectrum 1 o 2 visible que use Classic Pixel/LED o Retro Pixelate,
+  tanto radial como linear, sin sustituir logos personalizados.
+- El editor y el HUD pueden elegir la variante; restaurar Vibrix desacopla el
+  logo personalizado actual de la escena mediante confirmación.
+- Drag Mode tiene un panel propio en el HUD: sus destinos ya no invaden la fila
+  principal ni aparecen duplicados dentro de System.
+
 ### Identidad Vibrix completa (store v111)
 
 - El nombre visible del editor, mini-player, Media Session y fallback del HUD
@@ -22,9 +32,7 @@ the version scheme in `src/lib/version.ts`.
 - El navegador recibe favicon vectorial con URL nueva, PNG 192/512, manifest,
   Apple touch icon y metadatos de aplicación/Open Graph para que las miniaturas
   no reutilicen el icono anterior desde caché.
-- El logo de fábrica migra a `/vibrix-logo.svg` sin tocar logos subidos. Su
-  variante pixel se activa cuando Spectrum 1 o Spectrum 2 usa bloques pixel,
-  pixelado global o una capa Liquid pixelada.
+- El logo de fábrica migra a `/vibrix-logo.svg` sin tocar logos subidos.
 
 ### Rendimiento: donde se estaba despilfarrando
 
@@ -105,7 +113,7 @@ pliega el look Custom legacy dentro del banco normal de slots y traduce la
 selección. El campo legacy se queda en el esquema para que los proyectos
 exportados antes sigan importándose.
 
-`STORE_PERSIST_VERSION` is at **111**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **112**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

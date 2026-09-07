@@ -500,6 +500,20 @@ export const es: Record<TranslationKey, string> = {
 	label_intensity: 'Intensidad',
 	// Logo
 	label_logo_image: 'Imagen del Logo (PNG/SVG)',
+	label_logo_variant: 'Variante integrada',
+	logo_variant_vector: 'Vector',
+	logo_variant_pixel: 'Pixel',
+	logo_variant_auto: 'Auto',
+	logo_source_builtin_vector: 'Vibrix Vector',
+	logo_source_builtin_pixel: 'Vibrix Pixel',
+	logo_source_custom: 'Logo personalizado',
+	logo_source_missing: 'No hay logo seleccionado',
+	restore_vibrix_logo: 'Restaurar Vibrix',
+	confirm_restore_vibrix_logo_title: '¿Restaurar el logo de Vibrix?',
+	confirm_restore_vibrix_logo_message:
+		'El logo personalizado actual se desacoplará de esta escena y será reemplazado por el logo integrado de Vibrix.',
+	hint_logo_variant_auto:
+		'Auto usa el logo pixelado cuando cualquier Spectrum 1 o 2 visible emplea Classic Pixel/LED o Retro Pixelate.',
 	label_base_size: 'Tamaño Base',
 	label_logo_circular_crop: 'Recorte Circular',
 	label_logo_crop_radius: 'Radio del Recorte',
@@ -1978,6 +1992,11 @@ export const es: Record<TranslationKey, string> = {
 	qa_drag_mode: 'ARRASTRAR',
 	qa_drag_mode_t:
 		'Arrastrar elementos del lienzo (logo, espectro, título, letras, HUD)',
+	qa_drag_select_target: 'Elige qué mover',
+	qa_drag_done: 'TERMINAR',
+	qa_drag_done_t:
+		'Desactivar el modo de arrastre y devolver el puntero a la interfaz',
+	qa_drag_hud_handle: 'Mover HUD',
 	qa_setlist_hud: 'HUD SETLIST',
 	qa_setlist_hud_t: 'Chip de setlist activo en el lienzo',
 	// Temas / fuente de color

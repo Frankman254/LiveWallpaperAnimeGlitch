@@ -47,11 +47,13 @@ import {
 	fromFilterLookSlotSelectionId
 } from '@/features/filterLooks/filterLooks';
 import type { SubsystemCarouselNav } from '@/components/controls/mediaDock/types';
+import type { QuickActionButtonProps } from '@/components/wallpaper/quickActions/QuickActionButton';
+import { isBuiltInAppLogoUrl } from '@/config/appLogo';
+import { useDialog } from '@/editor/DialogProvider';
 
 /**
  * What drag mode can actually move. Mirrors `DRAG_TARGETS` in
- * `DragInteractionLayer`, plus `hud` (which the HUD drags itself) and `none`
- * to step back out without leaving drag mode.
+ * `DragInteractionLayer`, plus `hud` (which the HUD drags itself).
  */
 const DRAG_TOOL_ITEMS: ReadonlyArray<{
 	id: ActiveTool;
@@ -82,11 +84,6 @@ const DRAG_TOOL_ITEMS: ReadonlyArray<{
 		id: 'hud',
 		label: 'HUD',
 		icon: <SlidersHorizontal size={11} strokeWidth={2.25} />
-	},
-	{
-		id: 'none',
-		label: 'Off',
-		icon: <MousePointer size={11} strokeWidth={2.25} />
 	}
 ];
 
@@ -142,6 +139,7 @@ export function useQuickActionsViewModel({
 	goPresentation
 }: UseQuickActionsViewModelOptions) {
 	const fullStore = useWallpaperStore();
+	const { confirm } = useDialog();
 	// Visible pool — respects the active setlist. The label / index shown
 	// in the quick actions HUD reflects the curated set when one is active.
 	const visibleImages = useMemo(
@@ -592,6 +590,21 @@ export function useQuickActionsViewModel({
 	const logoShortcutActions = useMemo(() => {
 		const actions = buildLogoActions({
 			t,
+			logoVariantMode: state.logoVariantMode,
+			setLogoVariantMode: state.setLogoVariantMode,
+			isBuiltInLogo: !state.logoId && isBuiltInAppLogoUrl(state.logoUrl),
+			onRestoreFactoryLogo: () => {
+				void (async () => {
+					const ok = await confirm({
+						title: t.confirm_restore_vibrix_logo_title,
+						message: t.confirm_restore_vibrix_logo_message,
+						confirmLabel: t.restore_vibrix_logo,
+						cancelLabel: t.label_cancel,
+						tone: 'danger'
+					});
+					if (ok) state.restoreFactoryLogo();
+				})();
+			},
 			logoShadowEnabled: state.logoShadowEnabled,
 			setLogoShadowEnabled: state.setLogoShadowEnabled,
 			logoBackdropEnabled: state.logoBackdropEnabled,
@@ -618,7 +631,7 @@ export function useQuickActionsViewModel({
 			});
 		}
 		return actions;
-	}, [expandPanel, state, toggleExpand, t]);
+	}, [confirm, expandPanel, state, toggleExpand, t]);
 
 	const titleActions = useMemo(() => {
 		const actions = buildTitleActions({
@@ -668,11 +681,31 @@ export function useQuickActionsViewModel({
 					state.setShowSpectrumDiagnosticsHud,
 				showLogoDiagnosticsHud: state.showLogoDiagnosticsHud,
 				setShowLogoDiagnosticsHud: state.setShowLogoDiagnosticsHud,
-				enableDragMode: state.enableDragMode,
-				setEnableDragMode: state.setEnableDragMode,
 				showSetlistHud: state.showSetlistHud,
 				setShowSetlistHud: state.setShowSetlistHud
 			}),
+		[state, t]
+	);
+
+	const dragActions = useMemo<QuickActionButtonProps[]>(
+		() => [
+			...DRAG_TOOL_ITEMS.map(tool => ({
+				label: tool.label,
+				title: `${t.qa_drag_select_target}: ${tool.label}`,
+				icon: tool.icon,
+				active: state.enableDragMode && state.activeTool === tool.id,
+				small: true,
+				onClick: () => state.setDragTool(tool.id)
+			})),
+			{
+				label: t.qa_drag_done,
+				title: t.qa_drag_done_t,
+				icon: <MousePointer size={11} strokeWidth={2.25} />,
+				active: !state.enableDragMode,
+				small: true,
+				onClick: () => state.setDragTool('none')
+			}
+		],
 		[state, t]
 	);
 
@@ -848,37 +881,15 @@ export function useQuickActionsViewModel({
 			active: false,
 			onClick: goPresentation
 		});
-		// Drag mode belongs in the always-visible row, not buried in the System
-		// panel: it is the switch you flip between every reposition, and having
-		// to open a sub-panel to reach it is what made it read as missing.
+		// Drag mode owns a dedicated panel. Targets do not belong beside the
+		// editor sections because they are mutually exclusive tools, not tabs.
 		actions.push({
 			label: t.qa_drag_mode,
 			title: t.qa_drag_mode_t,
 			icon: <Move size={11} strokeWidth={2.25} />,
-			active: state.enableDragMode,
-			onClick: () => {
-				const next = !state.enableDragMode;
-				state.setEnableDragMode(next);
-				// Drag mode with no tool selected moves nothing, which is what
-				// made the old System-panel toggle read as broken. Opening it
-				// arms the logo; closing it releases the pointer back to the UI.
-				state.setActiveTool(next ? 'logo' : 'none');
-			}
+			active: state.enableDragMode || expandPanel === 'drag',
+			onClick: () => toggleExpand('drag')
 		});
-		// The tool chips only exist while drag mode is on — the HUD had no way
-		// to choose a drag target at all before, so the toggle was inert unless
-		// the user went to the desktop control panel to pick one.
-		if (state.enableDragMode) {
-			for (const tool of DRAG_TOOL_ITEMS) {
-				actions.push({
-					label: tool.label,
-					title: `${t.qa_drag_mode_t} — ${tool.label}`,
-					icon: tool.icon,
-					active: state.activeTool === tool.id,
-					onClick: () => state.setActiveTool(tool.id)
-				});
-			}
-		}
 		actions.push(
 			{
 				label: t.tab_layers.toUpperCase(),
@@ -1344,6 +1355,7 @@ export function useQuickActionsViewModel({
 		looksActions,
 		spectrumActions,
 		motionActions,
+		dragActions,
 		audioActions,
 		logoShortcutActions,
 		titleActions,

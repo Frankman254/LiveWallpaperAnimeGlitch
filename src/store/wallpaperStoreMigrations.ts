@@ -3015,6 +3015,17 @@ export function migrateWallpaperStore(
 	) {
 		migratedState.logoUrl = APP_LOGO_URL;
 	}
+	if (fromVersion < 112) {
+		migratedState.logoVariantMode ??= 'auto';
+		for (const slot of migratedState.logoProfileSlots ?? []) {
+			if (slot.values) slot.values.logoVariantMode ??= 'auto';
+		}
+		for (const image of migratedState.backgroundImages ?? []) {
+			if (image.logoOverride) {
+				image.logoOverride.logoVariantMode ??= 'auto';
+			}
+		}
+	}
 
 	return normalizeSpectrumSettings(migratedState) as WallpaperStore;
 }

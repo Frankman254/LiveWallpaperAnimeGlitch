@@ -3,6 +3,7 @@ import type {
 	QuickActionGroup
 } from '@/components/wallpaper/quickActions/QuickActionButton';
 import type { Translations } from '@/lib/i18n';
+import type { LogoVariantMode } from '@/types/wallpaper';
 import {
 	EDITOR_THEMES,
 	type EditorThemeOption
@@ -678,6 +679,10 @@ export function buildAudioActions(
 
 type BuildLogoActionsOptions = {
 	t: Translations;
+	logoVariantMode: LogoVariantMode;
+	setLogoVariantMode: (value: LogoVariantMode) => void;
+	isBuiltInLogo: boolean;
+	onRestoreFactoryLogo: () => void;
 	logoShadowEnabled: boolean;
 	setLogoShadowEnabled: (value: boolean) => void;
 	logoBackdropEnabled: boolean;
@@ -688,6 +693,42 @@ export function buildLogoActions(
 	o: BuildLogoActionsOptions
 ): QuickActionButtonProps[] {
 	return [
+		...(o.isBuiltInLogo
+			? ([
+					{
+						label: o.t.logo_variant_vector.toUpperCase(),
+						title: o.t.logo_source_builtin_vector,
+						icon: makeIcon(Circle),
+						active: o.logoVariantMode === 'vector',
+						small: true,
+						onClick: () => o.setLogoVariantMode('vector')
+					},
+					{
+						label: o.t.logo_variant_pixel.toUpperCase(),
+						title: o.t.logo_source_builtin_pixel,
+						icon: makeIcon(Square),
+						active: o.logoVariantMode === 'pixel',
+						small: true,
+						onClick: () => o.setLogoVariantMode('pixel')
+					},
+					{
+						label: o.t.logo_variant_auto.toUpperCase(),
+						title: o.t.hint_logo_variant_auto,
+						icon: makeIcon(Wand2),
+						active: o.logoVariantMode === 'auto',
+						small: true,
+						onClick: () => o.setLogoVariantMode('auto')
+					}
+				] satisfies QuickActionButtonProps[])
+			: ([
+					{
+						label: o.t.restore_vibrix_logo.toUpperCase(),
+						title: o.t.confirm_restore_vibrix_logo_message,
+						icon: makeIcon(ImageIcon),
+						small: true,
+						onClick: o.onRestoreFactoryLogo
+					}
+				] satisfies QuickActionButtonProps[])),
 		{
 			label: o.t.qa_shadow,
 			title: o.t.qa_shadow_t,
@@ -770,8 +811,6 @@ type BuildSystemActionsOptions = {
 	setShowSpectrumDiagnosticsHud: (value: boolean) => void;
 	showLogoDiagnosticsHud: boolean;
 	setShowLogoDiagnosticsHud: (value: boolean) => void;
-	enableDragMode: boolean;
-	setEnableDragMode: (value: boolean) => void;
 	showSetlistHud: boolean;
 	setShowSetlistHud: (value: boolean) => void;
 };
@@ -861,14 +900,6 @@ export function buildSystemActions(
 			small: true,
 			onClick: () =>
 				o.setShowLogoDiagnosticsHud(!o.showLogoDiagnosticsHud)
-		},
-		{
-			label: o.t.qa_drag_mode,
-			title: o.t.qa_drag_mode_t,
-			icon: makeIcon(Move),
-			active: o.enableDragMode,
-			small: true,
-			onClick: () => o.setEnableDragMode(!o.enableDragMode)
 		},
 		// QUICK EDIT toggle removed — the per-image overrides now live
 		// inside the HUD as the `PER IMG` header panel, so toggling its

@@ -496,6 +496,20 @@ export const en = {
 	label_intensity: 'Intensity',
 	// Logo
 	label_logo_image: 'Logo Image (PNG/SVG)',
+	label_logo_variant: 'Built-in variant',
+	logo_variant_vector: 'Vector',
+	logo_variant_pixel: 'Pixel',
+	logo_variant_auto: 'Auto',
+	logo_source_builtin_vector: 'Vibrix Vector',
+	logo_source_builtin_pixel: 'Vibrix Pixel',
+	logo_source_custom: 'Custom logo',
+	logo_source_missing: 'No logo selected',
+	restore_vibrix_logo: 'Restore Vibrix',
+	confirm_restore_vibrix_logo_title: 'Restore the Vibrix logo?',
+	confirm_restore_vibrix_logo_message:
+		'The current custom logo will be detached from this scene and replaced with the built-in Vibrix logo.',
+	hint_logo_variant_auto:
+		'Auto uses the pixel mark when any visible Spectrum 1 or 2 uses Classic Pixel/LED or Retro Pixelate.',
 	label_base_size: 'Base Size',
 	label_logo_circular_crop: 'Circular Crop',
 	label_logo_crop_radius: 'Crop Radius',
@@ -1963,6 +1977,10 @@ export const en = {
 	qa_drag_mode: 'DRAG MODE',
 	qa_drag_mode_t:
 		'Drag canvas elements (logo, spectrum, track title, lyrics, HUD)',
+	qa_drag_select_target: 'Choose what to move',
+	qa_drag_done: 'DONE',
+	qa_drag_done_t: 'Disable drag mode and return pointer control to the UI',
+	qa_drag_hud_handle: 'Move HUD',
 	qa_setlist_hud: 'SETLIST HUD',
 	qa_setlist_hud_t: 'Active setlist chip on the canvas',
 	// Themes / color source

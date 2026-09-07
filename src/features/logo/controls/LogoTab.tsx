@@ -17,6 +17,7 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import type {
 	AudioReactiveChannel,
 	ColorSourceMode,
+	LogoVariantMode,
 	WallpaperState
 } from '@/types/wallpaper';
 import {
@@ -42,6 +43,12 @@ import {
 import { useDialog } from '@/editor/DialogProvider';
 import { useIsSimple } from '@/editor/UIMode';
 import { LOGO_QUICK_PROFILES, type LogoQuickProfile } from '@/features/logo';
+import {
+	APP_LOGO_PIXEL_URL,
+	isBuiltInAppLogoUrl,
+	resolveAppLogoUrl,
+	shouldUsePixelAppLogo
+} from '@/config/appLogo';
 
 function formatDecimal(value: number): string {
 	return value.toFixed(2);
@@ -81,6 +88,14 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 		useShallow(s => ({
 			logoEnabled: s.logoEnabled,
 			logoUrl: s.logoUrl,
+			logoId: s.logoId,
+			logoVariantMode: s.logoVariantMode,
+			spectrumEnabled: s.spectrumEnabled,
+			spectrumMainVisible: s.spectrumMainVisible,
+			spectrumFamily: s.spectrumFamily,
+			spectrumShape: s.spectrumShape,
+			spectrumPixelate: s.spectrumPixelate,
+			spectrumInstances: s.spectrumInstances,
 			logoBaseSize: s.logoBaseSize,
 			logoPositionX: s.logoPositionX,
 			logoPositionY: s.logoPositionY,
@@ -117,8 +132,9 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 			logoProfileSlots: s.logoProfileSlots,
 			setLogoColorSources: s.setLogoColorSources,
 			setLogoEnabled: s.setLogoEnabled,
-			setLogoUrl: s.setLogoUrl,
-			setLogoId: s.setLogoId,
+			setLogoVariantMode: s.setLogoVariantMode,
+			setLogoAsset: s.setLogoAsset,
+			restoreFactoryLogo: s.restoreFactoryLogo,
 			setLogoBaseSize: s.setLogoBaseSize,
 			setLogoPositionX: s.setLogoPositionX,
 			setLogoPositionY: s.setLogoPositionY,
@@ -194,6 +210,20 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 		balanced: t.profile_balanced,
 		dsg: t.profile_dsg
 	};
+	const logoVariantLabels: Record<LogoVariantMode, string> = {
+		vector: t.logo_variant_vector,
+		pixel: t.logo_variant_pixel,
+		auto: t.logo_variant_auto
+	};
+	const builtInLogo = !store.logoId && isBuiltInAppLogoUrl(store.logoUrl);
+	const autoPixelated = shouldUsePixelAppLogo(store);
+	const effectiveLogoUrl = resolveAppLogoUrl(
+		store.logoUrl,
+		store.logoVariantMode,
+		autoPixelated
+	);
+	const effectiveBuiltInVariant =
+		effectiveLogoUrl === APP_LOGO_PIXEL_URL ? 'pixel' : 'vector';
 	const sharedLogoColorSource = sharedColorSource([
 		store.logoGlowColorSource,
 		store.logoShadowColorSource,
@@ -243,9 +273,19 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 		const url = await loadImage(id);
 		event.target.value = '';
 		if (!url) return;
-		store.setLogoId(id);
-		store.setLogoUrl(url);
-		store.setLogoEnabled(true);
+		store.setLogoAsset(id, url);
+	}
+
+	async function restoreBuiltInLogo() {
+		const ok = await confirm({
+			title: t.confirm_restore_vibrix_logo_title,
+			message: t.confirm_restore_vibrix_logo_message,
+			confirmLabel: t.restore_vibrix_logo,
+			cancelLabel: t.label_cancel,
+			tone: 'danger'
+		});
+		if (!ok) return;
+		store.restoreFactoryLogo();
 	}
 
 	function resetLogoRotationControl() {
@@ -336,9 +376,9 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 							background: UI_COLORS.raised
 						}}
 					>
-						{store.logoUrl ? (
+						{effectiveLogoUrl ? (
 							<img
-								src={store.logoUrl}
+								src={effectiveLogoUrl}
 								alt=""
 								className="h-12 w-12 shrink-0 rounded-[var(--editor-radius-md)] object-contain"
 								style={
@@ -365,20 +405,50 @@ export default function LogoTab({ onReset }: { onReset: () => void }) {
 								{t.label_logo_image}
 							</div>
 							<HintText>
-								{store.logoUrl
-									? 'Logo loaded'
-									: 'No logo selected'}
+								{builtInLogo
+									? effectiveBuiltInVariant === 'pixel'
+										? t.logo_source_builtin_pixel
+										: t.logo_source_builtin_vector
+									: store.logoUrl
+										? t.logo_source_custom
+										: t.logo_source_missing}
 							</HintText>
 						</div>
-						<Button
-							size="sm"
-							density="compact"
-							icon={<ImageUp size={ICON_SIZE.xs} />}
-							onClick={() => uploadRef.current?.click()}
-						>
-							{t.upload_logo}
-						</Button>
+						<div className="flex shrink-0 items-center gap-1">
+							{!builtInLogo ? (
+								<Button
+									size="sm"
+									density="compact"
+									variant="destructive"
+									icon={<RotateCcw size={ICON_SIZE.xs} />}
+									onClick={() => void restoreBuiltInLogo()}
+								>
+									{t.restore_vibrix_logo}
+								</Button>
+							) : null}
+							<Button
+								size="sm"
+								density="compact"
+								icon={<ImageUp size={ICON_SIZE.xs} />}
+								onClick={() => uploadRef.current?.click()}
+							>
+								{t.upload_logo}
+							</Button>
+						</div>
 					</div>
+					{builtInLogo ? (
+						<div className="flex flex-col gap-1.5">
+							<OptionButtonGroup<LogoVariantMode>
+								label={t.label_logo_variant}
+								options={['vector', 'pixel', 'auto']}
+								value={store.logoVariantMode}
+								onChange={store.setLogoVariantMode}
+								labels={logoVariantLabels}
+								columns={3}
+							/>
+							<HintText>{t.hint_logo_variant_auto}</HintText>
+						</div>
+					) : null}
 					<OptionButtonGroup<LogoQuickProfile>
 						label="Quick profile"
 						options={['subtle', 'balanced', 'dsg']}
