@@ -16,6 +16,11 @@ function createRecordingContext() {
 	const counts = { fill: 0, fillRect: 0, beginPath: 0, save: 0 };
 	/** Fills that happened while a shadow blur was actually set. */
 	const blurredFills: number[] = [];
+	const stack: {
+		shadowBlur: number;
+		filter: string;
+		globalAlpha: number;
+	}[] = [];
 	const ctx = {
 		canvas: { width: 1920, height: 1080 },
 		fillStyle: '' as unknown,
@@ -36,16 +41,36 @@ function createRecordingContext() {
 		roundRect: () => {},
 		fill: () => {
 			counts.fill++;
+			// A glow that sweeps cannot go through `shadowColor` (canvas
+			// shadows are one flat colour), so it is painted as a gradient
+			// under `ctx.filter = blur(...)` instead. Both are the same
+			// expensive Gaussian, so both count here — otherwise these
+			// assertions would go blind the moment a shape switches paths.
 			if (ctx.shadowBlur > 0) blurredFills.push(ctx.shadowBlur);
+			else if (ctx.filter && ctx.filter !== 'none') blurredFills.push(0);
 		},
 		stroke: () => {},
 		fillRect: () => {
 			counts.fillRect++;
 		},
+		// A real `save`/`restore` stack. Without it `ctx.filter` set by a
+		// blurred pass leaks into every later fill in the mock, and the
+		// blurred-draw counts below silently become meaningless.
 		save: () => {
 			counts.save++;
+			stack.push({
+				shadowBlur: ctx.shadowBlur,
+				filter: ctx.filter,
+				globalAlpha: ctx.globalAlpha
+			});
 		},
-		restore: () => {},
+		restore: () => {
+			const previous = stack.pop();
+			if (!previous) return;
+			ctx.shadowBlur = previous.shadowBlur;
+			ctx.filter = previous.filter;
+			ctx.globalAlpha = previous.globalAlpha;
+		},
 		translate: () => {},
 		rotate: () => {},
 		scale: () => {},

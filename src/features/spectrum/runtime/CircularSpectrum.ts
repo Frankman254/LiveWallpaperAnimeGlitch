@@ -31,7 +31,10 @@ import {
 	updateSpectrumShockwavesAndDraw
 } from '@/features/spectrum/runtime/spectrumFrameEffects';
 import { dispatchSpectrumRenderer } from '@/features/spectrum/domain/spectrumFamilyRegistry';
-import { computeClassicGlowBlur } from '@/features/spectrum/renderers/linear/linearRenderer';
+import {
+	computeClassicGlowBlur,
+	resolveGlowPerfScale
+} from '@/features/spectrum/renderers/linear/linearRenderer';
 import {
 	getSectionLevel,
 	tickManualSections
@@ -537,13 +540,23 @@ export function drawSpectrum(
 	// glow its own render-only blur floor so the halo is visible without mutating
 	// the saved preset values. Per-family caps and performance-mode scaling still
 	// bound the final radius.
+	// The rescue floor only exists for a preset that has NO radius at all — a
+	// nonzero Shadow Blur is already the user saying how wide they want the
+	// halo, and overriding a deliberate 4 with 12 both changed their look and
+	// made the toggle cost more than they asked for. It also scales with the
+	// performance mode now, the same way every real blur in the app does; it
+	// used to sit under the per-family cap, so the cap's scaling never bound it
+	// and a `low` machine paid the full manufactured radius.
+	const manualGlowRescueFloor =
+		settings.spectrumManualGlow &&
+		settings.spectrumGlowIntensity > 0.001 &&
+		settings.spectrumShadowBlur <= 0.001
+			? 12 * resolveGlowPerfScale(settings)
+			: 0;
 	const effectiveShadowBlur =
 		audioGlowDrive > 0.001
 			? Math.max(settings.spectrumShadowBlur, audioGlowDrive * 14)
-			: settings.spectrumManualGlow &&
-				  settings.spectrumGlowIntensity > 0.001
-				? Math.max(settings.spectrumShadowBlur, 12)
-				: settings.spectrumShadowBlur;
+			: Math.max(settings.spectrumShadowBlur, manualGlowRescueFloor);
 	const renderSettings = {
 		...settings,
 		spectrumGlowIntensity: effectiveGlowIntensity,

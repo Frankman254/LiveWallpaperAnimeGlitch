@@ -37,6 +37,14 @@ function createRecordingContext() {
 	const counts = { fill: 0, fillRect: 0, beginPath: 0, save: 0 };
 	/** Fills that happened while a shadow blur was actually set. */
 	const blurredFills: number[] = [];
+	/** Colour each blurred / crisp fill was painted with. */
+	const blurredColors: string[] = [];
+	const crispColors: string[] = [];
+	const stack: {
+		shadowBlur: number;
+		filter: string;
+		globalAlpha: number;
+	}[] = [];
 	const ctx = {
 		canvas: { width: 1920, height: 1080 },
 		fillStyle: '' as unknown,
@@ -58,17 +66,55 @@ function createRecordingContext() {
 		roundRect: () => {},
 		fill: () => {
 			counts.fill++;
-			if (ctx.shadowBlur > 0) blurredFills.push(ctx.shadowBlur);
+			// A glow that sweeps cannot go through `shadowColor` (canvas
+			// shadows are one flat colour), so it is painted as a gradient
+			// under `ctx.filter = blur(...)` instead. Both are the same
+			// expensive Gaussian, so both count here — otherwise these
+			// assertions would go blind the moment a shape switches paths.
+			if (ctx.shadowBlur > 0) {
+				blurredFills.push(ctx.shadowBlur);
+				blurredColors.push(String(ctx.shadowColor));
+			} else if (ctx.filter && ctx.filter !== 'none') {
+				blurredFills.push(0);
+				blurredColors.push(String(ctx.fillStyle));
+			} else {
+				crispColors.push(String(ctx.fillStyle));
+			}
 		},
 		stroke: () => {},
 		fillRect: () => {
 			counts.fillRect++;
-			if (ctx.shadowBlur > 0) blurredFills.push(ctx.shadowBlur);
+			// `drawLinearBars` paints its crisp pass with `fillRect`, not
+			// `fill`, so it has to land in the same buckets or the colour
+			// assertions below would just see an empty set.
+			if (ctx.shadowBlur > 0) {
+				blurredFills.push(ctx.shadowBlur);
+				blurredColors.push(String(ctx.shadowColor));
+			} else if (ctx.filter && ctx.filter !== 'none') {
+				blurredFills.push(0);
+				blurredColors.push(String(ctx.fillStyle));
+			} else {
+				crispColors.push(String(ctx.fillStyle));
+			}
 		},
+		// A real `save`/`restore` stack. Without it `ctx.filter` set by a
+		// blurred pass leaks into every later fill in the mock, and the
+		// blurred-draw counts below silently become meaningless.
 		save: () => {
 			counts.save++;
+			stack.push({
+				shadowBlur: ctx.shadowBlur,
+				filter: ctx.filter,
+				globalAlpha: ctx.globalAlpha
+			});
 		},
-		restore: () => {},
+		restore: () => {
+			const previous = stack.pop();
+			if (!previous) return;
+			ctx.shadowBlur = previous.shadowBlur;
+			ctx.filter = previous.filter;
+			ctx.globalAlpha = previous.globalAlpha;
+		},
 		translate: () => {},
 		rotate: () => {},
 		scale: () => {},
@@ -80,7 +126,9 @@ function createRecordingContext() {
 	return {
 		ctx: ctx as unknown as CanvasRenderingContext2D,
 		counts,
-		blurredFills
+		blurredFills,
+		blurredColors,
+		crispColors
 	};
 }
 
@@ -591,5 +639,92 @@ describe('drawLinearPixel — a sweeping fill must not cost one blur per bar', (
 		// Blurred runs are quantized; the crisp pass keeps every bar's exact
 		// colour, so the total fills exceed the blurred ones.
 		expect(rec.counts.fill).toBeGreaterThan(rec.blurredFills.length);
+	});
+});
+
+/**
+ * Manual Glow is a colour override: the glow reads its own palette instead of
+ * following the fill. `drawLinearBars` was the only classic shape that
+ * actually did that — capsules, spikes, dots, blocks, radial blocks and radial
+ * dots all sampled the FILL colour for their glow, so the toggle was silently
+ * dead on six of the eight shapes.
+ */
+describe.each(SHAPES)(
+	'$name — Manual Glow drives the glow colour',
+	({ mode, draw }) => {
+		it('paints the glow from the glow palette, not the fill', () => {
+			const barCount = 32;
+			const rec = createRecordingContext();
+			draw(
+				rec.ctx,
+				tallHeights(barCount),
+				barCount,
+				settingsWith({
+					spectrumMode: mode,
+					spectrumBarCount: barCount,
+					// Fill green, glow red. Both solid, so there is exactly one
+					// correct colour for each and no sweep to blur the question.
+					spectrumColorMode: 'solid',
+					spectrumPrimaryColor: '#00ff00',
+					spectrumManualGlow: true,
+					spectrumManualGlowMode: 'gradient',
+					spectrumGlowColorMode: 'solid',
+					spectrumGlowPrimaryColor: '#ff0000'
+				})
+			);
+			expect(rec.blurredColors.length).toBeGreaterThan(0);
+			expect(new Set(rec.blurredColors)).toEqual(new Set(['#ff0000']));
+			expect(new Set(rec.crispColors)).toEqual(new Set(['#00ff00']));
+		});
+	}
+);
+
+describe('sweeping glow collapses to a single blurred pass', () => {
+	// A canvas shadow is one flat colour, so a sweeping glow used to cost one
+	// blurred fill per quantized colour — up to GLOW_COLOR_STEPS for the halo
+	// and as many again for the core, per instance, per frame. Painting the
+	// gradient itself under `ctx.filter` carries every colour in ONE pass.
+	const LINEAR_SHAPES = SHAPES.filter(shape => shape.mode === 'linear');
+
+	it.each(LINEAR_SHAPES.map(shape => [shape.name, shape.draw] as const))(
+		'%s stays at a small constant, well under GLOW_COLOR_STEPS',
+		(_name, draw) => {
+			const blurredAt = (barCount: number) => {
+				const rec = createRecordingContext();
+				draw(
+					rec.ctx,
+					tallHeights(barCount),
+					barCount,
+					settingsWith({
+						spectrumMode: 'linear',
+						spectrumBarCount: barCount,
+						spectrumColorMode: 'gradient'
+					})
+				);
+				return rec.blurredFills.length;
+			};
+			expect(blurredAt(240)).toBeLessThan(GLOW_COLOR_STEPS);
+			expect(blurredAt(240)).toBe(blurredAt(24));
+		}
+	);
+
+	it('keeps the quantized runs when the glow is a flat colour', () => {
+		// Solid needs no gradient — one run already covers the whole figure,
+		// and a filter pass would only add a layer for nothing.
+		const barCount = 96;
+		const rec = createRecordingContext();
+		drawLinearBars(
+			rec.ctx,
+			CANVAS,
+			tallHeights(barCount),
+			tallHeights(barCount),
+			barCount,
+			settingsWith({
+				spectrumMode: 'linear',
+				spectrumBarCount: barCount,
+				spectrumColorMode: 'solid'
+			})
+		);
+		expect(rec.blurredFills.every(blur => blur > 0)).toBe(true);
 	});
 });

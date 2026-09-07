@@ -1,5 +1,10 @@
-import { getColor, createWaveGradient } from '../../color/spectrumColor';
 import {
+	addGradientStops,
+	createWaveGradient,
+	getColor
+} from '../../color/spectrumColor';
+import {
+	asGlowColorSettings,
 	createGlowGradient,
 	glowUsesColorSweep,
 	resolveManualGlow
@@ -23,6 +28,7 @@ import type {
 	SpectrumRuntimeState,
 	SpectrumSettings
 } from '../../runtime/spectrumRuntime';
+import type { ResolvedManualGlow } from '../../effects/manualGlow';
 
 export {
 	resolveManualGlow,
@@ -105,6 +111,105 @@ export function quantizeGlowPhase(t: number): number {
 	const steps = GLOW_COLOR_STEPS - 1;
 	return Math.round(t * steps) / steps;
 }
+
+/**
+ * The glow colours for one bar of a classic figure.
+ *
+ * Every bar shape needs the same two things — a halo colour and a core colour,
+ * both sampled on the quantized glow grid — and `drawLinearBars` was the only
+ * one resolving them correctly. Capsules, spikes, dots, blocks, radial blocks
+ * and radial dots each sampled `getColor` straight, which bypasses
+ * `resolveManualGlow` entirely: Manual Glow was a dead toggle on six of the
+ * eight classic shapes, silently following the fill instead of the glow
+ * palette. One helper so they cannot drift apart again.
+ *
+ * `quantizedPhase` must already be through `quantizeGlowPhase` — that is what
+ * lets neighbouring bars share a blurred fill.
+ */
+export function resolveBarGlowColors(
+	settings: SpectrumSettings,
+	quantizedPhase: number
+): ResolvedManualGlow {
+	return resolveManualGlow(
+		settings,
+		quantizedPhase,
+		getColor(settings, quantizedPhase)
+	);
+}
+
+/**
+ * Gradient carrying the glow's colour sweep along the figure's axis, or null
+ * when the glow is one flat colour.
+ *
+ * A sweeping glow costs one blurred fill per quantized colour — up to
+ * `GLOW_COLOR_STEPS` for the halo and another `GLOW_COLOR_STEPS` for the core,
+ * per instance, per frame, where a solid glow costs exactly one each. Canvas
+ * shadows are single-colour by definition, so the only way to carry a sweep in
+ * ONE pass is to paint the gradient itself and blur it with `ctx.filter` — the
+ * technique `drawClassicGlowHaloPass` already uses for wave, liquid and scope
+ * traces.
+ *
+ * Two details matter for it to land on the same colours the crisp fills do:
+ * the gradient spans the FIGURE (`from` → `to`), not the canvas, and `from`
+ * corresponds to bar 0 in both orientations. `phaseOffset` carries the
+ * gradient-flow phase, and in `core-halo` the halo's phase lead.
+ */
+export function createLinearGlowSweep(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings,
+	from: number,
+	to: number,
+	phaseOffset = 0
+): CanvasGradient | null {
+	// With Manual Glow off the glow follows the fill, so the fill's palette is
+	// what sweeps; with it on, the glow has its own.
+	const source = settings.spectrumManualGlow
+		? asGlowColorSettings(settings)
+		: settings;
+	if (source.spectrumColorMode === 'solid') return null;
+	if (typeof ctx.createLinearGradient !== 'function') return null;
+	const gradient =
+		settings.spectrumLinearOrientation === 'vertical'
+			? ctx.createLinearGradient(0, from, 0, to)
+			: ctx.createLinearGradient(from, 0, to, 0);
+	addGradientStops(gradient, source, phaseOffset);
+	return gradient;
+}
+
+/**
+ * The sweep gradient for a bar figure, anchored on the FIRST and LAST bar
+ * centres — that is where `t = 0` and `t = 1` actually land, so the gradient
+ * reads the same colour at bar `i` that `getColor` does.
+ */
+export function createLinearBarSweep(
+	ctx: CanvasRenderingContext2D,
+	settings: SpectrumSettings,
+	barCount: number,
+	start: number,
+	stride: number,
+	phaseOffset = 0
+): CanvasGradient | null {
+	const half = settings.spectrumBarWidth / 2;
+	return createLinearGlowSweep(
+		ctx,
+		settings,
+		start + half,
+		start + Math.max(0, barCount - 1) * stride + half,
+		phaseOffset
+	);
+}
+
+/** The halo's phase lead over the core, when the layout gives it one. */
+export function resolveGlowHaloPhaseOffset(settings: SpectrumSettings): number {
+	return settings.spectrumManualGlow &&
+		settings.spectrumManualGlowMode === 'core-halo' &&
+		settings.spectrumGlowColorMode !== 'solid'
+		? GLOW_HALO_SWEEP_PHASE_OFFSET
+		: 0;
+}
+
+/** Mirrors `GLOW_HALO_PHASE_OFFSET` in `manualGlow.ts`. */
+const GLOW_HALO_SWEEP_PHASE_OFFSET = 0.12;
 
 export function resolveGlowReach(settings: SpectrumSettings): number {
 	return Math.max(1, Math.min(3, settings.spectrumGlowReach ?? 1));
@@ -289,6 +394,40 @@ export function createClassicGlowHaloRuns(
 		return { expansion: 0, glowBlur, add: () => {}, flush: () => {} };
 	}
 
+	const sweep = options.sweepStyle ?? null;
+	if (sweep !== null && typeof sweep === 'object') {
+		// The sweep carries every colour at once, so the whole figure is ONE
+		// blurred pass instead of one per quantized colour run. `haloColor` is
+		// ignored on purpose — the gradient is the colour.
+		let opened = false;
+		return {
+			expansion,
+			glowBlur,
+			add(_haloColor, addPath) {
+				if (!opened) {
+					ctx.beginPath();
+					opened = true;
+				}
+				addPath(expansion);
+			},
+			flush() {
+				if (!opened) return;
+				opened = false;
+				ctx.save();
+				ctx.fillStyle = sweep;
+				// `blur(σ)` is a Gaussian std dev; `shadowBlur` is ~2σ. Same
+				// halving `drawClassicGlowHaloPass` uses, so the two agree.
+				ctx.filter = `blur(${(haloBlur * 0.5).toFixed(1)}px)`;
+				ctx.shadowBlur = 0;
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+				ctx.globalAlpha =
+					Math.max(ctx.globalAlpha, haloAlpha) * alphaScale;
+				ctx.fill();
+				ctx.restore();
+			}
+		};
+	}
+
 	return {
 		expansion,
 		glowBlur,
@@ -323,13 +462,41 @@ export function createClassicGlowHaloRuns(
  */
 export function createClassicCoreGlowRuns(
 	ctx: CanvasRenderingContext2D,
-	glowBlur: number
+	glowBlur: number,
+	sweepStyle: CanvasGradient | null = null
 ): {
 	add(glowColor: string, addPath: () => void): void;
 	flush(): void;
 } {
 	if (glowBlur <= 0.001) {
 		return { add: () => {}, flush: () => {} };
+	}
+
+	if (sweepStyle) {
+		// One blurred pass for the whole figure — see `createLinearGlowSweep`.
+		// The crisp pass that follows repaints every bar in its exact colour,
+		// so this one only ever contributes bloom.
+		let opened = false;
+		return {
+			add(_glowColor, addPath) {
+				if (!opened) {
+					ctx.beginPath();
+					opened = true;
+				}
+				addPath();
+			},
+			flush() {
+				if (!opened) return;
+				opened = false;
+				ctx.save();
+				ctx.fillStyle = sweepStyle;
+				ctx.filter = `blur(${(glowBlur * 0.5).toFixed(1)}px)`;
+				ctx.shadowBlur = 0;
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+				ctx.fill();
+				ctx.restore();
+			}
+		};
 	}
 
 	let runColor: string | null = null;
@@ -486,8 +653,31 @@ export function drawLinearBars(
 	const fillPhase = (t: number) =>
 		settings.spectrumGradientFlow ? t + gradientPhase : t;
 
-	// Pass 1 — halos, batched into one blurred fill per colour run.
-	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
+	// With Manual Glow on the glow reads its own palette at the raw phase; with
+	// it off the glow follows the fill, so it inherits the flow phase too.
+	const sweepFlowPhase = settings.spectrumManualGlow ? 0 : gradientPhase;
+	const coreSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride,
+		sweepFlowPhase
+	);
+	const haloSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride,
+		sweepFlowPhase + resolveGlowHaloPhaseOffset(settings)
+	);
+
+	// Pass 1 — halos. One blurred fill per colour run, or a single blurred
+	// pass when the colour sweeps (see `createLinearGlowSweep`).
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount, {
+		sweepStyle: haloSweep
+	});
 	for (let i = 0; i < barCount; i++) {
 		const t = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
 		const haloColor = resolveManualGlow(
@@ -537,7 +727,7 @@ export function drawLinearBars(
 	// Pass 2 — core glow, batched into one blurred fill per colour run. Only
 	// the (about to be blurred) shadow colour is quantized; the crisp fill in
 	// pass 3 keeps every bar's exact colour.
-	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
 		const coreColor = resolveManualGlow(
@@ -788,19 +978,41 @@ export function drawLinearCapsules(
 		}
 	};
 
+	const coreSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride
+	);
+	const haloSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride,
+		resolveGlowHaloPhaseOffset(settings)
+	);
+
 	// Pass 1 — halos, batched into one blurred fill per colour run.
-	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount, {
+		sweepStyle: haloSweep
+	});
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-		halo.add(getColor(settings, qt), expansion => addPath(i, expansion));
+		halo.add(resolveBarGlowColors(settings, qt).halo, expansion =>
+			addPath(i, expansion)
+		);
 	}
 	halo.flush();
 
 	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
-	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-		coreGlow.add(getColor(settings, qt), () => addPath(i, 0));
+		coreGlow.add(resolveBarGlowColors(settings, qt).core, () =>
+			addPath(i, 0)
+		);
 	}
 	coreGlow.flush();
 
@@ -867,21 +1079,41 @@ export function drawLinearSpikes(
 		}
 	};
 
+	const coreSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride
+	);
+	const haloSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride,
+		resolveGlowHaloPhaseOffset(settings)
+	);
+
 	// Pass 1 — halos, batched into one blurred fill per colour run.
-	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount, {
+		sweepStyle: haloSweep
+	});
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-		halo.add(getColor(settings, qt), expansion =>
+		halo.add(resolveBarGlowColors(settings, qt).halo, expansion =>
 			addSpikePath(i, expansion)
 		);
 	}
 	halo.flush();
 
 	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
-	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-		coreGlow.add(getColor(settings, qt), () => addSpikePath(i, 0));
+		coreGlow.add(resolveBarGlowColors(settings, qt).core, () =>
+			addSpikePath(i, 0)
+		);
 	}
 	coreGlow.flush();
 
@@ -923,80 +1155,91 @@ export function drawLinearBlocks(
 		highDensityCap: 6
 	});
 
-	for (let i = 0; i < barCount; i++) {
-		const t = i / Math.max(barCount - 1, 1);
-		const color = getColor(settings, t);
-		ctx.fillStyle = color;
-		ctx.shadowColor = color;
-		ctx.shadowBlur = shadowBlur;
+	// One geometry for both passes. Segments never overlap, so accumulating a
+	// bar's N segments (and their mirrors) into one path and filling once is
+	// pixel-identical to the per-segment `fillRect` calls this shape started
+	// out with.
+	const addBlocksPath = (index: number) => {
+		const h = heights[index];
 		const estimatedSegments = Math.max(
 			1,
 			Math.round(
-				(heights[i] + baseSegmentGap) /
-					(baseSegmentLength + baseSegmentGap)
+				(h + baseSegmentGap) / (baseSegmentLength + baseSegmentGap)
 			)
 		);
 		const segments = Math.min(maxSegmentsPerBar, estimatedSegments);
-		const segmentGap = Math.min(baseSegmentGap, heights[i] * 0.18);
+		const segmentGap = Math.min(baseSegmentGap, h * 0.18);
 		const segmentLength = Math.max(
 			baseSegmentLength,
-			(heights[i] - Math.max(0, segments - 1) * segmentGap) / segments
+			(h - Math.max(0, segments - 1) * segmentGap) / segments
 		);
-
-		// Accumulate every segment (and its mirror) for this bar into a single
-		// path and fill once. shadowBlur is computed per draw call, so batching
-		// the bar's N segments into one fill() collapses N shadowed passes into
-		// one — the dominant cost of this shape at high bar/segment counts.
-		// Segments never overlap, so a nonzero-winding fill is pixel-identical
-		// to the previous per-segment fillRect calls.
-		if (settings.spectrumLinearOrientation === 'vertical') {
-			const y = start + i * stride + settings.spectrumBarWidth / 2;
-			ctx.beginPath();
-			for (let segment = 0; segment < segments; segment++) {
-				const offset = segment * (segmentLength + segmentGap);
-				if (offset > heights[i]) break;
-				const width = Math.min(segmentLength, heights[i] - offset);
+		const vertical = settings.spectrumLinearOrientation === 'vertical';
+		const lineCenter =
+			start + index * stride + settings.spectrumBarWidth / 2;
+		for (let segment = 0; segment < segments; segment++) {
+			const offset = segment * (segmentLength + segmentGap);
+			if (offset > h) break;
+			const extent = Math.min(segmentLength, h - offset);
+			if (vertical) {
 				ctx.rect(
 					baseX + offset * direction,
-					y - settings.spectrumBarWidth / 2,
-					width * direction,
+					lineCenter - settings.spectrumBarWidth / 2,
+					extent * direction,
 					settings.spectrumBarWidth
 				);
 				if (settings.spectrumMirror) {
 					ctx.rect(
 						baseX - offset * direction,
-						y - settings.spectrumBarWidth / 2,
-						-width * direction,
+						lineCenter - settings.spectrumBarWidth / 2,
+						-extent * direction,
 						settings.spectrumBarWidth
 					);
 				}
-			}
-			ctx.fill();
-		} else {
-			const x = start + i * stride + settings.spectrumBarWidth / 2;
-			ctx.beginPath();
-			for (let segment = 0; segment < segments; segment++) {
-				const offset = segment * (segmentLength + segmentGap);
-				if (offset > heights[i]) break;
-				const height = Math.min(segmentLength, heights[i] - offset);
+			} else {
 				ctx.rect(
-					x - settings.spectrumBarWidth / 2,
+					lineCenter - settings.spectrumBarWidth / 2,
 					baseY + offset * direction,
 					settings.spectrumBarWidth,
-					height * direction
+					extent * direction
 				);
 				if (settings.spectrumMirror) {
 					ctx.rect(
-						x - settings.spectrumBarWidth / 2,
+						lineCenter - settings.spectrumBarWidth / 2,
 						baseY - offset * direction,
 						settings.spectrumBarWidth,
-						-height * direction
+						-extent * direction
 					);
 				}
 			}
-			ctx.fill();
 		}
+	};
+
+	// Pass 1 — core glow, batched by quantized colour. Blocks was the last
+	// classic shape still drawing one shadowed fill per bar: at 256 bars that
+	// is 256 blurs a frame per instance, where every other shape had already
+	// been collapsed to at most `GLOW_COLOR_STEPS`.
+	const coreGlow = createClassicCoreGlowRuns(
+		ctx,
+		shadowBlur,
+		createLinearBarSweep(ctx, settings, barCount, start, stride)
+	);
+	for (let i = 0; i < barCount; i++) {
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		coreGlow.add(resolveBarGlowColors(settings, qt).core, () =>
+			addBlocksPath(i)
+		);
 	}
+	coreGlow.flush();
+
+	// Pass 2 — crisp fills, each bar keeping its exact colour, no shadow.
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'rgba(0,0,0,0)';
+	const fills = createCrispFillRuns(ctx);
+	for (let i = 0; i < barCount; i++) {
+		const color = getColor(settings, i / Math.max(barCount - 1, 1));
+		fills.add(color, () => addBlocksPath(i));
+	}
+	fills.flush();
 }
 
 /**
@@ -1176,7 +1419,17 @@ export function drawLinearPixel(
 		// blur is wide enough to bridge the cell gaps, and the real cells
 		// otherwise — the shadow-offset trick only applies to the hull.
 		if (glowUsesColumnHull) ctx.shadowOffsetX = HULL_SHADOW_OFFSET;
-		const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
+		// The hull pass builds its path far off-canvas and offsets the shadow
+		// back into place, which only a real shadow can do — a `filter` blur
+		// would blur the shape where it actually sits, off-screen. So the
+		// single-pass sweep is only available on the traced-cell path.
+		const coreGlow = createClassicCoreGlowRuns(
+			ctx,
+			glowBlur,
+			glowUsesColumnHull
+				? null
+				: createLinearBarSweep(ctx, settings, barCount, start, stride)
+		);
 		for (let i = 0; i < barCount; i++) {
 			const litCells = litCellsAt(i);
 			if (litCells <= 0) continue;
@@ -1425,92 +1678,85 @@ export function drawLinearDots(
 	const dotRadius = Math.max(settings.spectrumBarWidth * 0.7, 1.5);
 	const glowBlur = computeClassicGlowBlur(settings, barCount);
 
-	// Pass 1 — halos, batched into one blurred fill per colour run. Each arc
-	// needs its own `moveTo` or it joins the previous dot with a stray line.
-	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
-	for (let i = 0; i < barCount; i++) {
-		const t = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-		halo.add(getColor(settings, t), expansion => {
-			const r = dotRadius + expansion * 0.45;
-			if (settings.spectrumLinearOrientation === 'vertical') {
-				const y = start + i * stride + settings.spectrumBarWidth / 2;
-				const x = baseX + heights[i] * direction;
-				ctx.moveTo(x + r, y);
-				ctx.arc(x, y, r, 0, Math.PI * 2);
-				if (settings.spectrumMirror) {
-					const mx = baseX - heights[i] * direction;
-					ctx.moveTo(mx + r, y);
-					ctx.arc(mx, y, r, 0, Math.PI * 2);
-				}
-			} else {
-				const x = start + i * stride + settings.spectrumBarWidth / 2;
-				const y = baseY + heights[i] * direction;
-				ctx.moveTo(x + r, y);
-				ctx.arc(x, y, r, 0, Math.PI * 2);
-				if (settings.spectrumMirror) {
-					const my = baseY - heights[i] * direction;
-					ctx.moveTo(x + r, my);
-					ctx.arc(x, my, r, 0, Math.PI * 2);
-				}
+	// One geometry for all three passes: `expansion = 0` reproduces the core
+	// dot exactly, so halo / glow / fill can never drift apart.
+	const addDotPath = (index: number, expansion: number) => {
+		const r = dotRadius + expansion * 0.45;
+		if (settings.spectrumLinearOrientation === 'vertical') {
+			const y = start + index * stride + settings.spectrumBarWidth / 2;
+			const x = baseX + heights[index] * direction;
+			// Each arc needs its own `moveTo` or it joins the previous dot
+			// with a stray line.
+			ctx.moveTo(x + r, y);
+			ctx.arc(x, y, r, 0, Math.PI * 2);
+			if (settings.spectrumMirror) {
+				const mx = baseX - heights[index] * direction;
+				ctx.moveTo(mx + r, y);
+				ctx.arc(mx, y, r, 0, Math.PI * 2);
 			}
-		});
+		} else {
+			const x = start + index * stride + settings.spectrumBarWidth / 2;
+			const y = baseY + heights[index] * direction;
+			ctx.moveTo(x + r, y);
+			ctx.arc(x, y, r, 0, Math.PI * 2);
+			if (settings.spectrumMirror) {
+				const my = baseY - heights[index] * direction;
+				ctx.moveTo(x + r, my);
+				ctx.arc(x, my, r, 0, Math.PI * 2);
+			}
+		}
+	};
+
+	const coreSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride
+	);
+	const haloSweep = createLinearBarSweep(
+		ctx,
+		settings,
+		barCount,
+		start,
+		stride,
+		resolveGlowHaloPhaseOffset(settings)
+	);
+
+	// Pass 1 — halos, batched into one blurred fill per colour run.
+	const halo = createClassicGlowHaloRuns(ctx, settings, barCount, {
+		sweepStyle: haloSweep
+	});
+	for (let i = 0; i < barCount; i++) {
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		halo.add(resolveBarGlowColors(settings, qt).halo, expansion =>
+			addDotPath(i, expansion)
+		);
 	}
 	halo.flush();
 
-	// Pass 2 — cores, one per bar, each keeping its exact colour.
+	// Pass 2 — core glow, batched by quantized colour. This used to be one
+	// blurred `fill()` per dot AND a second per mirrored dot, so a mirrored
+	// 256-bar spectrum paid 512 blurs a frame — the most expensive unbatched
+	// loop left in the classic family.
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
-		const t = i / Math.max(barCount - 1, 1);
-		const color = getColor(settings, t);
-		ctx.fillStyle = color;
-		ctx.shadowColor = color;
-		ctx.shadowBlur = glowBlur;
-
-		if (settings.spectrumLinearOrientation === 'vertical') {
-			const y = start + i * stride + settings.spectrumBarWidth / 2;
-			ctx.beginPath();
-			ctx.arc(
-				baseX + heights[i] * direction,
-				y,
-				dotRadius,
-				0,
-				Math.PI * 2
-			);
-			ctx.fill();
-			if (settings.spectrumMirror) {
-				ctx.beginPath();
-				ctx.arc(
-					baseX - heights[i] * direction,
-					y,
-					dotRadius,
-					0,
-					Math.PI * 2
-				);
-				ctx.fill();
-			}
-		} else {
-			const x = start + i * stride + settings.spectrumBarWidth / 2;
-			ctx.beginPath();
-			ctx.arc(
-				x,
-				baseY + heights[i] * direction,
-				dotRadius,
-				0,
-				Math.PI * 2
-			);
-			ctx.fill();
-			if (settings.spectrumMirror) {
-				ctx.beginPath();
-				ctx.arc(
-					x,
-					baseY - heights[i] * direction,
-					dotRadius,
-					0,
-					Math.PI * 2
-				);
-				ctx.fill();
-			}
-		}
+		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
+		coreGlow.add(resolveBarGlowColors(settings, qt).core, () =>
+			addDotPath(i, 0)
+		);
 	}
+	coreGlow.flush();
+
+	// Pass 3 — crisp fills, each dot keeping its exact colour, no shadow.
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'rgba(0,0,0,0)';
+	const fills = createCrispFillRuns(ctx);
+	for (let i = 0; i < barCount; i++) {
+		const color = getColor(settings, i / Math.max(barCount - 1, 1));
+		fills.add(color, () => addDotPath(i, 0));
+	}
+	fills.flush();
 }
 
 export function drawLinearWave(

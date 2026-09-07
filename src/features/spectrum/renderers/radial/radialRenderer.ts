@@ -10,7 +10,8 @@ import {
 	createClassicGlowHaloRuns,
 	createCrispFillRuns,
 	drawClassicGlowHaloPass,
-	quantizeGlowPhase
+	quantizeGlowPhase,
+	resolveBarGlowColors
 } from '../linear/linearRenderer';
 import {
 	createGlowGradient,
@@ -240,20 +241,23 @@ export function drawRadialBlocks(
 		}
 		ctx.restore();
 	};
-	const quantizedColorAt = (index: number) =>
-		getColor(settings, quantizeGlowPhase(barColorPhase(barAngle(index))));
+	const glowColorAt = (index: number) =>
+		resolveBarGlowColors(
+			settings,
+			quantizeGlowPhase(barColorPhase(barAngle(index)))
+		);
 
 	// Pass 1 — halos, batched into one blurred fill per colour run.
 	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
 	for (let i = 0; i < barCount; i++) {
-		halo.add(quantizedColorAt(i), expansion => addBarPath(i, expansion));
+		halo.add(glowColorAt(i).halo, expansion => addBarPath(i, expansion));
 	}
 	halo.flush();
 
 	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
 	const coreGlow = createClassicCoreGlowRuns(ctx, shadowBlur);
 	for (let i = 0; i < barCount; i++) {
-		coreGlow.add(quantizedColorAt(i), () => addBarPath(i, 0));
+		coreGlow.add(glowColorAt(i).core, () => addBarPath(i, 0));
 	}
 	coreGlow.flush();
 
@@ -763,34 +767,45 @@ export function drawRadialDots(
 	const barColorPhase = (angle: number) =>
 		normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2);
 
-	// Pass 1 — halos, batched into one blurred fill per colour run. Each arc
-	// needs its own `moveTo` or it joins the previous dot with a stray line.
+	// One geometry for all three passes: `expansion = 0` reproduces the core
+	// dot exactly, so halo / glow / fill can never drift apart. Each arc needs
+	// its own `moveTo` or it joins the previous dot with a stray line.
+	const addDotPath = (index: number, expansion: number) => {
+		const angle = barAngle(index);
+		const { x, y } = dotCenter(index, angle);
+		const r = dotRadius + expansion * 0.45;
+		ctx.moveTo(x + r, y);
+		ctx.arc(x, y, r, 0, Math.PI * 2);
+	};
+	const glowColorAt = (index: number) =>
+		resolveBarGlowColors(
+			settings,
+			quantizeGlowPhase(barColorPhase(barAngle(index)))
+		);
+
+	// Pass 1 — halos, batched into one blurred fill per colour run.
 	const halo = createClassicGlowHaloRuns(ctx, settings, barCount);
 	for (let i = 0; i < barCount; i++) {
-		const angle = barAngle(i);
-		const { x, y } = dotCenter(i, angle);
-		const haloColor = getColor(
-			settings,
-			quantizeGlowPhase(barColorPhase(angle))
-		);
-		halo.add(haloColor, expansion => {
-			const r = dotRadius + expansion * 0.45;
-			ctx.moveTo(x + r, y);
-			ctx.arc(x, y, r, 0, Math.PI * 2);
-		});
+		halo.add(glowColorAt(i).halo, expansion => addDotPath(i, expansion));
 	}
 	halo.flush();
 
-	// Pass 2 — cores, one per bar, each keeping its exact colour.
+	// Pass 2 — core glow, batched by quantized colour. This was one blurred
+	// `fill()` per dot, so it scaled straight with the bar count.
+	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
 	for (let i = 0; i < barCount; i++) {
-		const angle = barAngle(i);
-		const { x, y } = dotCenter(i, angle);
-		const color = getColor(settings, barColorPhase(angle));
-		ctx.fillStyle = color;
-		ctx.shadowColor = color;
-		ctx.shadowBlur = glowBlur;
-		ctx.beginPath();
-		ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
-		ctx.fill();
+		coreGlow.add(glowColorAt(i).core, () => addDotPath(i, 0));
 	}
+	coreGlow.flush();
+
+	// Pass 3 — crisp fills, each dot keeping its exact colour, no shadow.
+	ctx.shadowBlur = 0;
+	ctx.shadowColor = 'rgba(0,0,0,0)';
+	const fills = createCrispFillRuns(ctx);
+	for (let i = 0; i < barCount; i++) {
+		fills.add(getColor(settings, barColorPhase(barAngle(i))), () =>
+			addDotPath(i, 0)
+		);
+	}
+	fills.flush();
 }

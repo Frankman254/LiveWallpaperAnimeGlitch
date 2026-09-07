@@ -47,6 +47,36 @@ the version scheme in `src/lib/version.ts`.
   `SpectrumSettings` falla si `resolveManualGlow` vuelve a recorrer el objeto
   entero.
 
+### Spectrum: Manual Glow deja de ser un toggle muerto
+
+- **Manual Glow no hacía nada en seis de las ocho figuras clásicas.** Capsules,
+  Spikes, Dots, Blocks (linear) y Blocks, Dots (radial) tomaban el color del
+  glow con `getColor()` directo, es decir con la paleta del **relleno**,
+  saltándose `resolveManualGlow()` por completo. Elegir un color de glow propio
+  no cambiaba un píxel en ninguna de ellas. Ahora las ocho pasan por un único
+  `resolveBarGlowColors()`, así que el modo de color del glow, `core-halo` y
+  `peaks` se comportan igual en toda la familia clásica.
+- **Blocks y Dots no agrupaban nada.** `drawLinearBlocks` hacía un `fill()` con
+  sombra por barra, y los dos renderers de Dots uno por punto **y otro por su
+  espejo** — 512 fills borrosos a 256 barras con mirror activo. Pasan al patrón
+  de tres pasadas que ya usaban Bars y Pixel: halo agrupado, core agrupado,
+  relleno nítido.
+- **El piso de blur de Manual Glow ya no pisa el valor del usuario.** Encender
+  el toggle forzaba `shadowBlur >= 12` aunque hubieras puesto 4 a propósito:
+  cambiaba tu look y encarecía cada pasada sin pedirlo. Ahora solo rescata el
+  caso de blur exactamente 0 (un preset sin radio ninguno) y escala con el modo
+  de rendimiento, como el resto del glow.
+- **Glow en degradado/arcoíris: hasta 32 fills borrosos → 2.** Un glow que barre
+  color no puede agruparse con `shadowColor`, que es un color plano, así que se
+  cuantizaba en hasta 16 tramos por pasada. Ahora el degradado se pinta una sola
+  vez bajo `ctx.filter = blur(...)` — la misma técnica que ya usaban wave,
+  liquid y scope. **Este es el único cambio del lote que altera píxeles**: el
+  barrido queda continuo en lugar de escalonado en 16 pasos, que es lo que se
+  pedía en primer lugar.
+- Tests de regresión: cada figura clásica verifica que el color borroso sale de
+  la paleta del glow y no de la del relleno, y que los fills borrosos no escalan
+  con el número de barras.
+
 ### Logo Vibrix y variantes (store v112)
 
 - El logo integrado ahora tiene modos Vector, Pixel y Auto. Auto sigue
