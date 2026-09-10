@@ -95,6 +95,7 @@ export function useBackgroundStore() {
 			moveImageEntry: s.moveImageEntry,
 			shuffleImageEntries: s.shuffleImageEntries,
 			autoFitAllImages: s.autoFitAllImages,
+			autoFitCoveredActiveImage: s.autoFitCoveredActiveImage,
 			setGlobalBackgroundEnabled: s.setGlobalBackgroundEnabled,
 			setGlobalBackgroundFitMode: s.setGlobalBackgroundFitMode,
 			setGlobalBackgroundScale: s.setGlobalBackgroundScale,

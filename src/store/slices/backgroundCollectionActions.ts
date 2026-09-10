@@ -22,7 +22,8 @@ import {
 	applyActiveImageConfigToDefaultImages,
 	buildBackgroundImageCollectionPatch,
 	moveBackgroundImageItem,
-	shuffleBackgroundImages
+	shuffleBackgroundImages,
+	syncStateWithActiveBackgroundImage
 } from '@/store/backgroundStoreUtils';
 import type { WallpaperStore } from '@/store/wallpaperStoreTypes';
 import type { StateCreator } from 'zustand';
@@ -78,6 +79,67 @@ export function createBackgroundCollectionActions(
 	set: WallpaperSet,
 	get: WallpaperGet
 ) {
+	/**
+	 * Keep Covered is per-image, but the scale that covers depends on the
+	 * viewport. When the active image changes (or the lock is turned on), the
+	 * composition stored for the old viewport may no longer cover the new one
+	 * — e.g. a 9:16 wallpaper composed on a phone is full-bleed there but a
+	 * narrow strip on a 16:9 desktop. Recompute the active image's fit with
+	 * the same domain logic as auto-fit so what's drawn matches what the
+	 * controls claim. Race-safe: the active image or the lock may change while
+	 * the image dimensions load; both races abort the write.
+	 */
+	async function autoFitCoveredActiveImage(): Promise<void> {
+		const state = get();
+		const activeId = state.activeImageId;
+		if (!activeId || !state.imageCoverageLockEnabled) return;
+		const image = state.backgroundImages.find(
+			img => img.assetId === activeId
+		);
+		if (!image?.url) return;
+		try {
+			const { width, height } = await loadImageDimensions(image.url);
+			const viewportWidth =
+				typeof window === 'undefined' ? 1920 : window.innerWidth;
+			const viewportHeight =
+				typeof window === 'undefined' ? 1080 : window.innerHeight;
+			const suggestion = suggestBackgroundAutoFit(
+				viewportWidth,
+				viewportHeight,
+				width,
+				height,
+				image.rotation,
+				image.mirrorFill ? (image.mirrorFillCount ?? 0) : 0
+			);
+			const current = get();
+			if (current.activeImageId !== activeId) return;
+			if (!current.imageCoverageLockEnabled) return;
+			if (
+				current.imageFitMode === suggestion.fitMode &&
+				current.imageScale === suggestion.scale &&
+				current.imagePositionX === suggestion.positionX &&
+				current.imagePositionY === suggestion.positionY &&
+				current.imageFocusX === 0.5 &&
+				current.imageFocusY === 0.5
+			) {
+				return;
+			}
+			set(s =>
+				syncStateWithActiveBackgroundImage(s, {
+					imageFitMode: suggestion.fitMode,
+					imageScale: suggestion.scale,
+					imagePositionX: suggestion.positionX,
+					imagePositionY: suggestion.positionY,
+					imageFocusX: 0.5,
+					imageFocusY: 0.5
+				})
+			);
+		} catch {
+			// Dimension load failed: leave the composition as-is. The
+			// renderer-side coverage clamp still guarantees full-bleed.
+		}
+	}
+
 	return {
 		setImagePlaybackSwitchAt: v =>
 			set(state => ({
@@ -102,7 +164,7 @@ export function createBackgroundCollectionActions(
 					playbackSwitchAt: null
 				}))
 			})),
-		setActiveImageId: id =>
+		setActiveImageId: id => {
 			set(state => {
 				const patch = buildBackgroundImageCollectionPatch(
 					state,
@@ -233,7 +295,11 @@ export function createBackgroundCollectionActions(
 					prefersReducedMotion: prefersReducedMotion()
 				});
 				return patch;
-			}),
+			});
+			// Keep Covered: the new active image may not cover this viewport
+			// (different aspect ratio than where it was composed). Re-fit it.
+			void autoFitCoveredActiveImage();
+		},
 		applyActiveImageConfigToDefaultImages: () =>
 			set(state => applyActiveImageConfigToDefaultImages(state)),
 		moveImageEntry: (id, direction) =>
@@ -398,6 +464,7 @@ export function createBackgroundCollectionActions(
 				)
 			);
 		},
+		autoFitCoveredActiveImage,
 		addImageEntry: (
 			id,
 			url,

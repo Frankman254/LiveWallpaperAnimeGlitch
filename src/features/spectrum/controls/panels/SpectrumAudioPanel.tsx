@@ -3,6 +3,7 @@ import { useT } from '@/lib/i18n';
 import { AUDIO_ROUTING_RANGES, SPECTRUM_RANGES } from '@/config/ranges';
 import { DEFAULT_STATE } from '@/store/defaultState';
 import { AdvancedOnly } from '@/editor/UIMode';
+import { Caption } from '@/ui';
 import { CollapsibleSection } from '@/editor';
 import SliderControl from '@/editor/SliderControl';
 import AudioChannelSelector from '@/editor/AudioChannelSelector';
@@ -10,7 +11,7 @@ import { SpectrumManualControlGroup } from '@/features/spectrum/controls/Spectru
 
 export function SpectrumAudioPanel() {
 	const t = useT();
-	const { settings: sp, update, target } = useSpectrumTargetSettings();
+	const { settings: sp, update } = useSpectrumTargetSettings();
 
 	return (
 		<div className="flex min-w-0 flex-col gap-2">
@@ -132,14 +133,15 @@ export function SpectrumAudioPanel() {
 					</div>
 				</CollapsibleSection>
 
-				{target === 'main' ? (
-					<CollapsibleSection
-						title={t.spectrum_section_manual_control}
-						dense
-					>
-						<SpectrumManualControlGroup bare />
-					</CollapsibleSection>
-				) : null}
+				<CollapsibleSection
+					title={t.spectrum_section_manual_control}
+					dense
+				>
+					<Caption as="p" style={{ color: 'var(--editor-muted)' }}>
+						{t.spectrum_global_controls_subtitle}
+					</Caption>
+					<SpectrumManualControlGroup bare />
+				</CollapsibleSection>
 			</AdvancedOnly>
 		</div>
 	);

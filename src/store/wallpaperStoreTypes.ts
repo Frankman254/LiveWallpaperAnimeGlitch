@@ -469,7 +469,8 @@ export type WallpaperStore = WallpaperState & {
 	setSpectrumLiquidLayerRigidShape: (layer: 1 | 2 | 3, v: boolean) => void;
 	setSpectrumLiquidLayerPixelate: (layer: 1 | 2 | 3, v: boolean) => void;
 	applySpectrumTunnelPreset: (
-		preset: import('@/features/spectrum').SpectrumFrameMemoryPresetId
+		preset: import('@/features/spectrum').SpectrumFrameMemoryPresetId,
+		target: import('@/features/spectrum').SpectrumFrameMemoryTarget
 	) => void;
 	setSpectrumLiquidLayerParam: (
 		layer: 1 | 2 | 3,
@@ -671,6 +672,7 @@ export type WallpaperStore = WallpaperState & {
 	shuffleImageEntries: () => void;
 	setImageUrls: (v: string[]) => void;
 	autoFitAllImages: () => Promise<void>;
+	autoFitCoveredActiveImage: () => Promise<void>;
 
 	// Persistence (IndexedDB)
 	addImageEntry: (

@@ -29,6 +29,7 @@ function createRecordingContext() {
 		shadowBlur: 0,
 		globalAlpha: 1,
 		globalCompositeOperation: 'source-over',
+		filter: 'none',
 		lineWidth: 1,
 		beginPath: () => {
 			counts.beginPath++;

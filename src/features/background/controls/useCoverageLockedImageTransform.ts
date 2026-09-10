@@ -12,6 +12,7 @@ type CoverageStore = Pick<
 	| 'imagePositionX'
 	| 'imagePositionY'
 	| 'imageScale'
+	| 'autoFitCoveredActiveImage'
 	| 'setImageCoverageLockEnabled'
 	| 'setImageFitMode'
 	| 'setImageMirrorFill'
@@ -84,21 +85,11 @@ export function useCoverageLockedImageTransform(
 
 	function handleToggleCoverageLock(enabled: boolean) {
 		store.setImageCoverageLockEnabled(enabled);
-		if (!enabled || !activeImagePositionRanges.ready) return;
-		const { minScale, coverageBounds } = activeImagePositionRanges;
-		if (store.imageScale < minScale) store.setImageScale(minScale);
-		store.setImagePositionX(
-			clampToRange(store.imagePositionX, {
-				min: coverageBounds.minX,
-				max: coverageBounds.maxX
-			})
-		);
-		store.setImagePositionY(
-			clampToRange(store.imagePositionY, {
-				min: coverageBounds.minY,
-				max: coverageBounds.maxY
-			})
-		);
+		// Keep Covered ON must mean "what's stored is what's drawn": snap the
+		// composition to the same full-bleed fit auto-fit produces (same domain
+		// logic, same result as switching the active image) — not a mere clamp,
+		// which would leave a dishonest fitMode/scale pair in the UI.
+		if (enabled) void store.autoFitCoveredActiveImage();
 	}
 
 	// Some coverage-relevant changes shift the minimum scale needed to cover the

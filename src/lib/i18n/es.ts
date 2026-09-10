@@ -259,7 +259,6 @@ export const es: Record<TranslationKey, string> = {
 	section_logo_glow_shadow: 'Brillo y Sombra',
 	section_spectrum_profiles: 'Slots Guardados',
 	section_spectrum_main: 'Spectrum Principal',
-	section_spectrum_clone: 'Spectrum Clon',
 	section_spectrum_mode_placement: 'Modo y Posición',
 	section_spectrum_style_size: 'Estilo y Tamaño',
 	section_spectrum_motion_peaks: 'Movimiento y Picos',
@@ -710,31 +709,11 @@ export const es: Record<TranslationKey, string> = {
 	hint_rain_low_perf: 'La lluvia está desactivada en modo Bajo rendimiento.',
 	// Espectro sigue logo
 	label_follow_logo: 'Seguir Logo (radial)',
-	label_circular_clone: 'Companion Radial del Logo',
-	hint_circular_clone:
-		'Dibuja un anillo radial separado pegado al logo. Funciona junto a cualquier modo del Spectrum principal.',
-	section_circular_clone: 'Ajustes del Clon',
 	label_linear_direction: 'Sentido Lineal',
 	label_fit_around_logo: 'Ajustar al Logo',
 	hint_fit_around_logo:
 		'Mantiene libre la base alrededor del logo mientras el borde exterior conserva la forma radial elegida.',
 	label_logo_gap: 'Separacion del Logo',
-	label_clone_opacity: 'Opacidad del Clon',
-	label_clone_scale: 'Escala del Clon',
-	label_clone_gap: 'Separacion del Clon',
-	label_clone_style: 'Estilo del Clon',
-	label_clone_angle: 'Angulo del Clon',
-	label_clone_bar_count: 'Cantidad de Barras del Clon',
-	label_clone_bar_width: 'Ancho de Barra del Clon',
-	label_clone_glow: 'Glow del Clon',
-	label_clone_shape: 'Forma del Clon',
-	label_clone_color_mode: 'Modo de Color del Clon',
-	label_clone_primary_color: 'Color Primario del Clon',
-	label_clone_secondary_color: 'Color Secundario del Clon',
-	label_clone_follow_logo: 'El clon sigue al logo',
-	label_clone_radial_fit_logo: 'El clon abraza al logo',
-	hint_spectrum_clone_section:
-		'Anillo radial: ajusta seguir y abrazar al logo independiente del spectrum principal.',
 	label_spectrum_mode: 'Modo del Spectrum',
 	label_spectrum_orientation: 'Orientacion Lineal',
 	label_spectrum_style: 'Estilo del Spectrum',
@@ -760,8 +739,6 @@ export const es: Record<TranslationKey, string> = {
 		'La cantidad de barras define cuántas bandas de frecuencia mueven cada anillo — no el número de segmentos del anillo.',
 	hint_radial_shape_families:
 		'Define el contorno radial en Classic, Tunnel, Liquid, Orbital y Scope (modo radial). No aplica en layouts solo lineales.',
-	hint_clone_spectrum_radial:
-		'El modo radial dibuja anillos alrededor de un centro — la familia elige el renderer (Tunnel, Liquid, etc.); la forma radial abajo perfila el anillo. Cambia el modo arriba para un layout linear.',
 	hint_spectrum_family_liquid:
 		'Tres capas fluidas (fondo → frente). En radial sigue la forma radial; cada capa tiene opacidad, amplitud, relleno y velocidad de ondulación propias.',
 	hint_spectrum_family_orbital:
@@ -788,9 +765,7 @@ export const es: Record<TranslationKey, string> = {
 	label_spectrum_frame_preset_safe: 'Seguro',
 	label_spectrum_frame_preset_balanced: 'Equilibrado',
 	label_spectrum_frame_preset_heavy: 'Pesado',
-	label_clone_spectrum_family: 'Familia del clon',
 	label_ring_count: 'Cantidad de anillos',
-	label_clone_tunnel_ring_count: 'Anillos del clon',
 	label_shockwave_band_mode: 'Canal de audio del shockwave',
 	label_shockwave_color_mode: 'Color del shockwave',
 	label_shockwave_color_cycle: 'Ciclo',
@@ -800,11 +775,6 @@ export const es: Record<TranslationKey, string> = {
 	label_shockwave_opacity: 'Opacidad del shockwave',
 	label_shockwave_blur: 'Blur del shockwave',
 	label_peak_ribbon_angle: 'Ángulo peak ribbons',
-	section_clone_frame_memory: 'Clon · Memoria de fotograma',
-	hint_clone_frame_memory:
-		'Independiente del Main Spectrum: afterglow, trails, ribbons, bloom y shockwaves solo para el anillo circular.',
-	hint_circular_spectrum:
-		'Siempre radial y ligado al logo. Se ajusta en Circular Settings — controles de memoria independientes del Main Spectrum.',
 	label_wave_fill_opacity: 'Opacidad del Relleno Wave',
 	// Presentación
 	section_slideshow: 'Presentación',
@@ -1428,8 +1398,6 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_section_sections: 'Secciones',
 	spectrum_sections_subtitle: 'Elige qué parte del espectro ajustar',
 	spectrum_aria_sections: 'Secciones del espectro',
-	spectrum_clone_caption_toggle:
-		'Actívalo para habilitar un clon circular independiente del espectro principal.',
 	spectrum_section_recovery_reset: 'Recuperación y Reset',
 	spectrum_profiles_subtitle:
 		'Guarda configuraciones calibradas de espectro manual',
@@ -1437,7 +1405,6 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_view_style: 'Estilo',
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
-	spectrum_view_clone: 'Espectro 2',
 	spectrum_target_main: 'Espectro 1',
 	spectrum_target_second: 'Espectro 2',
 	spectrum_aria_target: 'Espectro a editar',
@@ -1472,9 +1439,6 @@ export const es: Record<TranslationKey, string> = {
 	spectrum_meta_audio_subtitle: 'Canales, suavizado, manual',
 	spectrum_meta_fx_title: 'Memoria de frame y movimiento',
 	spectrum_meta_fx_subtitle: 'Estelas, fantasmas, shockwave',
-	spectrum_meta_clone_title: 'Espectro 2',
-	spectrum_meta_clone_subtitle:
-		'Segundo espectro independiente — radial o linear',
 	// Pestaña Looks
 	looks_subtitle_preset_first: 'Flujo de filtros priorizando preset',
 	looks_catalog_hint:
@@ -1563,14 +1527,9 @@ export const es: Record<TranslationKey, string> = {
 	hud_drag_tooltip: 'Arrastrar HUD',
 	hud_drag_launcher_tooltip: 'Arrastrar lanzador HUD',
 	label_clear: 'Limpiar',
-	// Paneles de espectro (FX + Clone colapsables)
+	// Paneles de espectro (FX colapsables)
 	spectrum_section_frame_memory: 'Memoria de frame',
 	spectrum_section_bass_shockwave: 'Shockwave de bajos',
-	spectrum_clone_section_position: 'Posición',
-	spectrum_clone_section_tunnel_surface: 'Superficie del túnel',
-	spectrum_clone_section_liquid_layers: 'Capas líquidas',
-	spectrum_clone_section_spiral_shape: 'Forma en espiral',
-	spectrum_clone_section_scope_crt: 'Scope CRT',
 	// Inspector de overlay
 	overlay_toggle_aria: 'Alternar overlay seleccionado',
 	overlay_reset_tooltip: 'Restablecer overlay seleccionado',

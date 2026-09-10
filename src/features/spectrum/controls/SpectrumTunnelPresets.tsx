@@ -2,11 +2,16 @@ import { useWallpaperStore } from '@/store/wallpaperStore';
 import { useT } from '@/lib/i18n';
 import {
 	SPECTRUM_FRAME_MEMORY_PRESET_IDS,
-	type SpectrumFrameMemoryPresetId
+	type SpectrumFrameMemoryPresetId,
+	type SpectrumFrameMemoryTarget
 } from '@/features/spectrum/presets/spectrumFrameMemoryPresets';
 import { SegmentedControl } from '@/ui';
 
-export function SpectrumTunnelPresets() {
+export function SpectrumTunnelPresets({
+	target
+}: {
+	target: SpectrumFrameMemoryTarget;
+}) {
 	const t = useT();
 	const applyPreset = useWallpaperStore(s => s.applySpectrumTunnelPreset);
 
@@ -25,7 +30,7 @@ export function SpectrumTunnelPresets() {
 				value: id,
 				label: labels[id]
 			}))}
-			onChange={id => applyPreset(id)}
+			onChange={id => applyPreset(id, target)}
 		/>
 	);
 }

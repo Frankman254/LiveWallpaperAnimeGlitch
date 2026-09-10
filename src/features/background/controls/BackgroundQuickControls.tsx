@@ -96,11 +96,16 @@ export default function BackgroundQuickControls({
 				</span>
 			</div>
 
-			<BgFitModeSelector
-				label={t.label_fit_mode}
-				value={imageFitMode}
-				onChange={onChangeFitMode}
-			/>
+			{/* Keep Covered pins the fit to the recomputed full-bleed cover;
+			    exposing the selector would let the user pick a mode the lock
+			    immediately overwrites. */}
+			{imageCoverageLockEnabled ? null : (
+				<BgFitModeSelector
+					label={t.label_fit_mode}
+					value={imageFitMode}
+					onChange={onChangeFitMode}
+				/>
+			)}
 
 			<div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
 				<SwitchRow

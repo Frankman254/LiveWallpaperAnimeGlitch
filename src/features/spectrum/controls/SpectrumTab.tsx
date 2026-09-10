@@ -109,7 +109,6 @@ export default function SpectrumTab({
 			loadSpectrumProfileSlot: s.loadSpectrumProfileSlot,
 			addSpectrumProfileSlot: s.addSpectrumProfileSlot,
 			removeSpectrumProfileSlot: s.removeSpectrumProfileSlot,
-			randomizeSpectrum: s.randomizeSpectrum,
 			randomizeSpectrumTarget: s.randomizeSpectrumTarget,
 			resetSpectrumTarget: s.resetSpectrumTarget,
 			activeSpectrumTarget: s.activeSpectrumTarget,

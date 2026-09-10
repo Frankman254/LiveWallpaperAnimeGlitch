@@ -256,7 +256,6 @@ export const en = {
 	section_logo_glow_shadow: 'Glow & Shadow',
 	section_spectrum_profiles: 'Saved Slots',
 	section_spectrum_main: 'Main Spectrum',
-	section_spectrum_clone: 'Clone Spectrum',
 	section_spectrum_mode_placement: 'Mode & Placement',
 	section_spectrum_style_size: 'Style & Size',
 	section_spectrum_motion_peaks: 'Motion & Peaks',
@@ -702,31 +701,11 @@ export const en = {
 	hint_rain_low_perf: 'Rain is disabled in Low performance mode.',
 	// Spectrum follow logo
 	label_follow_logo: 'Follow Logo (radial)',
-	label_circular_clone: 'Logo Radial Companion',
-	hint_circular_clone:
-		'Draw a separate radial ring attached to the logo. Works alongside any Main Spectrum mode.',
-	section_circular_clone: 'Clone Settings',
 	label_linear_direction: 'Linear Direction',
 	label_fit_around_logo: 'Fit Around Logo',
 	hint_fit_around_logo:
 		'Keep the inner edge clear around the logo while the outer contour keeps the selected radial shape.',
 	label_logo_gap: 'Logo Gap',
-	label_clone_opacity: 'Clone Opacity',
-	label_clone_scale: 'Clone Scale',
-	label_clone_gap: 'Clone Gap',
-	label_clone_style: 'Clone Style',
-	label_clone_angle: 'Clone Angle',
-	label_clone_bar_count: 'Clone Bar Count',
-	label_clone_bar_width: 'Clone Bar Width',
-	label_clone_glow: 'Clone Glow',
-	label_clone_shape: 'Clone Shape',
-	label_clone_color_mode: 'Clone Color Mode',
-	label_clone_primary_color: 'Clone Primary Color',
-	label_clone_secondary_color: 'Clone Secondary Color',
-	label_clone_follow_logo: 'Clone follows logo',
-	label_clone_radial_fit_logo: 'Clone hugs logo',
-	hint_spectrum_clone_section:
-		'Circular companion ring: tune follow / fit independently from the main spectrum.',
 	label_spectrum_mode: 'Spectrum Mode',
 	label_spectrum_orientation: 'Linear Orientation',
 	label_spectrum_style: 'Spectrum Style',
@@ -752,8 +731,6 @@ export const en = {
 		'Bar count sets how many frequency bands drive each ring — it is not the number of ring segments.',
 	hint_radial_shape_families:
 		'Shapes the radial outline for Classic bars, Tunnel rings, Liquid, Orbital, and Scope (radial mode). Hidden for linear-only layouts.',
-	hint_clone_spectrum_radial:
-		'Radial mode rings around a center — family picks the renderer (Tunnel, Liquid, etc.); Radial Shape below outlines the ring. Switch the mode above for a linear layout.',
 	hint_spectrum_family_liquid:
 		'Three fluid layers (back → front). Radial mode follows Radial Shape; each layer has its own opacity, amplitude, fill, and wobble speed.',
 	hint_spectrum_family_orbital:
@@ -780,9 +757,7 @@ export const en = {
 	label_spectrum_frame_preset_safe: 'Safe',
 	label_spectrum_frame_preset_balanced: 'Balanced',
 	label_spectrum_frame_preset_heavy: 'Heavy',
-	label_clone_spectrum_family: 'Clone family',
 	label_ring_count: 'Ring count',
-	label_clone_tunnel_ring_count: 'Clone ring count',
 	label_shockwave_band_mode: 'Shockwave audio channel',
 	label_shockwave_color_mode: 'Shockwave color source',
 	label_shockwave_color_cycle: 'Cycle',
@@ -792,11 +767,6 @@ export const en = {
 	label_shockwave_opacity: 'Shockwave opacity',
 	label_shockwave_blur: 'Shockwave blur',
 	label_peak_ribbon_angle: 'Peak ribbon angle',
-	section_clone_frame_memory: 'Clone · Frame Memory',
-	hint_clone_frame_memory:
-		'Independent from Main Spectrum: afterglow, trails, ribbons, bloom, and shockwaves for the circular companion only.',
-	hint_circular_spectrum:
-		'Always radial and logo-attached. Tuned under Circular Settings — independent frame-memory controls from Main Spectrum.',
 	label_wave_fill_opacity: 'Wave Fill Opacity',
 	// Slideshow
 	section_slideshow: 'Slideshow',
@@ -1418,15 +1388,12 @@ export const en = {
 	spectrum_section_sections: 'Sections',
 	spectrum_sections_subtitle: 'Pick a part of the spectrum to tune',
 	spectrum_aria_sections: 'Spectrum sections',
-	spectrum_clone_caption_toggle:
-		'Toggle to enable an independent circular clone of the main spectrum.',
 	spectrum_section_recovery_reset: 'Recovery & Reset',
 	spectrum_profiles_subtitle: 'Save calibrated manual spectrum setups',
 	spectrum_view_family: 'Family',
 	spectrum_view_style: 'Style',
 	spectrum_view_audio: 'Audio',
 	spectrum_view_fx: 'FX',
-	spectrum_view_clone: 'Spectrum 2',
 	spectrum_target_main: 'Spectrum 1',
 	spectrum_target_second: 'Spectrum 2',
 	spectrum_aria_target: 'Spectrum to edit',
@@ -1460,9 +1427,6 @@ export const en = {
 	spectrum_meta_audio_subtitle: 'Channels, smoothing, manual',
 	spectrum_meta_fx_title: 'Frame memory & motion',
 	spectrum_meta_fx_subtitle: 'Trails, ghosts, shockwave',
-	spectrum_meta_clone_title: 'Spectrum 2',
-	spectrum_meta_clone_subtitle:
-		'Independent second spectrum — radial or linear',
 	// Looks tab
 	looks_subtitle_preset_first: 'Preset-first filter workflow',
 	looks_catalog_hint:
@@ -1549,14 +1513,9 @@ export const en = {
 	hud_drag_tooltip: 'Drag HUD',
 	hud_drag_launcher_tooltip: 'Drag HUD launcher',
 	label_clear: 'Clear',
-	// Spectrum panels (FX + Clone collapsibles)
+	// Spectrum panels (FX collapsibles)
 	spectrum_section_frame_memory: 'Frame memory',
 	spectrum_section_bass_shockwave: 'Bass shockwave',
-	spectrum_clone_section_position: 'Position',
-	spectrum_clone_section_tunnel_surface: 'Tunnel surface',
-	spectrum_clone_section_liquid_layers: 'Liquid layers',
-	spectrum_clone_section_spiral_shape: 'Spiral shape',
-	spectrum_clone_section_scope_crt: 'Scope CRT',
 	// Overlay inspector
 	overlay_toggle_aria: 'Toggle selected overlay',
 	overlay_reset_tooltip: 'Reset selected overlay',

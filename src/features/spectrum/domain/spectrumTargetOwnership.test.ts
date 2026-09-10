@@ -103,6 +103,34 @@ describe('spectrum target ownership', () => {
 		);
 	});
 
+	it('applies tunnel presets to the targeted spectrum only', () => {
+		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
+		useWallpaperStore
+			.getState()
+			.patchSpectrumMain({ spectrumTunnelRingCount: 20 });
+		useWallpaperStore
+			.getState()
+			.applySpectrumTunnelPreset('balanced', 'instance');
+		// The instance bank takes the preset; main keeps its own ring count.
+		expect(
+			useWallpaperStore.getState().spectrumInstances[0]
+				?.spectrumTunnelRingCount
+		).toBe(12);
+		expect(useWallpaperStore.getState().spectrumTunnelRingCount).toBe(20);
+
+		useWallpaperStore.getState().applySpectrumTunnelPreset('heavy', 'main');
+		expect(useWallpaperStore.getState().spectrumTunnelRingCount).toBe(16);
+		expect(
+			useWallpaperStore.getState().spectrumInstances[0]
+				?.spectrumTunnelRingCount
+		).toBe(12);
+		// A main-target patch must not rewrite unrelated instance fields.
+		expect(
+			useWallpaperStore.getState().spectrumInstances[0]?.spectrumFamily
+		).toBe('classic');
+		expect(id).toBe(useWallpaperStore.getState().spectrumInstances[0]?.id);
+	});
+
 	it('resets only the targeted spectrum', () => {
 		const id = useWallpaperStore.getState().spectrumInstances[0]!.id;
 		const slotsBefore = spectrumSlots('User Spectrum Slot');

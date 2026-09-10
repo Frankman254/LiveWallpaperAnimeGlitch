@@ -427,12 +427,12 @@ export default function QuickActionsPanel() {
 							actions={spectrumActions}
 							isRainbow={usesRainbowChrome}
 							colorSourceShortcut={spectrumColorSourceShortcut}
-							colorSourceLabel={t.label_color_source}
+							colorSourceLabel={t.spectrum_color_source_both}
 						/>
 					)}
 
 					{expandPanel === 'spectrum_slots' &&
-						state.spectrumProfileSlots.length > 0 && (
+						spectrumSlots.length > 0 && (
 							<QuickActionsSlotsPanel
 								slots={spectrumSlots}
 								isRainbow={usesRainbowChrome}

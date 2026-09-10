@@ -495,13 +495,27 @@ export function createSpectrumSlice(
 					)
 				};
 			}),
-		applySpectrumTunnelPreset: (preset: SpectrumFrameMemoryPresetId) =>
-			set(state =>
-				normalizeSpectrumSettings({
-					...state,
-					...buildSpectrumTunnelPresetPatch(preset)
-				})
-			),
+		applySpectrumTunnelPreset: (
+			preset: SpectrumFrameMemoryPresetId,
+			target: SpectrumFrameMemoryTarget
+		) =>
+			set(state => {
+				const patch = normalizeSpectrumSettings(
+					buildSpectrumTunnelPresetPatch(preset)
+				);
+				if (target === 'main') return patch;
+				return {
+					spectrumInstances: state.spectrumInstances.map(
+						(inst, index) =>
+							index === 0
+								? (normalizeSpectrumSettings({
+										...inst,
+										...patch
+									}) as SpectrumInstance)
+								: inst
+					)
+				};
+			}),
 		randomizeSpectrum: colorSource => {
 			invalidateSpectrumPresetMorph();
 			set(state => buildPresetShuffleSpectrumPatch(state, colorSource));

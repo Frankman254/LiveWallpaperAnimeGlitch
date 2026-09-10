@@ -539,7 +539,7 @@ export function SpectrumStylePanel() {
 									>
 										{t.label_spectrum_tunnel_presets}
 									</span>
-									<SpectrumTunnelPresets />
+									<SpectrumTunnelPresets target={target} />
 									<Caption
 										as="p"
 										style={{
