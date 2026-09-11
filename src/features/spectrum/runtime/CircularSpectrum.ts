@@ -53,11 +53,9 @@ import {
 
 export type { SpectrumSettings };
 
-// Cross-family transition crossfade source. Captured continuously so a frame
-// is ready the instant the user switches families/modes — but that switch is
-// rare and the capture is a full-viewport copy, so we keep it at 5 Hz. The
-// crossfade "from" frame can be up to ~200ms stale, which is imperceptible in
-// the 320ms transition.
+// Cross-family transition crossfade source. Captured at 5 Hz (the switch is
+// rare and the capture is a full-viewport copy); a ~200ms-stale "from" frame is
+// imperceptible in the 320ms transition.
 const TRANSITION_SNAPSHOT_CAPTURE_INTERVAL = 0.2;
 const EMPTY_TIME_DOMAIN = new Uint8Array(0);
 
@@ -81,20 +79,9 @@ function resolveScaledSpectrumSettings(
 }
 
 /**
- * Blur left on the context before dispatching to a family renderer.
- *
- * Every renderer sets its own `shadowBlur` for the passes it cares about, so
- * this value only survives on draws that don't — most visibly the wave-shape
- * fill in both `drawLinearWave` and `drawRadialWave`, which paints a
- * full-figure polygon under whatever is ambient.
- *
- * It used to be the raw `shadowBlur × glowIntensity × glowReach`, the one glow
- * path in the codebase that skipped `computeClassicGlowBlur`'s ceiling: with
- * the sliders maxed that is 60 × 3 × 3 = 540px of blur on a full-figure fill,
- * while the halo it sits under is capped at 40. Measured on that fill alone,
- * capping cut the frame cost ~3.5×. At factory defaults (16 × 0.7 × 1 = 11.2)
- * the cap never binds, so nothing changes until a preset is already past the
- * documented ceiling.
+ * Blur left on the context before dispatching to a family renderer. Renderers
+ * set their own `shadowBlur` where they care; this survives only on draws that
+ * don't (wave fills). Must stay under `computeClassicGlowBlur`'s ceiling.
  */
 export function resolveAmbientShadowBlur(
 	settings: SpectrumSettings,
@@ -105,14 +92,9 @@ export function resolveAmbientShadowBlur(
 }
 
 /**
- * Render policy the caller owns, not the renderer.
- *
- * This used to be read straight off the global store inside `drawSpectrum`,
- * which made the renderer — the one non-UI module in the domain — depend on
- * `store/`, and put the store in a cycle with itself
- * (store → slice → spectrum barrel → CircularSpectrum → store). Passing it in
- * keeps the draw path a pure function of its arguments and lets the offline
- * exporter pick its own quality without touching live state.
+ * Render policy the caller owns, not the renderer — keeps `drawSpectrum` a pure
+ * function of its arguments (no store dependency / import cycle) and lets the
+ * offline exporter pick its own quality.
  */
 export interface SpectrumRenderPolicy {
 	performanceMode: WallpaperState['performanceMode'];
@@ -133,10 +115,8 @@ export function drawSpectrum(
 	const runtime = getSpectrumRuntimeState(instanceKey);
 
 	// ── Global retro pixelate ─────────────────────────────────────────────────
-	// Redirect every draw of this spectrum into an offscreen "scene" canvas, then
-	// blit it back nearest-neighbor at the end so the whole spectrum (any family)
-	// snaps to a chunky pixel grid. Isolated per instance so it never pixelates
-	// the background or other overlays.
+	// Draw into an offscreen "scene" canvas, blit back nearest-neighbor so the
+	// whole spectrum snaps to a pixel grid. Isolated per instance.
 	const pixelScale = normalizePixelateScale(settings.spectrumPixelateScale);
 	const pixelateActive =
 		isPixelatePostProcessActive(settings) &&
@@ -161,19 +141,11 @@ export function drawSpectrum(
 			canvas = runtime.pixelateSceneCanvas;
 		}
 	} else if (runtime.pixelateSceneCanvas) {
-		// Release it. This is a full-viewport backing store (~8 MB at 1080p)
-		// held per instance, and it used to survive for the rest of the session
-		// once pixelate had been enabled a single time — so a user who tried
-		// the toggle on both spectrums and switched it back off kept paying for
-		// two of them. `feedbackCanvas` already drops itself the same way when
-		// its effect is off; this one was the outlier.
+		// Release the full-viewport backing store when pixelate inactive (feedbackCanvas precedent).
 		runtime.pixelateSceneCanvas = null;
 	}
 
-	// Family-owned scratch buffers, same rule. Both are full-viewport and both
-	// were kept for the life of the session once their family had rendered
-	// once, so cycling through the families left three dead 1080p backing
-	// stores alive per instance.
+	// Family-owned scratch buffers: release full-viewport backing stores when the family is inactive (feedbackCanvas precedent).
 	if (settings.spectrumFamily !== 'oscilloscope') {
 		runtime.oscilloscopePhosphorCanvas = null;
 	}
@@ -325,10 +297,8 @@ export function drawSpectrum(
 			)
 		: null;
 
-	// Manual drive: tick the section envelopes once per frame, then blend per
-	// bin inside the loop. The keyboard handler in the viewport pushes
-	// section targets between renders — ticking here keeps the runtime
-	// frame-rate independent regardless of which family draws.
+	// Manual drive: tick section envelopes once per frame (viewport keyboard
+	// handler pushes targets between renders), then blend per bin in the loop.
 	const driveMode = settings.spectrumDriveMode;
 	const manualActive = driveMode !== 'audio';
 	if (manualActive) {
@@ -355,10 +325,8 @@ export function drawSpectrum(
 				? 0
 				: sampleBinsForChannel(bins, i, barCount, resolvedChannel);
 
-		// Blend with manual section signal. We sample the section that
-		// covers this bin's index range; sections are evenly distributed
-		// across `barCount`. `manual` mode discards the FFT entirely, the
-		// other two combine.
+		// Blend with the manual section covering this bin's range (sections are
+		// evenly distributed across `barCount`); `manual` discards the FFT.
 		if (manualActive) {
 			const sectionIdx = Math.min(
 				manualSections - 1,
@@ -415,10 +383,9 @@ export function drawSpectrum(
 			max: 1
 		}
 	);
-	// `spectrumGainExpressiveness` shapes how deep the whole spectrum breathes
-	// between beats. 0 ignores the envelope, 0.5 preserves the legacy
-	// `0.84 + drive * 0.24` feel, 1 is cinematic, and values above 1 can drop
-	// close to silence when Min Height is 0.
+	// `spectrumGainExpressiveness` shapes how deep the spectrum breathes between
+	// beats: 0 ignores the envelope, 1 is cinematic; >1 can near-silence when
+	// Min Height is 0.
 	const gainExpr = Math.max(
 		0,
 		Math.min(3, settings.spectrumGainExpressiveness)
@@ -449,11 +416,9 @@ export function drawSpectrum(
 				globalGain;
 	}
 
-	// Radial mirror folds the per-bin heights into a vertically-symmetric figure
-	// (each semicircle shows the full spectrum, reflected). Done once here so
-	// every radial family inherits it. Linear mirror is handled per-renderer
-	// (it reflects geometry across the axis, not the bin order), so it is left
-	// untouched.
+	// Radial mirror folds heights into a vertically-symmetric figure (each
+	// semicircle shows the full spectrum, reflected), once here so every radial
+	// family inherits it. Linear mirror reflects geometry, handled per-renderer.
 	if (
 		settings.spectrumMirror &&
 		settings.spectrumMode === 'radial' &&
@@ -533,20 +498,7 @@ export function drawSpectrum(
 		6,
 		settings.spectrumGlowIntensity + audioGlowDrive
 	);
-	// The glow-blur formula across every family is `shadowBlur × glowIntensity`,
-	// so a preset with shadowBlur = 0 shows NO halo no matter how high the
-	// (audio-boosted) glow intensity climbs — that's why "Glow by Audio" and
-	// "Manual Glow" can look dead on presets with zero blur. Give reactive/manual
-	// glow its own render-only blur floor so the halo is visible without mutating
-	// the saved preset values. Per-family caps and performance-mode scaling still
-	// bound the final radius.
-	// The rescue floor only exists for a preset that has NO radius at all — a
-	// nonzero Shadow Blur is already the user saying how wide they want the
-	// halo, and overriding a deliberate 4 with 12 both changed their look and
-	// made the toggle cost more than they asked for. It also scales with the
-	// performance mode now, the same way every real blur in the app does; it
-	// used to sit under the per-family cap, so the cap's scaling never bound it
-	// and a `low` machine paid the full manufactured radius.
+	// Floor only rescues radius 0; a nonzero user blur is respected and scales with performance mode.
 	const manualGlowRescueFloor =
 		settings.spectrumManualGlow &&
 		settings.spectrumGlowIntensity > 0.001 &&
@@ -566,16 +518,8 @@ export function drawSpectrum(
 	const radialAngle = (effectiveRadialAngleDeg * Math.PI) / 180;
 	const resolvedShape = normalizeSpectrumShape(settings.spectrumShape);
 
-	// Time-domain waveform now comes directly from AnalyserNode via
-	// `audio.timeDomain`, so we no longer need to synthesize a history
-	// buffer from the smoothed envelope. The oscilloscope renderer reads
-	// the live PCM samples and the previous `pushOscilloscopeSample()` hack
-	// is gone.
-
-	// Extra instances draw after the main spectrum on the same canvas;
-	// frame-memory FX (ghost / trails / afterglow source) are full-frame. Clip
-	// to the radial ring so an instance's settings cannot composite over the
-	// main spectrum.
+	// Extra instances draw after the main spectrum on the same canvas; full-frame
+	// FX clip to the radial ring so they cannot composite over the main spectrum.
 	const shouldClipCloneRadialFx =
 		instanceKey !== 'primary' && settings.spectrumMode === 'radial';
 	if (shouldClipCloneRadialFx) {
@@ -727,8 +671,7 @@ export function drawSpectrum(
 			runtime.previousFrameCaptureElapsed = 0;
 		}
 	} else {
-		// Classic does not use cross-family snapshots. Avoid a full viewport
-		// copy every frame and release a stale buffer after switching back.
+		// Classic uses no cross-family snapshots: skip the viewport copy, release stale buffers.
 		runtime.previousFrameCanvas = null;
 		runtime.previousFrameCaptureElapsed = Number.POSITIVE_INFINITY;
 	}

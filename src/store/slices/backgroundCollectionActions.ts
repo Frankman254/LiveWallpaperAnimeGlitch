@@ -80,14 +80,9 @@ export function createBackgroundCollectionActions(
 	get: WallpaperGet
 ) {
 	/**
-	 * Keep Covered is per-image, but the scale that covers depends on the
-	 * viewport. When the active image changes (or the lock is turned on), the
-	 * composition stored for the old viewport may no longer cover the new one
-	 * — e.g. a 9:16 wallpaper composed on a phone is full-bleed there but a
-	 * narrow strip on a 16:9 desktop. Recompute the active image's fit with
-	 * the same domain logic as auto-fit so what's drawn matches what the
-	 * controls claim. Race-safe: the active image or the lock may change while
-	 * the image dimensions load; both races abort the write.
+	 * Keep Covered is per-image, but the covering scale is viewport-dependent:
+	 * refit the active image with auto-fit's domain logic. Skips when
+	 * coverageFramingEdited; race-safe (aborts if active image/lock change during load).
 	 */
 	async function autoFitCoveredActiveImage(): Promise<void> {
 		const state = get();
@@ -303,8 +298,7 @@ export function createBackgroundCollectionActions(
 				});
 				return patch;
 			});
-			// Keep Covered: the new active image may not cover this viewport
-			// (different aspect ratio than where it was composed). Re-fit it.
+			// Keep Covered: the stored composition may not cover this viewport.
 			void autoFitCoveredActiveImage();
 		},
 		applyActiveImageConfigToDefaultImages: () =>

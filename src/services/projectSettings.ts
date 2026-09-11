@@ -325,10 +325,8 @@ function normalizeBackgroundImages(
 							: null
 				}
 			);
-			// Imported projects may carry the framing-provenance flag (new
-			// exports) or predate it (older exports). Respect a saved boolean;
-			// otherwise derive from the imported layout so custom framing is
-			// never silently machine-overwritten by Keep-Covered auto-fit.
+			// Saved provenance boolean respected; else derive from layout so
+			// custom framing is never machine-overwritten by auto-fit.
 			return typeof image.coverageFramingEdited === 'boolean'
 				? {
 						...item,

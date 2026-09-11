@@ -4,16 +4,7 @@ import type { SpectrumSettings } from '@/features/spectrum/runtime/spectrumRunti
 import { asGlowColorSettings, resolveManualGlow } from './manualGlow';
 
 /**
- * Settings whose non-colour fields report when they are read.
- *
- * A spread (`{ ...settings }`) reads every own enumerable property, so a probe
- * on a field the glow has no business caring about is an exact detector for
- * "this cloned the whole object". That matters because `resolveManualGlow` is
- * a per-bar call: `SpectrumSettings` carries ~155 keys, so a 256-bar spectrum
- * with manual glow on used to copy ~119k properties per instance per frame —
- * doubled by the second spectrum — purely to override five of them. That is
- * the cliff behind "bar count al máximo + manual glow = ultra lag", and it is
- * invisible with the toggle off because the function returns early there.
+ * Non-colour fields report reads; a spread means the object was cloned whole.
  */
 function probedSettings(patch: Partial<SpectrumSettings> = {}) {
 	const reads: string[] = [];
@@ -27,8 +18,6 @@ function probedSettings(patch: Partial<SpectrumSettings> = {}) {
 		...patch
 	} as unknown as SpectrumSettings;
 
-	// Fields the glow never needs. Reading any of them means the whole object
-	// was walked.
 	for (const key of [
 		'spectrumBarWidth',
 		'spectrumShadowBlur',
@@ -85,8 +74,7 @@ describe('resolveManualGlow — per-bar cost', () => {
 });
 
 describe('asGlowColorSettings — the once-per-figure view', () => {
-	// The gradient builders need a full settings object, so this one still
-	// clones. It runs once per figure, not once per bar.
+	// Gradient builders need a full object; this runs once per figure, not per bar.
 	it('keeps every field and remaps the colour ones', () => {
 		const { settings } = probedSettings();
 		const view = asGlowColorSettings(settings);

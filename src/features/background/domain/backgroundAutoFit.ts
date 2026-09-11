@@ -16,10 +16,9 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /**
- * Renderer-side safety clamp: pull a resolved image-rect center back inside
- * the coverage bounds. `drawnWidth`/`drawnHeight` should be the *non-reactive*
- * drawn size — bass zoom only grows the image, so clamping against the smaller
- * base keeps a pulse safe.
+ * Renderer-side safety clamp: pull an image-rect center back inside coverage
+ * bounds. Pass the *non-reactive* drawn size — bass zoom only grows the image,
+ * so clamping against the smaller base keeps a pulse safe.
  */
 export function clampCoveredCenterPx({
 	cx,
@@ -71,14 +70,9 @@ export function suggestBackgroundAutoFit(
 	const safeViewportHeight = Math.max(1, viewportHeight);
 	const safeImageWidth = Math.max(1, imageWidth);
 	const safeImageHeight = Math.max(1, imageHeight);
-	// Cover base: Keep Covered means the image must always bleed past the
-	// viewport edges, so the stored fitMode must say what is actually drawn
-	// (a full-bleed crop), not the bookkeeping base used to derive it. A
-	// 'contain' base would store a fake inflated scale (e.g. 3.5x on a
-	// portrait image in a landscape viewport) that is identical in pixels
-	// but dishonest in the UI and makes every later neutral edit (scale
-	// reset -> 1) break coverage. With 'cover', rotation 0 resolves to
-	// exactly 1.0 — clean, honest, and auto-fit == the natural cover fit.
+	// Cover base: Keep Covered stores fitMode cover so the saved framing says
+	// what is drawn; a contain base would need an inflated scale that later
+	// neutral edits break.
 	const fitMode: ImageFitMode = 'cover';
 	const scale = resolveMinimumCoverScale(
 		safeViewportWidth,

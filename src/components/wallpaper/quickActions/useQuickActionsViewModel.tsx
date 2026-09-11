@@ -881,8 +881,7 @@ export function useQuickActionsViewModel({
 			active: false,
 			onClick: goPresentation
 		});
-		// Drag mode owns a dedicated panel. Targets do not belong beside the
-		// editor sections because they are mutually exclusive tools, not tabs.
+		// Drag mode owns a dedicated panel: targets are exclusive tools, not tabs.
 		actions.push({
 			label: t.qa_drag_mode,
 			title: t.qa_drag_mode_t,
@@ -1118,11 +1117,8 @@ export function useQuickActionsViewModel({
 	}, [fullStore, activeSpectrumSlotIndex]);
 
 	// ── Looks carousel ────────────────────────────────────────────────────
-	// The same catalog the Looks tab renders — factory presets first, then the
-	// user's populated slots — so the HUD can never disagree with the tab
-	// about what exists or which entry is active. Empty slots are filtered
-	// out, and a local cursor covers the moment after the user has edited a
-	// look by hand and `activeFilterLookId` no longer matches anything.
+	// Same catalog the Looks tab renders (factory presets, then populated
+	// slots); a local cursor covers hand-edited looks with no active id.
 	const lastLooksNavKeyRef = useRef<string | null>(null);
 	const looksNav: SubsystemCarouselNav | undefined = useMemo(() => {
 		const entries = buildFilterLookCatalog(

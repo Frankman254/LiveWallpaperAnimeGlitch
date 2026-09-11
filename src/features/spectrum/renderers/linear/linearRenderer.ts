@@ -42,14 +42,9 @@ export type LinearWaveFrameContext = {
 };
 
 /**
- * Shared glow-blur cap.
- *
- * Without this, `shadowBlur (max 60) × glowIntensity (max 3) = 180 px` blur
- * fires on every fillRect / arc, which torches FPS on any non-trivial bar
- * count. `drawLinearBlocks` already had its own cap with a bar-count-aware
- * floor; this helper lifts the pattern so bars / dots / wave behave the
- * same. The defaults (40 / 24) match the upper bound users actually hit in
- * practice — anything past that is purely a cost without visual gain.
+ * Shared glow-blur cap: `shadowBlur × glowIntensity` must stay bounded or every
+ * shadowed fill pays a huge blur. Defaults (40/24) are the practical ceiling —
+ * past them blur is pure cost without visual gain.
  */
 export function computeClassicGlowBlur(
 	settings: SpectrumSettings,
@@ -67,14 +62,9 @@ export function computeClassicGlowBlur(
 }
 
 /**
- * Performance-mode blur ceiling, shared by every family.
- *
- * Canvas2D `shadowBlur` cost grows roughly with the blur radius squared, so
- * shrinking the cap on medium/low modes is the single cheapest spectrum win —
- * and the doubled main+clone pass feels it twice. `high` is left untouched so
- * quality is identical there. Classic was the only family applying it; the
- * others capped a raw number, which made the same preset cost far more on a
- * weak machine when the family happened to be liquid / tunnel / orbital.
+ * Performance-mode blur ceiling, shared by every family. Canvas2D `shadowBlur`
+ * cost grows roughly with radius squared, so shrinking the cap on medium/low is
+ * the cheapest win; `high` is untouched so quality is identical there.
  */
 export function resolveGlowPerfScale(settings: SpectrumSettings): number {
 	return settings.performanceMode === 'low'
@@ -89,23 +79,16 @@ function clamp01(value: number): number {
 }
 
 /**
- * How many distinct glow colours a figure samples across the spectrum.
- *
- * Canvas2D shadows take a single flat colour per draw call, so a glow that
- * sweeps needs one blurred fill per distinct colour. Sampling the sweep at this
- * resolution caps that count regardless of bar count, while staying fine enough
- * that the (already blurred) glow reads as continuous.
+ * Distinct glow colours a figure samples. Canvas shadows take one flat colour per
+ * draw call, so a sweeping glow needs one blurred fill per distinct colour; this
+ * caps that count regardless of bar count while staying visually continuous.
  */
 export const GLOW_COLOR_STEPS = 16;
 
 /**
- * Snaps a bar's position to the glow colour grid so neighbouring bars resolve to
- * the same halo colour and can share one blurred fill.
- *
- * Only the glow is quantized — the crisp fill keeps its exact per-bar colour.
- * Stepping a colour that is about to be blurred by tens of pixels is far less
- * visible than stepping the fill, and it is what turns a sweeping glow from 96
- * blurred fills into at most `GLOW_COLOR_STEPS`.
+ * Snaps a bar's position to the glow colour grid so neighbouring bars share one
+ * blurred fill. Only the glow is quantized — the crisp fill keeps its exact
+ * per-bar colour.
  */
 export function quantizeGlowPhase(t: number): number {
 	const steps = GLOW_COLOR_STEPS - 1;
@@ -113,18 +96,9 @@ export function quantizeGlowPhase(t: number): number {
 }
 
 /**
- * The glow colours for one bar of a classic figure.
- *
- * Every bar shape needs the same two things — a halo colour and a core colour,
- * both sampled on the quantized glow grid — and `drawLinearBars` was the only
- * one resolving them correctly. Capsules, spikes, dots, blocks, radial blocks
- * and radial dots each sampled `getColor` straight, which bypasses
- * `resolveManualGlow` entirely: Manual Glow was a dead toggle on six of the
- * eight classic shapes, silently following the fill instead of the glow
- * palette. One helper so they cannot drift apart again.
- *
- * `quantizedPhase` must already be through `quantizeGlowPhase` — that is what
- * lets neighbouring bars share a blurred fill.
+ * The glow colours (halo + core) for one bar of a classic figure. Every bar shape
+ * resolves them through here so they cannot drift apart.
+ * `quantizedPhase` must already be through `quantizeGlowPhase`.
  */
 export function resolveBarGlowColors(
 	settings: SpectrumSettings,
@@ -138,21 +112,9 @@ export function resolveBarGlowColors(
 }
 
 /**
- * Gradient carrying the glow's colour sweep along the figure's axis, or null
- * when the glow is one flat colour.
- *
- * A sweeping glow costs one blurred fill per quantized colour — up to
- * `GLOW_COLOR_STEPS` for the halo and another `GLOW_COLOR_STEPS` for the core,
- * per instance, per frame, where a solid glow costs exactly one each. Canvas
- * shadows are single-colour by definition, so the only way to carry a sweep in
- * ONE pass is to paint the gradient itself and blur it with `ctx.filter` — the
- * technique `drawClassicGlowHaloPass` already uses for wave, liquid and scope
- * traces.
- *
- * Two details matter for it to land on the same colours the crisp fills do:
- * the gradient spans the FIGURE (`from` → `to`), not the canvas, and `from`
- * corresponds to bar 0 in both orientations. `phaseOffset` carries the
- * gradient-flow phase, and in `core-halo` the halo's phase lead.
+ * Gradient carrying the glow's colour sweep along the figure's axis, or null when
+ * the glow is one flat colour. The gradient spans the FIGURE (`from` → `to`) with
+ * `from` = bar 0, so it lands on the same colours the crisp fills do.
  */
 export function createLinearGlowSweep(
 	ctx: CanvasRenderingContext2D,
@@ -220,25 +182,19 @@ export type ClassicGlowHaloOptions = {
 	alphaBoost?: number;
 	expansionMultiplier?: number;
 	/**
-	 * Core-pass blur this halo should sit around. Families with their own
-	 * density model (liquid layers, scope traces) pass theirs so the halo
-	 * stays proportional to what they actually draw; classic omits it and
-	 * gets the bar-count cap.
+	 * Core-pass blur this halo sits around. Families with their own density model
+	 * pass theirs; classic omits it and gets the bar-count cap.
 	 */
 	baseBlur?: number;
 	/**
-	 * Multiplier applied AFTER the halo alpha is resolved. Callers that draw
-	 * inside an already-faded element (a liquid layer at 20% opacity) pass
-	 * that opacity so the halo can never end up brighter than the thing it
-	 * is supposed to be glowing around. Defaults to 1 (classic behaviour).
+	 * Multiplier applied AFTER the halo alpha resolves — callers drawing inside an
+	 * already-faded element pass its opacity. Defaults to 1.
 	 */
 	alphaScale?: number;
 	/**
-	 * Paint style for the halo when the glow sweeps colors (gradient /
-	 * rainbow / rotate). A CanvasGradient cannot be used as `shadowColor`
-	 * — canvas shadows are single-color — so when one is passed the halo
-	 * switches to a `filter: blur()` pass over the gradient itself, which
-	 * is what makes the bloom carry the sweep instead of one flat tone.
+	 * Paint style for a sweeping glow. A CanvasGradient cannot be a `shadowColor`,
+	 * so passing one switches the halo to a `filter: blur()` pass over the
+	 * gradient itself.
 	 */
 	sweepStyle?: CanvasGradient | string | null;
 };
@@ -254,12 +210,9 @@ export type ClassicGlowHaloParams = {
 };
 
 /**
- * The halo geometry/alpha recipe, with no canvas state touched.
- *
- * Shared by the one-shot `drawClassicGlowHaloPass` (wave, liquid layers, scope
- * traces) and by `createClassicGlowHaloRuns` (the bar shapes, which batch many
- * bars into one blurred fill). Keeping it in one place is what stops the two
- * from drifting into visibly different halos for the same slider values.
+ * The halo geometry/alpha recipe, with no canvas state touched. Shared by
+ * `drawClassicGlowHaloPass` and `createClassicGlowHaloRuns` so the two cannot
+ * drift into visibly different halos for the same slider values.
  */
 export function resolveClassicGlowHaloParams(
 	settings: SpectrumSettings,
@@ -345,24 +298,9 @@ export type ClassicGlowHaloRuns = {
 };
 
 /**
- * Batches the halos of a whole bar figure into one blurred fill per colour run.
- *
- * Canvas2D re-runs the (very expensive) blur on every fill under a shadow, so
- * calling `drawClassicGlowHaloPass` inside the bar loop costs one blur per bar:
- * 96 bars is 96 blurs per instance per frame, and that doubles exactly when the
- * user turns on the second spectrum. Measured on the real draw pattern, two
- * maxed instances went from ~52ms to ~14ms per frame by collapsing these.
- *
- * Same `flushRun` shape `drawLinearPixel` already uses: consecutive bars that
- * resolve to the same halo colour accumulate into one path and are filled once.
- * In `solid` that is a single blurred fill for the entire spectrum; in the
- * sweeping colour modes the caller quantizes the colour with
- * `quantizeGlowPhase` so neighbouring bars still merge — never worse than the
- * per-bar behaviour it replaces.
- *
- * Callers run this as its own pass BEFORE their core loop, so every halo sits
- * behind every core. That is what wave, liquid and pixel already do; the bar
- * shapes were the odd ones out, interleaving halo/core per bar.
+ * Batches a bar figure's halos into one blurred fill per colour run (Canvas2D
+ * re-runs the blur on every shadowed fill). Run as its own pass BEFORE the core
+ * loop so every halo sits behind every core.
  */
 export function createClassicGlowHaloRuns(
 	ctx: CanvasRenderingContext2D,
@@ -396,9 +334,8 @@ export function createClassicGlowHaloRuns(
 
 	const sweep = options.sweepStyle ?? null;
 	if (sweep !== null && typeof sweep === 'object') {
-		// The sweep carries every colour at once, so the whole figure is ONE
-		// blurred pass instead of one per quantized colour run. `haloColor` is
-		// ignored on purpose — the gradient is the colour.
+		// The sweep carries every colour at once: the figure is ONE blurred pass;
+		// `haloColor` is ignored — the gradient is the colour.
 		let opened = false;
 		return {
 			expansion,
@@ -415,8 +352,7 @@ export function createClassicGlowHaloRuns(
 				opened = false;
 				ctx.save();
 				ctx.fillStyle = sweep;
-				// `blur(σ)` is a Gaussian std dev; `shadowBlur` is ~2σ. Same
-				// halving `drawClassicGlowHaloPass` uses, so the two agree.
+				// `blur(σ)` is a Gaussian std dev; `shadowBlur` is ~2σ — halve to match.
 				ctx.filter = `blur(${(haloBlur * 0.5).toFixed(1)}px)`;
 				ctx.shadowBlur = 0;
 				ctx.shadowColor = 'rgba(0,0,0,0)';
@@ -446,19 +382,8 @@ export function createClassicGlowHaloRuns(
 
 /**
  * Batches the CORE glow of a bar figure into one blurred fill per colour run.
- *
- * The halo pass was collapsed into colour runs, but the cores kept one blurred
- * `fillRect` per bar — and Canvas2D re-runs the blur on every shadowed draw, so
- * a horizontal `bars` spectrum at 120 bars paid 120 blurs per instance per
- * frame. That is what dropped the app under 30fps with a high bar count (worse
- * with manual glow on, which adds up to `GLOW_COLOR_STEPS` sweeping halos on
- * top).
- *
- * The split: the shadow only ever needs the QUANTIZED colour (it is about to be
- * blurred by tens of pixels), so it batches exactly like the halo; the crisp
- * fill then paints on top per bar with `shadowBlur = 0`, keeping every bar's
- * exact colour. Cores also end up uniformly behind every fill instead of a
- * neighbour's shadow darkening the bar drawn before it.
+ * The shadow only needs the quantized colour; the crisp fill then repaints each
+ * bar with its exact colour under `shadowBlur = 0`.
  */
 export function createClassicCoreGlowRuns(
 	ctx: CanvasRenderingContext2D,
@@ -473,9 +398,8 @@ export function createClassicCoreGlowRuns(
 	}
 
 	if (sweepStyle) {
-		// One blurred pass for the whole figure — see `createLinearGlowSweep`.
-		// The crisp pass that follows repaints every bar in its exact colour,
-		// so this one only ever contributes bloom.
+		// One blurred pass for the whole figure — the crisp pass repaints every
+		// bar in its exact colour, so this only contributes bloom.
 		let opened = false;
 		return {
 			add(_glowColor, addPath) {
@@ -528,13 +452,9 @@ export function createClassicCoreGlowRuns(
 }
 
 /**
- * Groups consecutive same-colour shapes into one UNSHADOWED fill.
- *
- * The other half of the core-glow split: once the blurred pass has run (see
- * `createClassicCoreGlowRuns`), the crisp shapes carry no shadow, so they can
- * be merged by exact colour with no visual change at all — in `solid` the whole
- * figure becomes a single `fill()`, and in the sweeping modes it degrades to one
- * cheap unblurred fill per bar.
+ * Groups consecutive same-colour shapes into one UNSHADOWED fill. The other half
+ * of the core-glow split: with no shadow, shapes merge by exact colour with no
+ * visual change.
  */
 export function createCrispFillRuns(ctx: CanvasRenderingContext2D): {
 	add(color: string, addPath: () => void): void;
@@ -724,9 +644,7 @@ export function drawLinearBars(
 	}
 	halo.flush();
 
-	// Pass 2 — core glow, batched into one blurred fill per colour run. Only
-	// the (about to be blurred) shadow colour is quantized; the crisp fill in
-	// pass 3 keeps every bar's exact colour.
+	// Pass 2 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
@@ -1006,7 +924,7 @@ export function drawLinearCapsules(
 	}
 	halo.flush();
 
-	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
+	// Pass 2 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
@@ -1107,7 +1025,7 @@ export function drawLinearSpikes(
 	}
 	halo.flush();
 
-	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
+	// Pass 2 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
@@ -1155,10 +1073,8 @@ export function drawLinearBlocks(
 		highDensityCap: 6
 	});
 
-	// One geometry for both passes. Segments never overlap, so accumulating a
-	// bar's N segments (and their mirrors) into one path and filling once is
-	// pixel-identical to the per-segment `fillRect` calls this shape started
-	// out with.
+	// One geometry for both passes. Segments never overlap, so one path + one
+	// fill is pixel-identical to the per-segment `fillRect` calls.
 	const addBlocksPath = (index: number) => {
 		const h = heights[index];
 		const estimatedSegments = Math.max(
@@ -1214,10 +1130,7 @@ export function drawLinearBlocks(
 		}
 	};
 
-	// Pass 1 — core glow, batched by quantized colour. Blocks was the last
-	// classic shape still drawing one shadowed fill per bar: at 256 bars that
-	// is 256 blurs a frame per instance, where every other shape had already
-	// been collapsed to at most `GLOW_COLOR_STEPS`.
+	// Pass 1 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(
 		ctx,
 		shadowBlur,
@@ -1243,10 +1156,9 @@ export function drawLinearBlocks(
 }
 
 /**
- * Retro LED equalizer. Each bar is a stacked column of hard square cells
- * snapped to a fixed grid — no anti-aliasing, no glow — for a chunky pixel-art
- * / VU-meter look. The cell side equals the bar width so cells are square; the
- * number of lit cells is the bar height quantized to the cell pitch.
+ * Retro LED equalizer: each bar is a stacked column of hard square cells snapped
+ * to a fixed grid — pixel-art VU look. Cell side equals bar width; lit-cell
+ * count is the bar height quantized to the cell pitch.
  */
 export function drawLinearPixel(
 	ctx: CanvasRenderingContext2D,
@@ -1283,17 +1195,9 @@ export function drawLinearPixel(
 		highDensityCap: 8
 	});
 
-	// Glow and fill are painted in two passes.
-	//
-	// The blurred pass does NOT trace every cell. A LED column is dozens of
-	// small squares a few px apart, and a blur wide enough to be visible fuses
-	// those gaps anyway — so the glow traces ONE rect spanning the column and
-	// the crisp pass below draws the real cells. That matters because this
-	// shape's cost is geometry, not draw calls: at 240 bars with the smallest
-	// cell size a frame builds ~40k cell subpaths, and making the blur chew
-	// through all of them was the whole expense. The simplification only kicks
-	// in when the blur is actually wider than the gap it would be filling in;
-	// otherwise the real cells are traced, exactly as before.
+	// Glow and fill are two passes. The blurred pass traces ONE column-spanning
+	// rect, not every cell — this shape's cost is geometry, and any blur wide
+	// enough to see fuses the cell gaps anyway; the crisp pass draws real cells.
 	const columnPath = (index: number, litCells: number, size: number) => {
 		addLedColumnPath(ctx, settings, {
 			litCells,
@@ -1310,17 +1214,12 @@ export function drawLinearPixel(
 	};
 	const litCellsAt = (index: number) =>
 		Math.min(maxCells, Math.floor(heights[index] / cellPitch));
-	// The hull below replaces a column of cells with one rect for the BLURRED
-	// pass only. It is only indistinguishable when the blur is far wider than
-	// the gap it bridges — at `6x` the glow of adjacent cells has fully merged
-	// anyway. Above that gap size the real cells are traced (original path), so
-	// a chunky LED look with visible spacing keeps its per-cell glow.
+	// The hull replaces a cell column for the BLURRED pass only, when the blur is
+	// far wider than the gap it bridges — at `6x` adjacent cells' glow has fully
+	// merged anyway; below that the real cells are traced.
 	const glowUsesColumnHull = glowBlur >= cellGap * 6 && ledAngle === 0;
-	// The hull is a SHADOW-ONLY pass: filling it would paint over the gaps
-	// between cells and turn the LED column into a solid bar. Canvas has no
-	// "shadow without the shape", so the path is built far off-canvas and the
-	// shadow is offset back into place — the shape itself never lands on a
-	// visible pixel, only its blur does.
+	// The hull is SHADOW-ONLY: filling it would paint the gaps solid. Canvas has
+	// no shapeless shadow, so the path is built far off-canvas and offset back.
 	const HULL_SHADOW_OFFSET = 1e5;
 	const addGlowPath = (index: number, litCells: number) => {
 		if (!glowUsesColumnHull) {
@@ -1367,19 +1266,14 @@ export function drawLinearPixel(
 		}
 	};
 
-	// Whether the crisp fill colour actually changes from bar to bar. The single
-	// pass below merges on fill AND glow colour together, so a sweeping fill
-	// breaks the run on EVERY bar — at 256 bars that is 256 blurred fills, each
-	// tracing a whole LED column. That is the "pixel + glow está pésimo" case,
-	// and it is why the strategy is picked here rather than by the hull alone.
+	// Whether the crisp fill colour varies per bar: a sweeping fill breaks the
+	// merged run on EVERY bar, so the pass strategy is decided here too.
 	const fillSweepsPerBar = settings.spectrumColorMode !== 'solid';
 	const splitGlowFromFill = glowUsesColumnHull || fillSweepsPerBar;
 
 	if (!splitGlowFromFill) {
-		// Solid fill: consecutive bars share a fill AND a glow colour, so the
-		// whole spectrum collapses into a single shadowed fill. Splitting the
-		// passes here would only trace every cell twice for nothing — measured,
-		// that costs more than the blurs it saves.
+		// Solid fill: consecutive bars share fill AND glow colour, so the whole
+		// spectrum is one shadowed fill; splitting would trace every cell twice.
 		let runColor: string | null = null;
 		let runGlow: string | null = null;
 		let runOpen = false;
@@ -1412,17 +1306,12 @@ export function drawLinearPixel(
 		}
 		flushRun();
 	} else {
-		// Two passes. The blurred one is keyed on the QUANTIZED glow colour, so
-		// it costs at most `GLOW_COLOR_STEPS` fills no matter how many bars
-		// there are; the crisp one below then repaints every bar in its exact
-		// colour with no shadow. `addGlowPath` traces the column hull when the
-		// blur is wide enough to bridge the cell gaps, and the real cells
-		// otherwise — the shadow-offset trick only applies to the hull.
+		// Two passes: the blurred one is keyed on the quantized glow colour (at
+		// most `GLOW_COLOR_STEPS` fills); the crisp one repaints each bar's exact
+		// colour with no shadow.
 		if (glowUsesColumnHull) ctx.shadowOffsetX = HULL_SHADOW_OFFSET;
-		// The hull pass builds its path far off-canvas and offsets the shadow
-		// back into place, which only a real shadow can do — a `filter` blur
-		// would blur the shape where it actually sits, off-screen. So the
-		// single-pass sweep is only available on the traced-cell path.
+		// The hull needs a real shadow (its path sits off-canvas; a `filter` blur
+		// would blur the shape off-screen), so the sweep pass is traced-cell only.
 		const coreGlow = createClassicCoreGlowRuns(
 			ctx,
 			glowBlur,
@@ -1434,9 +1323,8 @@ export function drawLinearPixel(
 			const litCells = litCellsAt(i);
 			if (litCells <= 0) continue;
 			const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
-			// `getColor` at the quantized phase stays the fallback, so with manual
-			// glow OFF the glow is still the fill colour, just snapped to the glow
-			// grid like every other family already does.
+			// Quantized-phase `getColor` is the fallback: with manual glow OFF the
+			// glow is the fill colour snapped to the glow grid.
 			const glow = resolveManualGlow(
 				settings,
 				qt,
@@ -1600,18 +1488,9 @@ function addLedColumnPath(
 }
 
 /**
- * Adds ONE LED cell to the current path. Does not fill.
- *
- * Filling per cell is what made this shape crawl: the caller sets a shadow for
- * the bar, and Canvas2D re-runs the (very expensive) blur for every fill under
- * it. A 96-bar column of up to 256 cells meant tens of thousands of blurred
- * fills per frame. Accumulating the whole bar into one path and filling once
- * collapses that to one blur per bar and draws the same pixels — the cells do
- * not overlap, so a single shadow over the union is what per-cell shadows were
- * already producing.
- *
- * Path geometry is captured in the CTM at the time it is added, so the
- * save/rotate/restore below still bakes rotation into the accumulated path.
+ * Adds ONE LED cell to the current path. Does not fill — filling the whole bar
+ * at once keeps the blur to one per bar (cells never overlap, so the shadow over
+ * the union equals per-cell shadows). Path geometry captures the CTM at add time.
  */
 export function addLedCellPath(
 	ctx: CanvasRenderingContext2D,
@@ -1623,8 +1502,7 @@ export function addLedCellPath(
 ) {
 	const half = size / 2;
 	if (shape === 'circle') {
-		// `moveTo` first so this arc starts its own subpath instead of being
-		// joined to the previous cell by a stray line.
+		// `moveTo` first so the arc starts its own subpath, not a stray line joined to the previous cell.
 		ctx.moveTo(x + half, y);
 		ctx.arc(x, y, half, 0, Math.PI * 2);
 		return;
@@ -1685,8 +1563,7 @@ export function drawLinearDots(
 		if (settings.spectrumLinearOrientation === 'vertical') {
 			const y = start + index * stride + settings.spectrumBarWidth / 2;
 			const x = baseX + heights[index] * direction;
-			// Each arc needs its own `moveTo` or it joins the previous dot
-			// with a stray line.
+			// Each arc needs its own `moveTo` or it joins the previous dot with a stray line.
 			ctx.moveTo(x + r, y);
 			ctx.arc(x, y, r, 0, Math.PI * 2);
 			if (settings.spectrumMirror) {
@@ -1735,10 +1612,7 @@ export function drawLinearDots(
 	}
 	halo.flush();
 
-	// Pass 2 — core glow, batched by quantized colour. This used to be one
-	// blurred `fill()` per dot AND a second per mirrored dot, so a mirrored
-	// 256-bar spectrum paid 512 blurs a frame — the most expensive unbatched
-	// loop left in the classic family.
+	// Pass 2 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur, coreSweep);
 	for (let i = 0; i < barCount; i++) {
 		const qt = quantizeGlowPhase(i / Math.max(barCount - 1, 1));
@@ -1892,8 +1766,7 @@ export function drawLinearWave(
 		{
 			alphaBoost: 0.22,
 			expansionMultiplier: 1.25,
-			// Sweeping glow modes paint the halo with an axis gradient so the
-			// first color runs into the second along the whole trace.
+			// Sweeping glow modes paint the halo with an axis gradient.
 			sweepStyle: glowUsesColorSweep(settings)
 				? createGlowGradient(
 						ctx,

@@ -299,12 +299,9 @@ export function normalizePersistedBackgroundImages(
 		mirrorFillInvert: fallbackImageConfig.imageMirrorFillInvert,
 		mirrorFillCount: fallbackImageConfig.imageMirrorFillCount
 	};
-	// Provenance matters for `coverageFramingEdited`: items from the stored
-	// collection may carry a saved boolean (respect it — `false` after an
-	// explicit auto-fit is a legitimate state even with a non-default layout).
-	// Items synthesized from legacy `imageIds` have no saved flag: derive it
-	// from the constructed layout, so a legacy custom global framing is
-	// protected from auto-fit and a legacy default one stays machine-managed.
+	// coverageFramingEdited provenance: saved boolean respected for stored
+	// items; legacy imageIds items (no saved flag) derive it from the layout,
+	// so legacy custom framing is never machine-overwritten.
 	const fromStoredCollection = Boolean(state.backgroundImages?.length);
 
 	return (
@@ -415,11 +412,8 @@ export function normalizePersistedBackgroundImages(
 }
 
 /**
- * Provenance switch for Keep-Covered auto-fit. UI framing handlers mark the
- * active item `true` (hand-tuned: autofit must not overwrite); explicit
- * auto-fit / reset-framing mark it `false` (machine-owned again). No-ops when
- * the active item already has the value, so per-slider-tick marking stays
- * cheap.
+ * Provenance switch for Keep-Covered auto-fit: UI framing edits mark the
+ * active item true; auto-fit/reset mark it false. No-ops on unchanged value.
  */
 export function setActiveImageFramingEditedPatch(
 	state: WallpaperState,
@@ -461,8 +455,7 @@ export function applyActiveImageConfigToDefaultImages(
 		return {
 			...image,
 			...activeLayout,
-			// The copied composition inherits the active image's provenance:
-			// a hand-tuned framing must stay protected on these images too.
+			// Inherited provenance: a hand-tuned framing stays protected.
 			coverageFramingEdited: active?.coverageFramingEdited ?? false
 		};
 	});

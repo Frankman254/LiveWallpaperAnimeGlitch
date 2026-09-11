@@ -21,7 +21,7 @@
 /build
 /dist/*
 /dist/index.html
-
+/.local
 # misc
 .DS_Store
 *.pem

@@ -134,9 +134,8 @@ export function createBackgroundImageItem(
 		fitMode: settings.fitMode ?? defaults.fitMode,
 		coverageLockEnabled:
 			settings.coverageLockEnabled ?? defaults.coverageLockEnabled,
-		// A freshly created item has never been hand-framed. The flag is
-		// deliberately NOT part of BackgroundImageSettings: it is UI/machine
-		// provenance, never a user-importable setting.
+		// Never hand-framed; provenance flag, deliberately not part of
+		// importable settings.
 		coverageFramingEdited: false,
 		mirror: settings.mirror ?? defaults.mirror,
 		mirrorFill: settings.mirrorFill ?? defaults.mirrorFill,

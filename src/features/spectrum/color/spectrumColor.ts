@@ -44,9 +44,8 @@ export function sampleWrappedPaletteColor(colors: string[], t: number): string {
 }
 
 /**
- * Palette a rotating mode sweeps. `complete-rotate` is `visible-rotate` plus
- * the achromatic extremes, so the cycle also passes through pure black and
- * pure white instead of staying fully saturated the whole way round.
+ * Palette a rotating mode sweeps. `complete-rotate` is `visible-rotate` plus the
+ * achromatic extremes, so the cycle also passes through black and white.
  */
 export function resolveRotatePalette(
 	settings: Pick<SpectrumSettings, 'spectrumColorMode'> & {
@@ -55,11 +54,8 @@ export function resolveRotatePalette(
 ): string[] {
 	const palette = settings.spectrumRainbowColors ?? [];
 	if (settings.spectrumColorMode !== 'complete-rotate') return palette;
-	// `getColor` runs once per bar per pass, so building the extended palette
-	// here allocated a fresh array on every one of those — up to ~1.5k throwaway
-	// arrays a frame across two 256-bar spectrums. The palette only changes when
-	// the source array is replaced (store arrays are replaced, never mutated in
-	// place), so caching on its identity is enough.
+	// Cache keyed on the source-array identity: `getColor` runs per bar per pass,
+	// and store arrays are replaced, never mutated in place.
 	if (completeRotateSource !== palette) {
 		completeRotateSource = palette;
 		completeRotateResult = completeRotatePalette(palette);
@@ -98,14 +94,9 @@ export function getLoopGradientColor(
 }
 
 /**
- * The only fields `getColor` reads.
- *
- * Declared separately so the glow can build a colour view without cloning the
- * whole `SpectrumSettings`. That clone used to run once per bar per pass —
- * `SpectrumSettings` has ~155 keys, so a 256-bar spectrum with manual glow on
- * copied ~119k properties per instance per frame, purely to change five of
- * them. Widening the parameter is safe for every existing caller: they all
- * pass a full `SpectrumSettings`, which still satisfies this.
+ * The only fields `getColor` reads — a view type so the glow builds a colour view
+ * without cloning `SpectrumSettings` per bar. Every existing caller passes a full
+ * `SpectrumSettings`, which still satisfies this.
  */
 export type SpectrumColorInput = Pick<
 	SpectrumSettings,
@@ -183,10 +174,9 @@ export function addGradientStops(
 	) {
 		const rotatePhase = getRotateRgbPhase();
 		const palette = resolveRotatePalette(settings);
-		// The rotation offsets every stop by the same phase, so a stop grid as
-		// coarse as the palette almost never lands ON a palette entry — the
-		// black and white members of `complete-rotate` would be averaged into
-		// grey. Oversampling the ramp keeps them present at every phase.
+		// Rotation offsets every stop by the same phase, so a stop grid as coarse
+		// as the palette almost never lands ON a palette entry — `complete-rotate`'s
+		// black/white members would average into grey. Oversampling keeps them.
 		const steps =
 			settings.spectrumColorMode === 'complete-rotate'
 				? Math.max(6, palette.length * 4)
@@ -264,10 +254,9 @@ export function addRadialLoopGradientStops(
 	) {
 		const rotatePhase = getRotateRgbPhase();
 		const palette = resolveRotatePalette(settings);
-		// The rotation offsets every stop by the same phase, so a stop grid as
-		// coarse as the palette almost never lands ON a palette entry — the
-		// black and white members of `complete-rotate` would be averaged into
-		// grey. Oversampling the ramp keeps them present at every phase.
+		// Rotation offsets every stop by the same phase, so a stop grid as coarse
+		// as the palette almost never lands ON a palette entry — `complete-rotate`'s
+		// black/white members would average into grey. Oversampling keeps them.
 		const steps =
 			settings.spectrumColorMode === 'complete-rotate'
 				? Math.max(6, palette.length * 4)

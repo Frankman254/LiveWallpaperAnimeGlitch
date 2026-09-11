@@ -87,9 +87,7 @@ export function drawRadialBars(
 	const barColorPhase = (angle: number) =>
 		normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2);
 
-	// One geometry for all three passes: `expansion = 0` reproduces the core
-	// bar exactly. The path captures the CTM at the time each rect is added, so
-	// the rotation is baked in and every bar can share one fill.
+	// One geometry for all three passes: `expansion = 0` reproduces the core bar exactly; the path bakes the CTM per rect so all bars share one fill.
 	const addBarPath = (index: number, expansion: number) => {
 		const angle = barAngle(index);
 		ctx.save();
@@ -124,7 +122,7 @@ export function drawRadialBars(
 	}
 	halo.flush();
 
-	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
+	// Pass 2 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
 	for (let i = 0; i < barCount; i++) {
 		coreGlow.add(glowColorAt(i).core, () => addBarPath(i, 0));
@@ -215,9 +213,7 @@ export function drawRadialBlocks(
 		return { segments, segmentGap, segmentLength };
 	};
 
-	// One geometry for all three passes: `expansion = 0` reproduces the core
-	// segments exactly. Segments never overlap, so one path + one fill is
-	// pixel-identical to the per-segment fillRects it replaces.
+	// One geometry for all three passes: `expansion = 0` reproduces the core segments exactly; segments never overlap, so one path + one fill is pixel-identical.
 	const addBarPath = (index: number, expansion: number) => {
 		const angle = barAngle(index);
 		const h = heights[index];
@@ -254,7 +250,7 @@ export function drawRadialBlocks(
 	}
 	halo.flush();
 
-	// Pass 2 — core glow, batched by quantized colour (was one blur per bar).
+	// Pass 2 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(ctx, shadowBlur);
 	for (let i = 0; i < barCount; i++) {
 		coreGlow.add(glowColorAt(i).core, () => addBarPath(i, 0));
@@ -344,21 +340,9 @@ export function drawRadialPixel(
 	};
 
 	/**
-	 * Glow geometry for one bar, for the BLURRED pass only.
-	 *
-	 * A LED column is a stack of small cells a few px apart, and this shape's
-	 * cost is geometry, not draw calls: a dense radial spectrum builds tens of
-	 * thousands of cell subpaths per frame and making the blur chew through all
-	 * of them is the whole expense. When the blur is far wider than the gap it
-	 * bridges (`6x`, where adjacent cells' glow has fully merged anyway), the
-	 * glow traces ONE rotated rect spanning the column. Below that the real
-	 * cells are traced and the original single-pass path runs, so a chunky LED
-	 * look with visible spacing keeps its exact per-cell glow.
-	 *
-	 * The hull is SHADOW-ONLY: filling it would paint over the gaps and turn
-	 * the column into a solid bar. Canvas has no "shadow without the shape", so
-	 * the rect is built far off-canvas and the shadow is offset back into
-	 * place — the shape itself never lands on a visible pixel, only its blur.
+	 * BLURRED-pass glow shape only: when the blur far exceeds the cell gap (`6x`,
+	 * where glow has merged anyway) one rotated column rect replaces the cells.
+	 * SHADOW-ONLY: built off-canvas, shadow offset back, so the fill never lands.
 	 */
 	const glowUsesColumnHull = glowBlur >= cellGap * 6;
 	const HULL_SHADOW_OFFSET = 1e5;
@@ -380,10 +364,9 @@ export function drawRadialPixel(
 	};
 
 	if (!glowUsesColumnHull) {
-		// Original single pass: bars sharing a fill AND a glow colour merge
-		// into one shadowed fill. Splitting glow from fill only pays off when
-		// the hull can shrink the blurred geometry — measured, tracing every
-		// cell twice costs more than the blurs it saves.
+		// Original single pass: bars sharing a fill AND a glow colour merge into
+		// one shadowed fill; splitting only pays off when the hull can shrink the
+		// blurred geometry.
 		let runColor: string | null = null;
 		let runGlow: string | null = null;
 		let runOpen = false;
@@ -404,8 +387,8 @@ export function drawRadialPixel(
 				normalizeAngle(angle + radialAngle + Math.PI / 2) /
 					(Math.PI * 2)
 			);
-			// `color` stays the fallback, so with manual glow OFF the glow is
-			// byte-for-byte the fill colour and runs merge exactly as before.
+			// `color` stays the fallback: with manual glow OFF the glow is
+			// byte-for-byte the fill colour, so runs merge maximally.
 			const glow = resolveManualGlow(
 				settings,
 				quantizeGlowPhase(i / barCount),
@@ -469,8 +452,7 @@ export function drawRadialPixel(
 		fills.flush();
 	}
 
-	// The core colour does not vary per bar, so every core is a single
-	// unshadowed fill.
+	// The core colour does not vary per bar: one unshadowed fill for all cores.
 	if (settings.spectrumNeonCore) {
 		const coreSize =
 			cellSize *
@@ -642,9 +624,8 @@ export function drawRadialWave(
 		settings.spectrumPrimaryColor
 	);
 
-	// A sweeping glow (gradient / rainbow / rotate) paints the halo with a
-	// conic gradient around the figure, so the first color runs into the
-	// second along the whole contour instead of collapsing to one tone.
+	// A sweeping glow paints the halo with a conic gradient so the first colour
+	// runs into the second along the whole contour.
 	const waveGlowSweep = glowUsesColorSweep(settings)
 		? createGlowGradient(
 				ctx,
@@ -767,13 +748,12 @@ export function drawRadialDots(
 	const barColorPhase = (angle: number) =>
 		normalizeAngle(angle + radialAngle + Math.PI / 2) / (Math.PI * 2);
 
-	// One geometry for all three passes: `expansion = 0` reproduces the core
-	// dot exactly, so halo / glow / fill can never drift apart. Each arc needs
-	// its own `moveTo` or it joins the previous dot with a stray line.
+	// One geometry for all three passes: `expansion = 0` reproduces the core dot exactly.
 	const addDotPath = (index: number, expansion: number) => {
 		const angle = barAngle(index);
 		const { x, y } = dotCenter(index, angle);
 		const r = dotRadius + expansion * 0.45;
+		// Each arc needs its own `moveTo` or it joins the previous dot with a stray line.
 		ctx.moveTo(x + r, y);
 		ctx.arc(x, y, r, 0, Math.PI * 2);
 	};
@@ -790,8 +770,7 @@ export function drawRadialDots(
 	}
 	halo.flush();
 
-	// Pass 2 — core glow, batched by quantized colour. This was one blurred
-	// `fill()` per dot, so it scaled straight with the bar count.
+	// Pass 2 — core glow, batched by quantized colour.
 	const coreGlow = createClassicCoreGlowRuns(ctx, glowBlur);
 	for (let i = 0; i < barCount; i++) {
 		coreGlow.add(glowColorAt(i).core, () => addDotPath(i, 0));

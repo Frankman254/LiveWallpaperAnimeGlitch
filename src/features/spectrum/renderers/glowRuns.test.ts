@@ -17,21 +17,8 @@ import {
 } from './radial/radialRenderer';
 
 /**
- * Counts blurred draw operations so the classic bar shapes cannot regress into
- * one blurred fill per bar.
- *
- * That regression is the whole reason two spectrums with glow melted the frame:
- * Canvas2D re-runs the (very expensive) blur on every fill under a shadow, so a
- * halo drawn inside the bar loop costs one blur per bar — 96 per instance, and
- * exactly double with the second spectrum on. Measured on the real draw
- * pattern, two maxed instances went from ~52ms to ~14ms per frame once the
- * halos were batched into one fill per colour run.
- *
- * These assertions are on the HALO pass, which every classic bar shape batches.
- * `drawLinearBars` additionally batches its CORE glow (see the block at the
- * bottom of this file): its crisp fills stay one per bar, but they carry no
- * shadow at all, so nothing blurred scales with the bar count. The other shapes
- * still pay one blurred core per bar.
+ * Counts blurred draw operations so shapes cannot regress into one blurred
+ * fill per bar. All batch the halo; only `drawLinearBars` also batches core glow.
  */
 function createRecordingContext() {
 	const counts = { fill: 0, fillRect: 0, beginPath: 0, save: 0 };
@@ -66,11 +53,8 @@ function createRecordingContext() {
 		roundRect: () => {},
 		fill: () => {
 			counts.fill++;
-			// A glow that sweeps cannot go through `shadowColor` (canvas
-			// shadows are one flat colour), so it is painted as a gradient
-			// under `ctx.filter = blur(...)` instead. Both are the same
-			// expensive Gaussian, so both count here — otherwise these
-			// assertions would go blind the moment a shape switches paths.
+			// Sweeping glows paint under ctx.filter, not shadowColor — count both or
+			// assertions go blind when a shape switches paths.
 			if (ctx.shadowBlur > 0) {
 				blurredFills.push(ctx.shadowBlur);
 				blurredColors.push(String(ctx.shadowColor));
@@ -84,9 +68,7 @@ function createRecordingContext() {
 		stroke: () => {},
 		fillRect: () => {
 			counts.fillRect++;
-			// `drawLinearBars` paints its crisp pass with `fillRect`, not
-			// `fill`, so it has to land in the same buckets or the colour
-			// assertions below would just see an empty set.
+			// fillRect lands in the same buckets — drawLinearBars paints its crisp pass with it.
 			if (ctx.shadowBlur > 0) {
 				blurredFills.push(ctx.shadowBlur);
 				blurredColors.push(String(ctx.shadowColor));
@@ -97,9 +79,7 @@ function createRecordingContext() {
 				crispColors.push(String(ctx.fillStyle));
 			}
 		},
-		// A real `save`/`restore` stack. Without it `ctx.filter` set by a
-		// blurred pass leaks into every later fill in the mock, and the
-		// blurred-draw counts below silently become meaningless.
+		// A real save/restore stack; without it ctx.filter leaks and blur counts go meaningless.
 		save: () => {
 			counts.save++;
 			stack.push({
@@ -217,9 +197,7 @@ describe.each(SHAPES)('$name — halo blurs stay bounded', ({ mode, draw }) => {
 			);
 			return rec.blurredFills.length;
 		};
-		// Cores are still per bar, so the total grows — but the halo must not
-		// contribute more than a constant. 4x the bars, at most ~4x + a
-		// constant, never 8x.
+		// Halo must stay flat: 4x bars ⇒ at most 4x + a constant, never 8x.
 		const few = run(24);
 		const many = run(96);
 		expect(many).toBeLessThanOrEqual(few * 4 + GLOW_COLOR_STEPS);
@@ -247,8 +225,7 @@ describe.each(SHAPES)('$name — halo blurs stay bounded', ({ mode, draw }) => {
 			barCount,
 			base({ spectrumColorMode: 'gradient', spectrumBarCount: barCount })
 		);
-		// Halos are quantized, so they add at most GLOW_COLOR_STEPS on top of
-		// the per-bar cores — never the 2x-per-bar of the old interleaved loop.
+		// Quantized halos add at most GLOW_COLOR_STEPS on top of the per-bar cores.
 		expect(rec.blurredFills.length).toBeLessThanOrEqual(
 			barCount + GLOW_COLOR_STEPS
 		);
@@ -324,8 +301,7 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 			barCount,
 			pixelSettings({ spectrumBarCount: barCount })
 		);
-		// One blurred hull pass + one crisp cell pass when the blur is wide
-		// enough to bridge the cell gap; a single combined fill otherwise.
+		// Blurred hull + crisp pass when the blur bridges the cell gap; one fill otherwise.
 		expect(rec.counts.fill).toBeLessThanOrEqual(2);
 	});
 
@@ -346,8 +322,6 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 	});
 
 	it('never falls back to per-cell transforms for square cells', () => {
-		// save/restore per cell was the other half of the cost; squares and
-		// diamonds emit rotated corners directly.
 		const barCount = 8;
 		const rec = createRecordingContext();
 		draw(
@@ -360,8 +334,7 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 				spectrumLedAngle: 30
 			})
 		);
-		// The hull pass wraps each bar in one save/restore to place its rotated
-		// rect; what must never come back is a save PER CELL.
+		// One save/restore per bar for the rotated hull; never one per cell.
 		expect(rec.counts.save).toBeLessThanOrEqual(barCount + 2);
 	});
 
@@ -405,18 +378,13 @@ describe('drawRadialPixel — one blurred fill per colour run, not per cell', ()
 				spectrumGlowColorMode: 'solid'
 			})
 		);
-		// Columns (blurred hull + crisp cells, or one combined fill) plus one
-		// run for the peak markers — never one fill per bar.
+		// Hull + crisp (or one fill) + peak-marker run — never one fill per bar.
 		expect(rec.counts.fill).toBeLessThanOrEqual(3);
 	});
 });
 
 describe('drawLinearBars — blurred draws do not scale with the bar count', () => {
-	// The reported symptom: horizontal `bars` + manual glow + a high bar count
-	// fell under 30fps. Every blurred draw re-runs the (quadratic in radius)
-	// Canvas2D blur, so 120 bars meant 120 blurs per instance per frame on the
-	// core pass alone. Halo and core are both batched by colour run now, and
-	// the crisp per-bar fills carry no shadow.
+	// Halo and core are both batched by colour run; crisp per-bar fills carry no shadow.
 	const bars = (patch: Partial<SpectrumSettings> = {}) =>
 		settingsWith({ spectrumMode: 'linear', ...patch });
 
@@ -470,12 +438,7 @@ describe('drawLinearBars — blurred draws do not scale with the bar count', () 
 });
 
 describe('core glow batching — blurred draws stay flat as bars grow', () => {
-	// The shapes whose CORE glow was split into a quantized blurred pass plus a
-	// crisp unshadowed pass. Measured on a real canvas, this took a 120-bar
-	// spectrum from ~24ms to ~12ms (linear capsules/spikes) and ~61ms to ~26ms
-	// (radial bars). Shapes NOT listed here were measured too and left alone:
-	// batching dots or linear blocks made them SLOWER, because merging shapes
-	// that sit far apart grows the area each blur has to cover.
+	// Shapes with a quantized blurred core pass + crisp pass; unlisted shapes still blur per bar.
 	const blurredFor = (
 		draw: (
 			ctx: CanvasRenderingContext2D,
@@ -547,8 +510,7 @@ describe('core glow batching — blurred draws stay flat as bars grow', () => {
 	});
 
 	it('linear pixel keeps its blurred pass off the per-cell path when the blur bridges the gap', () => {
-		// Dense LED (tiny cells, tight gap) + a wide blur: the glow collapses
-		// to one hull per colour run instead of tracing every cell.
+		// Wide blur bridges the tiny cells: one hull per colour run, no cell tracing.
 		const barCount = 64;
 		const rec = createRecordingContext();
 		drawLinearPixel(
@@ -574,14 +536,8 @@ describe('core glow batching — blurred draws stay flat as bars grow', () => {
 });
 
 describe('drawLinearPixel — a sweeping fill must not cost one blur per bar', () => {
-	// The LED column shape has a second, cheaper strategy that only applies
-	// when the blur is wide enough to bridge the gaps between cells. Below
-	// that it traces the real cells — and that path used to break its draw run
-	// on the exact (unquantized) fill colour, so any gradient / rainbow /
-	// rotate fill fragmented into one blurred fill per bar, each one tracing a
-	// whole column of cell subpaths. At 256 bars that is 256 blurs a frame per
-	// instance. Chunky cells with a visible gap and a modest blur are exactly
-	// the configuration that lands there.
+	// Below the hull threshold the shape traces real cells; blurred runs must key on
+	// the quantized colour, never the exact fill colour.
 	const chunkyLed = (patch: Partial<SpectrumSettings> = {}) =>
 		settingsWith({
 			spectrumMode: 'linear',
@@ -618,8 +574,7 @@ describe('drawLinearPixel — a sweeping fill must not cost one blur per bar', (
 	});
 
 	it('keeps the single-pass merge when the fill is solid', () => {
-		// Solid loses nothing by staying in one pass, and splitting would only
-		// trace every cell twice — so that case must NOT change.
+		// Solid stays a single pass; splitting would trace every cell twice.
 		expect(blurredAt(240, { spectrumColorMode: 'solid' })).toBe(1);
 	});
 
@@ -636,19 +591,12 @@ describe('drawLinearPixel — a sweeping fill must not cost one blur per bar', (
 				spectrumColorMode: 'gradient'
 			})
 		);
-		// Blurred runs are quantized; the crisp pass keeps every bar's exact
-		// colour, so the total fills exceed the blurred ones.
+		// Blurred runs are quantized; the crisp pass keeps every bar's exact colour.
 		expect(rec.counts.fill).toBeGreaterThan(rec.blurredFills.length);
 	});
 });
 
-/**
- * Manual Glow is a colour override: the glow reads its own palette instead of
- * following the fill. `drawLinearBars` was the only classic shape that
- * actually did that — capsules, spikes, dots, blocks, radial blocks and radial
- * dots all sampled the FILL colour for their glow, so the toggle was silently
- * dead on six of the eight shapes.
- */
+// Manual Glow is a colour override: the glow reads its own palette, not the fill.
 describe.each(SHAPES)(
 	'$name — Manual Glow drives the glow colour',
 	({ mode, draw }) => {
@@ -662,8 +610,7 @@ describe.each(SHAPES)(
 				settingsWith({
 					spectrumMode: mode,
 					spectrumBarCount: barCount,
-					// Fill green, glow red. Both solid, so there is exactly one
-					// correct colour for each and no sweep to blur the question.
+					// Fill green, glow red; both solid so exactly one colour per pass.
 					spectrumColorMode: 'solid',
 					spectrumPrimaryColor: '#00ff00',
 					spectrumManualGlow: true,
@@ -680,10 +627,7 @@ describe.each(SHAPES)(
 );
 
 describe('sweeping glow collapses to a single blurred pass', () => {
-	// A canvas shadow is one flat colour, so a sweeping glow used to cost one
-	// blurred fill per quantized colour — up to GLOW_COLOR_STEPS for the halo
-	// and as many again for the core, per instance, per frame. Painting the
-	// gradient itself under `ctx.filter` carries every colour in ONE pass.
+	// A sweeping glow is painted as the gradient itself under ctx.filter: one pass, every colour.
 	const LINEAR_SHAPES = SHAPES.filter(shape => shape.mode === 'linear');
 
 	it.each(LINEAR_SHAPES.map(shape => [shape.name, shape.draw] as const))(
@@ -709,8 +653,7 @@ describe('sweeping glow collapses to a single blurred pass', () => {
 	);
 
 	it('keeps the quantized runs when the glow is a flat colour', () => {
-		// Solid needs no gradient — one run already covers the whole figure,
-		// and a filter pass would only add a layer for nothing.
+		// Solid needs no gradient; one run already covers the whole figure.
 		const barCount = 96;
 		const rec = createRecordingContext();
 		drawLinearBars(

@@ -17,13 +17,9 @@ export type ResolvedManualGlow = {
 };
 
 /**
- * Resolves the glow colors for the classic bar/wave families. When
- * `spectrumManualGlow` is off, glow follows the fill (`fallbackColor`) exactly
- * as before. When on, the glow uses its own resolved colors
- * (`spectrumGlowPrimary/SecondaryColor`, already mode-driven by
- * `resolveMainSpectrumState`), decoupled from the fill. `spectrumGlowColorMode`
- * picks how the two colors combine (`solid` = single color) and
- * `spectrumManualGlowMode` picks the core/halo/peaks layout.
+ * Resolves glow colors for the classic bar/wave families: off, glow follows the
+ * fill (`fallbackColor`); on, it uses its own palette, with `spectrumGlowColorMode`
+ * picking the combination and `spectrumManualGlowMode` the core/halo/peaks layout.
  */
 export function resolveManualGlow(
 	settings: SpectrumSettings,
@@ -36,12 +32,10 @@ export function resolveManualGlow(
 	const glowView = glowColorView(settings);
 	const primary = glowView.spectrumPrimaryColor;
 	const isSolid = glowView.spectrumColorMode === 'solid';
-	// `solid` means exactly one color, so every layout renders monochrome —
-	// the second color only exists in the sweeping modes.
+	// `solid` means exactly one color: every layout renders monochrome.
 	const secondary = isSolid ? primary : glowView.spectrumSecondaryColor;
-	// Non-solid modes resolve per position, so a bar at t=0 and one at t=0.8
-	// get different colors — that is what makes gradient / rainbow / rotate
-	// read as a sweep along the figure instead of one flat mixed tone.
+	// Non-solid modes resolve per position — that is what makes gradient /
+	// rainbow / rotate read as a sweep along the figure.
 	const colorAt = (phase: number) => getColor(glowView, phase);
 
 	if (settings.spectrumManualGlowMode === 'gradient') {
@@ -52,9 +46,8 @@ export function resolveManualGlow(
 		const color = isSolid ? primary : colorAt(t);
 		return { core: color, halo: color, peak: secondary };
 	}
-	// core-halo: two tones. Solid stays monochrome (historical behaviour); the
-	// sweeping modes nudge the halo along the phase so it reads as a second
-	// tone instead of duplicating the core.
+	// core-halo: two tones. Solid stays monochrome; sweeping modes nudge the
+	// halo along the phase so it reads as a second tone.
 	return {
 		core: isSolid ? primary : colorAt(t),
 		halo: isSolid
@@ -68,13 +61,9 @@ export function resolveManualGlow(
 const GLOW_HALO_PHASE_OFFSET = 0.12;
 
 /**
- * Reads the spectrum settings as if the GLOW colors were the fill colors, so
- * every existing color helper (`getColor`, `createWaveGradient`, the gradient
- * stop builders) can drive the glow without a parallel implementation.
- *
- * This is what lets the glow support the same four color modes as the fill:
- * `gradient` used to collapse into a single mixed color — the exact thing a
- * user could already get by typing that color into `solid`.
+ * Reads spectrum settings as if the GLOW colors were the fill colors, so every
+ * color helper (`getColor`, `createWaveGradient`, stop builders) can drive the
+ * glow without a parallel implementation — and it supports the fill's modes.
  */
 export function asGlowColorSettings(
 	settings: SpectrumSettings
@@ -84,19 +73,8 @@ export function asGlowColorSettings(
 
 /**
  * The five colour fields, remapped to the glow's — without cloning the other
- * ~150.
- *
- * This is the per-bar path. `resolveManualGlow` runs once per bar per pass, so
- * a 256-bar spectrum with manual glow on called it 768 times a frame, and
- * every one of those built a full `SpectrumSettings` clone (~119k property
- * copies per instance per frame, doubled by the second spectrum, plus the
- * garbage). That is why "manual glow + bar count al máximo" fell off a cliff
- * while the same figure with the glow off stayed smooth: the early return
- * above skips this entirely when the toggle is off.
- *
- * `asGlowColorSettings` still hands back a full settings object because the
- * gradient builders need one — but that runs once per figure, not once per
- * bar, and it is now written in terms of this so the two cannot drift.
+ * ~150. This is the per-bar path: never clone the full settings here.
+ * `asGlowColorSettings` wraps it for the once-per-figure gradient builders.
  */
 function glowColorView(settings: SpectrumSettings): SpectrumColorInput {
 	return {
@@ -121,11 +99,9 @@ export function glowUsesColorSweep(settings: SpectrumSettings): boolean {
 }
 
 /**
- * Canvas gradient for a glow that sweeps along the figure: a conic gradient
- * around the center in radial mode (first color → second color all the way
- * around the contour) and an axis gradient in linear mode. Returns a plain
- * color string when the glow is solid, so callers can always assign the result
- * straight to `strokeStyle`.
+ * Canvas gradient for a sweeping glow: conic around the center in radial mode,
+ * axis gradient in linear; a plain color string when solid, so callers can
+ * assign the result straight to `strokeStyle`.
  */
 export function createGlowGradient(
 	ctx: CanvasRenderingContext2D,

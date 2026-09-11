@@ -35,10 +35,7 @@ function reset() {
 	});
 }
 
-/**
- * The user's ownership rule, enforced at the store boundary: a per-target write
- * touches ONLY its spectrum; only the explicit Global/Both action touches both.
- */
+/** Per-target writes touch ONLY their spectrum; only the explicit Global/Both touches both. */
 describe('spectrum target ownership', () => {
 	beforeEach(reset);
 
@@ -89,7 +86,6 @@ describe('spectrum target ownership', () => {
 			useWallpaperStore.getState().spectrumInstances[0]
 		);
 		useWallpaperStore.getState().randomizeSpectrumTarget('main', 'manual');
-		// The second spectrum is untouched by a main-target shuffle.
 		expect(
 			JSON.stringify(useWallpaperStore.getState().spectrumInstances[0])
 		).toBe(instanceBefore);
@@ -111,7 +107,6 @@ describe('spectrum target ownership', () => {
 		useWallpaperStore
 			.getState()
 			.applySpectrumTunnelPreset('balanced', 'instance');
-		// The instance bank takes the preset; main keeps its own ring count.
 		expect(
 			useWallpaperStore.getState().spectrumInstances[0]
 				?.spectrumTunnelRingCount
@@ -124,7 +119,6 @@ describe('spectrum target ownership', () => {
 			useWallpaperStore.getState().spectrumInstances[0]
 				?.spectrumTunnelRingCount
 		).toBe(12);
-		// A main-target patch must not rewrite unrelated instance fields.
 		expect(
 			useWallpaperStore.getState().spectrumInstances[0]?.spectrumFamily
 		).toBe('classic');
@@ -156,7 +150,6 @@ describe('spectrum target ownership', () => {
 			spectrumLedShape: 'diamond'
 		});
 
-		// Reset the instance only; main keeps its custom values.
 		useWallpaperStore.setState({ activeSpectrumTarget: 'instance' });
 		useWallpaperStore.getState().resetSpectrumTarget('instance');
 		expect(useWallpaperStore.getState().activeSpectrumTarget).toBe(
@@ -189,7 +182,6 @@ describe('spectrum target ownership', () => {
 			useWallpaperStore.getState().spectrumInstances[0]?.spectrumLedShape
 		).toBe('square');
 
-		// Reset main only; the freshly-defaulted instance stays default.
 		useWallpaperStore.setState({ activeSpectrumTarget: 'main' });
 		useWallpaperStore.getState().resetSpectrumTarget('main');
 		expect(useWallpaperStore.getState().activeSpectrumTarget).toBe('main');
@@ -225,7 +217,6 @@ describe('spectrum target ownership', () => {
 		expect(
 			useWallpaperStore.getState().spectrumInstances[0]?.spectrumPositionX
 		).toBe(0);
-		// Both spectrum slot banks survive a visual reset.
 		expect(useWallpaperStore.getState().spectrumProfileSlots).toBe(
 			slotsBefore
 		);
@@ -244,7 +235,6 @@ describe('spectrum target ownership', () => {
 
 		useWallpaperStore.getState().restoreFactorySpectrumDefaults();
 
-		// The destructive action replaces BOTH spectrum slot banks with factory.
 		expect(useWallpaperStore.getState().spectrumProfileSlots).not.toBe(
 			slotsBefore
 		);
@@ -265,7 +255,6 @@ describe('spectrum target ownership', () => {
 			spectrumSecondProfileSlots: emptyProfileSlots('S1', 'S2', 'S3')
 		});
 
-		// Saving Spectrum 1's slot leaves the Spectrum 2 bank reference intact.
 		const secondBankRef =
 			useWallpaperStore.getState().spectrumSecondProfileSlots;
 		useWallpaperStore.getState().saveSpectrumProfileSlot(0, 'main');

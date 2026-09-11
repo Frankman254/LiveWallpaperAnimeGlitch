@@ -384,10 +384,8 @@ export interface BackgroundImageItem {
 	rotation: number;
 	fitMode: ImageFitMode;
 	coverageLockEnabled: boolean;
-	/** True once the user hand-tuned this image's framing (scale, position,
-	 *  focus, rotation, fit mode). The Keep-Covered auto-fit rewrites framing
-	 *  on image switch / viewport change; it must skip flagged images so a
-	 *  manual composition survives. Derived for pre-v113 persisted data. */
+	/** True once the user hand-tuned this framing; Keep-Covered auto-fit
+	 *  skips flagged images. Derived for pre-v113 persisted data. */
 	coverageFramingEdited: boolean;
 	mirror: boolean;
 	mirrorFill: boolean;

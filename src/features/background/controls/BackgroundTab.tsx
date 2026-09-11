@@ -74,12 +74,9 @@ export default function BackgroundTab({
 	const currentActiveSetlistId = store.activeSetlistId;
 	const currentActiveImageId = store.activeImageId;
 	const setCurrentActiveImageId = store.setActiveImageId;
-	// Derived: the subset the pool view should display. When a setlist is
-	// active the user wants ONLY the curated images visible — non-members
-	// are hidden entirely (per the strict-filter decision). The full
-	// `store.backgroundImages` array is still used for internal lookups
-	// (active image resolution, navigation by id) so internal references
-	// don't get clipped.
+	// Pool display subset: with an active setlist, non-members are hidden
+	// entirely. The full `store.backgroundImages` array stays for internal
+	// lookups (active-image resolution, navigation by id).
 	const visibleBackgroundImages = filterImageIdsBySetlist(
 		store.backgroundImages,
 		store.setlists,
@@ -263,10 +260,8 @@ export default function BackgroundTab({
 	}
 
 	function cycleActiveImage(direction: -1 | 1) {
-		// Manual prev/next navigation must respect the active setlist filter
-		// — otherwise the user paused the slideshow expecting to walk only
-		// the curated images but the arrows jump to non-members. Use the
-		// filtered list (same one the pool grid renders).
+		// Prev/next walk the setlist-filtered list — same one the pool
+		// grid renders.
 		if (visibleBackgroundImages.length < 2) return;
 		const baseIndex = activeImageIndex >= 0 ? activeImageIndex : 0;
 		const nextIndex =
@@ -495,9 +490,8 @@ export default function BackgroundTab({
 				/>
 			) : null}
 			{/* Hidden file input lives outside the conditional so its
-			    `ref={globalRef}` survives sub-view switches. Without this,
-			    a user opening the Upload dialog from Global view then
-			    accidentally switching tabs would unmount the input mid-flow. */}
+			    `ref={globalRef}` survives sub-view switches (the input must
+			    not unmount mid-upload-flow). */}
 			<input
 				ref={globalRef}
 				type="file"

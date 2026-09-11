@@ -5,12 +5,7 @@ import { drawLinearPixel } from './linearRenderer';
 
 /**
  * Counts draw operations so the LED equalizer cannot regress into filling once
- * per cell.
- *
- * That regression is what made this shape unusable: the bar's shadow is set
- * before the cells are drawn, and Canvas2D re-runs the blur on every fill under
- * it. A 96-bar column of ~100 cells meant ~19k blurred fills per frame instead
- * of 96.
+ * per cell; Canvas2D re-runs the blur on every fill under a shadow.
  */
 function createRecordingContext() {
 	const counts = { fill: 0, fillRect: 0, beginPath: 0, save: 0 };
@@ -42,11 +37,8 @@ function createRecordingContext() {
 		roundRect: () => {},
 		fill: () => {
 			counts.fill++;
-			// A glow that sweeps cannot go through `shadowColor` (canvas
-			// shadows are one flat colour), so it is painted as a gradient
-			// under `ctx.filter = blur(...)` instead. Both are the same
-			// expensive Gaussian, so both count here — otherwise these
-			// assertions would go blind the moment a shape switches paths.
+			// Sweeping glows paint under ctx.filter, not shadowColor — count both or
+			// assertions go blind when a shape switches paths.
 			if (ctx.shadowBlur > 0) blurredFills.push(ctx.shadowBlur);
 			else if (ctx.filter && ctx.filter !== 'none') blurredFills.push(0);
 		},
@@ -54,9 +46,7 @@ function createRecordingContext() {
 		fillRect: () => {
 			counts.fillRect++;
 		},
-		// A real `save`/`restore` stack. Without it `ctx.filter` set by a
-		// blurred pass leaks into every later fill in the mock, and the
-		// blurred-draw counts below silently become meaningless.
+		// A real save/restore stack; without it ctx.filter leaks and blur counts go meaningless.
 		save: () => {
 			counts.save++;
 			stack.push({
@@ -154,9 +144,7 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 	});
 
 	it('caps blurred fills when only the glow sweeps', () => {
-		// Manual glow defaults to a sweeping colour mode, which gave every bar
-		// its own shadow colour and blocked all merging. The glow colour is
-		// sampled on a coarse grid so the count stays bounded by bar count.
+		// The sweeping glow colour is sampled on a coarse grid; the count stays bounded by bar count.
 		const barCount = 96;
 		const { ctx, counts } = createRecordingContext();
 		drawLinearPixel(
@@ -175,12 +163,8 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 	});
 
 	it('splits the passes when colours sweep, so only the crisp fills scale', () => {
-		// Sweeping modes give every bar its own colour, so the crisp fills
-		// cannot merge — one per bar is the floor. What must NOT scale is the
-		// blurred pass: it keys on the quantized glow colour, so it stays a
-		// constant no matter how many bars there are. The total fill count goes
-		// slightly UP in exchange, which is the trade that matters: an
-		// unshadowed fill is orders of magnitude cheaper than a blurred one.
+		// Sweeping colours can't merge crisp fills (floor: one per bar); the blurred pass
+		// keys on the quantized colour and stays flat — cheap unshadowed fills absorb the rest.
 		const barCount = 16;
 		const { ctx, counts, blurredFills } = createRecordingContext();
 		drawLinearPixel(
@@ -266,8 +250,7 @@ describe('drawLinearPixel — one blurred fill per bar', () => {
 	});
 
 	it('never falls back to per-cell transforms for square cells', () => {
-		// save/restore per cell was the other half of the cost; squares and
-		// diamonds now emit rotated corners directly.
+		// Squares and diamonds emit rotated corners directly — no per-cell save/restore.
 		const barCount = 8;
 		const { ctx, counts } = createRecordingContext();
 		drawLinearPixel(

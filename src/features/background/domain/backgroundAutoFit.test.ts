@@ -6,22 +6,18 @@ import {
 	resolveMinimumCoverScale
 } from './resolveImageTransform';
 
-// Node-env viewport is irrelevant here: the domain functions take the
-// viewport explicitly, so everything below is pure arithmetic.
+// Pure arithmetic: the domain fns take the viewport explicitly.
 
 describe('suggestBackgroundAutoFit', () => {
 	it('stores an honest cover fit for a portrait image in a landscape viewport', () => {
 		const s = suggestBackgroundAutoFit(1920, 1080, 1080, 1920);
 
-		// The point of the fix: a cover base full-bleeds at scale 1.0, so
-		// the stored fitMode says what is actually drawn.
 		expect(s.fitMode).toBe('cover');
 		expect(s.scale).toBeCloseTo(1.0, 5);
 		expect(s.positionX).toBe(0);
 		expect(s.positionY).toBe(0);
 
-		// A 'contain' base would need a fake inflated scale (~3.16) to
-		// bleed past the edges — exactly the dishonesty this removes.
+		// A 'contain' base needs a fake inflated scale (~3.2) to full-bleed.
 		const containScale = resolveMinimumCoverScale(
 			1920,
 			1080,
@@ -44,11 +40,8 @@ describe('suggestBackgroundAutoFit', () => {
 	});
 
 	it('rotation 45 lowers the required scale while keeping full coverage', () => {
-		// Rotation is in degrees (getRotatedHalfExtents contract).
 		const s = suggestBackgroundAutoFit(1920, 1080, 1080, 1920, 45);
 
-		// A rotated portrait's bounding box is wider than the portrait, so
-		// less scale is needed than the upright 1.0.
 		expect(s.fitMode).toBe('cover');
 		expect(s.scale).toBeLessThan(1.0);
 

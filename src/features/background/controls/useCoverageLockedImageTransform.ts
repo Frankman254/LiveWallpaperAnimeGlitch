@@ -89,20 +89,14 @@ export function useCoverageLockedImageTransform(
 
 	function handleToggleCoverageLock(enabled: boolean) {
 		store.setImageCoverageLockEnabled(enabled);
-		// Keep Covered ON must mean "what's stored is what's drawn": snap the
-		// composition to the same full-bleed fit auto-fit produces (same domain
-		// logic, same result as switching the active image) — not a mere clamp,
-		// which would leave a dishonest fitMode/scale pair in the UI.
+		// ON refits to the same full-bleed auto-fit produces, not a clamp
+		// (a clamp would leave a dishonest fitMode/scale pair).
 		if (enabled) void store.autoFitCoveredActiveImage();
 	}
 
-	// Some coverage-relevant changes shift the minimum scale needed to cover the
-	// screen: turning Mirror Fill ON, or switching the Fit Mode. When Keep
-	// Covered is active the user wants the scale to SNAP to the freshly computed
-	// minimum so they immediately see the composition at its smallest
-	// coverage-valid size (Mirror Fill) or the recalculated minimum for the new
-	// fit (Fit Mode). The ranges hook re-runs after the change takes effect —
-	// this effect picks up the new minScale and snaps once per transition.
+	// Mirror Fill / Fit Mode changes shift minScale; while Keep Covered is
+	// active, snap scale to the recomputed minimum once per transition
+	// (ranges hook re-runs after the change lands).
 	const pendingCoverageSnap = useRef(false);
 	function handleToggleMirrorFill(enabled: boolean) {
 		store.setImageMirrorFill(enabled);

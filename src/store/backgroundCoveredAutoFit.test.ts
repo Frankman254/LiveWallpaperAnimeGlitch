@@ -9,9 +9,8 @@ const mem = new Map<string, string>();
 	clear: () => void mem.clear()
 };
 
-// The store's persist middleware touches localStorage at module-load time, so
-// the shim above must exist before the store module is imported — static
-// imports cannot guarantee that ordering (same pattern as sceneFirst.test.ts).
+// Persist middleware touches localStorage at module-load time; the shim must
+// exist before the store import (same pattern as sceneFirst.test.ts).
 const loadImageDimensionsMock = vi.hoisted(() => vi.fn());
 vi.mock('@/features/background', async importOriginal => ({
 	...(await importOriginal<Record<string, unknown>>()),
@@ -29,7 +28,6 @@ function setup(imageOverrides: Partial<BackgroundImageSettings> = {}) {
 		coverageLockEnabled: true,
 		...imageOverrides
 	});
-	// A dishonest stored composition: a 'contain' base inflated to 3.5x.
 	useWallpaperStore.setState({
 		backgroundImages: [image],
 		activeImageId: 'img-a',
@@ -60,8 +58,6 @@ describe('autoFitCoveredActiveImage', () => {
 		expect(s.imagePositionY).toBe(0);
 		expect(s.imageFocusX).toBe(0.5);
 		expect(s.imageFocusY).toBe(0.5);
-		// A cover base full-bleeds at 1.0 — the honest fit, no inflated
-		// fake scale like the old 'contain' composition carried.
 		expect(s.imageScale).toBeCloseTo(1.0, 5);
 		// And the per-image copy keeps the composition for the next switch.
 		const stored = s.backgroundImages.find(i => i.assetId === 'img-a')!;

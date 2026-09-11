@@ -1,15 +1,7 @@
 /**
- * Re-links persisted assets to the store after hydration.
- *
- * A project saves image *ids*, not bytes; the blobs live in IndexedDB. On load
- * the pool comes back with `url: null` until this runs and hands each item its
- * object URL and thumbnail back.
- *
- * It is a plain async service, not a hook — it is called from the restore path
- * (`services/projectSettings`), from the preview sync, and from the mount
- * effect in `hooks/useRestoreWallpaperAssets`, which is now a five-line wrapper
- * around it. Those three callers wanting one function was the whole reason
- * `lib/` used to reach up into `hooks/`.
+ * Re-links persisted assets to the store after hydration: projects save image
+ * *ids*, not bytes (blobs live in IndexedDB), so the pool comes back with
+ * `url: null` until this hands each item its object URL and thumbnail back.
  */
 import {
 	createBackgroundImageItem,
