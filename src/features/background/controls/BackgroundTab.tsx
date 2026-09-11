@@ -237,6 +237,7 @@ export default function BackgroundTab({
 	}
 
 	function handleChangeRotation(value: number) {
+		store.setActiveImageFramingEdited(true);
 		store.setImageRotation(value);
 	}
 
@@ -252,6 +253,8 @@ export default function BackgroundTab({
 			store.imageMirrorFill ? store.imageMirrorFillCount : 0
 		);
 
+		// Explicit auto-fit: the composition becomes machine-owned again.
+		store.setActiveImageFramingEdited(false);
 		store.setImageFitMode(suggestion.fitMode);
 		store.setImageScale(suggestion.scale);
 		store.setImagePositionX(suggestion.positionX);
@@ -339,7 +342,10 @@ export default function BackgroundTab({
 					onChangeScale={handleChangeScale}
 					onChangePositionX={handleChangePositionX}
 					onChangePositionY={handleChangePositionY}
-					onChangeFocusPoint={store.setImageFocusPoint}
+					onChangeFocusPoint={(x, y) => {
+						store.setActiveImageFramingEdited(true);
+						store.setImageFocusPoint(x, y);
+					}}
 					onCenterFocus={() => {
 						// Mirror Fill is symmetric around the original tile, so
 						// centering the full composition is the same normalized

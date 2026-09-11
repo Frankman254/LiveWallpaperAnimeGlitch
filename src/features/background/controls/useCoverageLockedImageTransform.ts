@@ -19,6 +19,7 @@ type CoverageStore = Pick<
 	| 'setImagePositionX'
 	| 'setImagePositionY'
 	| 'setImageScale'
+	| 'setActiveImageFramingEdited'
 >;
 
 function clampToRange(value: number, range: { min: number; max: number }) {
@@ -32,6 +33,7 @@ export function useCoverageLockedImageTransform(
 	const coverageActive = store.imageCoverageLockEnabled;
 
 	function handleChangeScale(value: number) {
+		store.setActiveImageFramingEdited(true);
 		store.setImageScale(
 			coverageActive && activeImagePositionRanges.ready
 				? Math.max(value, activeImagePositionRanges.minScale)
@@ -40,6 +42,7 @@ export function useCoverageLockedImageTransform(
 	}
 
 	function handleChangePositionX(value: number) {
+		store.setActiveImageFramingEdited(true);
 		store.setImagePositionX(
 			coverageActive && activeImagePositionRanges.ready
 				? clampToRange(value, {
@@ -51,6 +54,7 @@ export function useCoverageLockedImageTransform(
 	}
 
 	function handleChangePositionY(value: number) {
+		store.setActiveImageFramingEdited(true);
 		store.setImagePositionY(
 			coverageActive && activeImagePositionRanges.ready
 				? clampToRange(value, {
@@ -107,6 +111,7 @@ export function useCoverageLockedImageTransform(
 		}
 	}
 	function handleChangeFitMode(value: CoverageStore['imageFitMode']) {
+		store.setActiveImageFramingEdited(true);
 		store.setImageFitMode(value);
 		if (coverageActive) {
 			pendingCoverageSnap.current = true;

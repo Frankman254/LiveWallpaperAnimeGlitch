@@ -673,6 +673,7 @@ export type WallpaperStore = WallpaperState & {
 	setImageUrls: (v: string[]) => void;
 	autoFitAllImages: () => Promise<void>;
 	autoFitCoveredActiveImage: () => Promise<void>;
+	setActiveImageFramingEdited: (edited: boolean) => void;
 
 	// Persistence (IndexedDB)
 	addImageEntry: (

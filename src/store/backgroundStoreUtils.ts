@@ -299,6 +299,13 @@ export function normalizePersistedBackgroundImages(
 		mirrorFillInvert: fallbackImageConfig.imageMirrorFillInvert,
 		mirrorFillCount: fallbackImageConfig.imageMirrorFillCount
 	};
+	// Provenance matters for `coverageFramingEdited`: items from the stored
+	// collection may carry a saved boolean (respect it — `false` after an
+	// explicit auto-fit is a legitimate state even with a non-default layout).
+	// Items synthesized from legacy `imageIds` have no saved flag: derive it
+	// from the constructed layout, so a legacy custom global framing is
+	// protected from auto-fit and a legacy default one stays machine-managed.
+	const fromStoredCollection = Boolean(state.backgroundImages?.length);
 
 	return (
 		state.backgroundImages?.length
@@ -311,79 +318,125 @@ export function normalizePersistedBackgroundImages(
 						fallbackImageLayout
 					)
 				)
-	).map(image => ({
-		assetId: image.assetId,
-		url: image.url ?? null,
-		thumbnailUrl: image.thumbnailUrl ?? null,
-		originalFileName:
-			typeof image.originalFileName === 'string'
-				? image.originalFileName
-				: null,
-		// Migration: existing images persisted before this field were always
-		// "enabled". `?? true` keeps them in the pool when re-hydrated.
-		enabled: image.enabled ?? true,
-		scale: image.scale ?? fallbackImageConfig.imageScale,
-		positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
-		positionY: image.positionY ?? fallbackImageConfig.imagePositionY,
-		focusX:
-			typeof image.focusX === 'number'
-				? image.focusX
-				: fallbackImageConfig.imageFocusX,
-		focusY:
-			typeof image.focusY === 'number'
-				? image.focusY
-				: fallbackImageConfig.imageFocusY,
-		rotation: image.rotation ?? fallbackImageConfig.imageRotation,
-		fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
-		coverageLockEnabled:
-			image.coverageLockEnabled ??
-			fallbackImageConfig.imageCoverageLockEnabled,
-		mirror: image.mirror ?? fallbackImageConfig.imageMirror,
-		mirrorFill: image.mirrorFill ?? fallbackImageConfig.imageMirrorFill,
-		mirrorFillInvert:
-			image.mirrorFillInvert ?? fallbackImageConfig.imageMirrorFillInvert,
-		mirrorFillCount:
-			image.mirrorFillCount ?? fallbackImageConfig.imageMirrorFillCount,
-		opacity: image.opacity ?? fallbackImageConfig.imageOpacity,
-		bassReactive:
-			image.bassReactive ?? fallbackImageConfig.imageBassReactive,
-		bassIntensity:
-			image.bassIntensity ?? fallbackImageConfig.imageBassScaleIntensity,
-		audioReactiveDecay:
-			image.audioReactiveDecay ??
-			fallbackImageConfig.imageAudioReactiveDecay,
-		audioChannel:
-			image.audioChannel ?? fallbackImageConfig.imageAudioChannel,
-		transitionType:
-			image.transitionType ?? fallbackImageConfig.slideshowTransitionType,
-		transitionDuration:
-			image.transitionDuration ??
-			fallbackImageConfig.slideshowTransitionDuration,
-		transitionIntensity:
-			image.transitionIntensity ??
-			fallbackImageConfig.slideshowTransitionIntensity,
-		transitionAudioDrive:
-			image.transitionAudioDrive ??
-			fallbackImageConfig.slideshowTransitionAudioDrive,
-		transitionAudioChannel:
-			image.transitionAudioChannel ??
-			fallbackImageConfig.slideshowTransitionAudioChannel,
-		logoProfileSlotId: image.logoProfileSlotId ?? null,
-		spectrumProfileSlotId: image.spectrumProfileSlotId ?? null,
-		particlesProfileSlotId: image.particlesProfileSlotId ?? null,
-		rainProfileSlotId: image.rainProfileSlotId ?? null,
-		looksProfileSlotId: image.looksProfileSlotId ?? null,
-		logoOverride: image.logoOverride ?? null,
-		spectrumOverride: image.spectrumOverride ?? null,
-		particlesOverride: image.particlesOverride ?? null,
-		rainOverride: image.rainOverride ?? null,
-		looksOverride: image.looksOverride ?? null,
-		playbackSwitchAt: image.playbackSwitchAt ?? null,
-		sceneSlotId:
-			typeof (image as { sceneSlotId?: unknown }).sceneSlotId === 'string'
-				? (image as { sceneSlotId: string }).sceneSlotId
-				: null
-	}));
+	).map(image => {
+		const item: Omit<BackgroundImageItem, 'coverageFramingEdited'> = {
+			assetId: image.assetId,
+			url: image.url ?? null,
+			thumbnailUrl: image.thumbnailUrl ?? null,
+			originalFileName:
+				typeof image.originalFileName === 'string'
+					? image.originalFileName
+					: null,
+			// Migration: existing images persisted before this field were always
+			// "enabled". `?? true` keeps them in the pool when re-hydrated.
+			enabled: image.enabled ?? true,
+			scale: image.scale ?? fallbackImageConfig.imageScale,
+			positionX: image.positionX ?? fallbackImageConfig.imagePositionX,
+			positionY: image.positionY ?? fallbackImageConfig.imagePositionY,
+			focusX:
+				typeof image.focusX === 'number'
+					? image.focusX
+					: fallbackImageConfig.imageFocusX,
+			focusY:
+				typeof image.focusY === 'number'
+					? image.focusY
+					: fallbackImageConfig.imageFocusY,
+			rotation: image.rotation ?? fallbackImageConfig.imageRotation,
+			fitMode: image.fitMode ?? fallbackImageConfig.imageFitMode,
+			coverageLockEnabled:
+				image.coverageLockEnabled ??
+				fallbackImageConfig.imageCoverageLockEnabled,
+			mirror: image.mirror ?? fallbackImageConfig.imageMirror,
+			mirrorFill: image.mirrorFill ?? fallbackImageConfig.imageMirrorFill,
+			mirrorFillInvert:
+				image.mirrorFillInvert ??
+				fallbackImageConfig.imageMirrorFillInvert,
+			mirrorFillCount:
+				image.mirrorFillCount ??
+				fallbackImageConfig.imageMirrorFillCount,
+			opacity: image.opacity ?? fallbackImageConfig.imageOpacity,
+			bassReactive:
+				image.bassReactive ?? fallbackImageConfig.imageBassReactive,
+			bassIntensity:
+				image.bassIntensity ??
+				fallbackImageConfig.imageBassScaleIntensity,
+			audioReactiveDecay:
+				image.audioReactiveDecay ??
+				fallbackImageConfig.imageAudioReactiveDecay,
+			audioChannel:
+				image.audioChannel ?? fallbackImageConfig.imageAudioChannel,
+			transitionType:
+				image.transitionType ??
+				fallbackImageConfig.slideshowTransitionType,
+			transitionDuration:
+				image.transitionDuration ??
+				fallbackImageConfig.slideshowTransitionDuration,
+			transitionIntensity:
+				image.transitionIntensity ??
+				fallbackImageConfig.slideshowTransitionIntensity,
+			transitionAudioDrive:
+				image.transitionAudioDrive ??
+				fallbackImageConfig.slideshowTransitionAudioDrive,
+			transitionAudioChannel:
+				image.transitionAudioChannel ??
+				fallbackImageConfig.slideshowTransitionAudioChannel,
+			logoProfileSlotId: image.logoProfileSlotId ?? null,
+			spectrumProfileSlotId: image.spectrumProfileSlotId ?? null,
+			particlesProfileSlotId: image.particlesProfileSlotId ?? null,
+			rainProfileSlotId: image.rainProfileSlotId ?? null,
+			looksProfileSlotId: image.looksProfileSlotId ?? null,
+			logoOverride: image.logoOverride ?? null,
+			spectrumOverride: image.spectrumOverride ?? null,
+			particlesOverride: image.particlesOverride ?? null,
+			rainOverride: image.rainOverride ?? null,
+			looksOverride: image.looksOverride ?? null,
+			playbackSwitchAt: image.playbackSwitchAt ?? null,
+			sceneSlotId:
+				typeof (image as { sceneSlotId?: unknown }).sceneSlotId ===
+				'string'
+					? (image as { sceneSlotId: string }).sceneSlotId
+					: null
+		};
+		const saved = fromStoredCollection
+			? image.coverageFramingEdited
+			: undefined;
+		return {
+			...item,
+			coverageFramingEdited:
+				typeof saved === 'boolean'
+					? saved
+					: // The flag is not a layout field; the dummy value is ignored.
+						!isBackgroundImageUsingDefaultLayout({
+							...item,
+							coverageFramingEdited: false
+						})
+		};
+	});
+}
+
+/**
+ * Provenance switch for Keep-Covered auto-fit. UI framing handlers mark the
+ * active item `true` (hand-tuned: autofit must not overwrite); explicit
+ * auto-fit / reset-framing mark it `false` (machine-owned again). No-ops when
+ * the active item already has the value, so per-slider-tick marking stays
+ * cheap.
+ */
+export function setActiveImageFramingEditedPatch(
+	state: WallpaperState,
+	edited: boolean
+): Partial<WallpaperState> {
+	if (!state.activeImageId) return {};
+	const active = state.backgroundImages.find(
+		image => image.assetId === state.activeImageId
+	);
+	if (!active || active.coverageFramingEdited === edited) return {};
+	return {
+		backgroundImages: state.backgroundImages.map(image =>
+			image.assetId === state.activeImageId
+				? { ...image, coverageFramingEdited: edited }
+				: image
+		)
+	};
 }
 
 export function applyActiveImageConfigToDefaultImages(
@@ -392,6 +445,9 @@ export function applyActiveImageConfigToDefaultImages(
 	if (!state.activeImageId) return state;
 
 	const activeLayout = getActiveBackgroundImageLayout(state);
+	const active = state.backgroundImages.find(
+		image => image.assetId === state.activeImageId
+	);
 	let didUpdate = false;
 	const backgroundImages = state.backgroundImages.map(image => {
 		if (
@@ -404,7 +460,10 @@ export function applyActiveImageConfigToDefaultImages(
 		didUpdate = true;
 		return {
 			...image,
-			...activeLayout
+			...activeLayout,
+			// The copied composition inherits the active image's provenance:
+			// a hand-tuned framing must stay protected on these images too.
+			coverageFramingEdited: active?.coverageFramingEdited ?? false
 		};
 	});
 

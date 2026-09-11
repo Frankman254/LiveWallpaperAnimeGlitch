@@ -97,6 +97,9 @@ export function createBackgroundCollectionActions(
 			img => img.assetId === activeId
 		);
 		if (!image?.url) return;
+		// A hand-tuned composition is the user's intent: never machine-overwrite
+		// it on image switch / viewport change. Explicit auto-fit still wins.
+		if (image.coverageFramingEdited) return;
 		try {
 			const { width, height } = await loadImageDimensions(image.url);
 			const viewportWidth =
@@ -114,6 +117,10 @@ export function createBackgroundCollectionActions(
 			const current = get();
 			if (current.activeImageId !== activeId) return;
 			if (!current.imageCoverageLockEnabled) return;
+			const currentImage = current.backgroundImages.find(
+				img => img.assetId === activeId
+			);
+			if (currentImage?.coverageFramingEdited) return;
 			if (
 				current.imageFitMode === suggestion.fitMode &&
 				current.imageScale === suggestion.scale &&
@@ -449,7 +456,10 @@ export function createBackgroundCollectionActions(
 							positionX: suggestion.positionX,
 							positionY: suggestion.positionY,
 							focusX: 0.5,
-							focusY: 0.5
+							focusY: 0.5,
+							// Explicit user auto-fit: the composition is machine-
+							// owned again, so autofitCoveredActiveImage may manage it.
+							coverageFramingEdited: false
 						};
 					} catch {
 						return image;

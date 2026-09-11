@@ -20,6 +20,7 @@ import {
 } from '@/store/featureProfiles';
 import {
 	buildBackgroundImageCollectionPatch,
+	setActiveImageFramingEditedPatch,
 	syncActiveBackgroundImage
 } from '@/store/backgroundStoreUtils';
 import { createBackgroundCollectionActions } from '@/store/slices/backgroundCollectionActions';
@@ -569,6 +570,8 @@ export function createBackgroundSlice(
 				imageRotation: v,
 				...syncActiveBackgroundImage(state, { rotation: v })
 			})),
+		setActiveImageFramingEdited: v =>
+			set(state => setActiveImageFramingEditedPatch(state, v)),
 		setBackgroundImageEnabled: v => set({ backgroundImageEnabled: v }),
 		setShowBackgroundScaleMeter: v => set({ showBackgroundScaleMeter: v }),
 		setGlobalBackgroundEnabled: v => set({ globalBackgroundEnabled: v }),

@@ -11,7 +11,10 @@
  * around it. Those three callers wanting one function was the whole reason
  * `lib/` used to reach up into `hooks/`.
  */
-import { createBackgroundImageItem } from '@/features/background/backgroundImages';
+import {
+	createBackgroundImageItem,
+	isBackgroundImageUsingDefaultLayout
+} from '@/features/background/backgroundImages';
 import { APP_LOGO_URL } from '@/store/defaultState';
 import { loadAllImages, loadImage } from '@/lib/db/imageDb';
 import { hydrateMissingPoolThumbnails } from '@/lib/thumbnailUtils';
@@ -56,32 +59,45 @@ export async function restoreWallpaperAssets(): Promise<void> {
 		nextBackgroundImages = (
 			state.backgroundImages.length > 0
 				? state.backgroundImages
-				: state.imageIds.map(assetId =>
-						createBackgroundImageItem(assetId, null, null, {
-							scale: state.imageScale,
-							positionX: state.imagePositionX,
-							positionY: state.imagePositionY,
-							focusX: state.imageFocusX,
-							focusY: state.imageFocusY,
-							rotation: state.imageRotation,
-							fitMode: state.imageFitMode,
-							mirror: state.imageMirror,
-							opacity: state.imageOpacity,
-							bassReactive: state.imageBassReactive,
-							bassIntensity: state.imageBassScaleIntensity,
-							audioReactiveDecay: state.imageAudioReactiveDecay,
-							audioChannel: state.imageAudioChannel,
-							transitionType: state.slideshowTransitionType,
-							transitionDuration:
-								state.slideshowTransitionDuration,
-							transitionIntensity:
-								state.slideshowTransitionIntensity,
-							transitionAudioDrive:
-								state.slideshowTransitionAudioDrive,
-							transitionAudioChannel:
-								state.slideshowTransitionAudioChannel
-						})
-					)
+				: state.imageIds.map(assetId => {
+						const item = createBackgroundImageItem(
+							assetId,
+							null,
+							null,
+							{
+								scale: state.imageScale,
+								positionX: state.imagePositionX,
+								positionY: state.imagePositionY,
+								focusX: state.imageFocusX,
+								focusY: state.imageFocusY,
+								rotation: state.imageRotation,
+								fitMode: state.imageFitMode,
+								mirror: state.imageMirror,
+								opacity: state.imageOpacity,
+								bassReactive: state.imageBassReactive,
+								bassIntensity: state.imageBassScaleIntensity,
+								audioReactiveDecay:
+									state.imageAudioReactiveDecay,
+								audioChannel: state.imageAudioChannel,
+								transitionType: state.slideshowTransitionType,
+								transitionDuration:
+									state.slideshowTransitionDuration,
+								transitionIntensity:
+									state.slideshowTransitionIntensity,
+								transitionAudioDrive:
+									state.slideshowTransitionAudioDrive,
+								transitionAudioChannel:
+									state.slideshowTransitionAudioChannel
+							}
+						);
+						// Legacy restore: no per-item flag exists, so protect
+						// a custom global framing from auto-fit overwrite.
+						return {
+							...item,
+							coverageFramingEdited:
+								!isBackgroundImageUsingDefaultLayout(item)
+						};
+					})
 		)
 			.map(image => ({
 				...image,

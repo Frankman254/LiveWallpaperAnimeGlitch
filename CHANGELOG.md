@@ -15,6 +15,20 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Fondo: Keep Covered respeta el encuadre manual (store v113)
+
+- Cada imagen guarda ahora la procedencia de su encuadre
+  (`coverageFramingEdited`): si lo ajustaste a mano —escala, posición, foco,
+  rotación o modo de ajuste— el reencuadre automático de Keep Covered ya no lo
+  pisa. Un auto-fit explícito o un reset de encuadre devuelven la imagen a
+  control de la máquina.
+- Al reencuadrar con el lock encendido se usa el modo `cover` sugerido y el
+  selector de modo de ajuste se oculta mientras el lock está activo, porque la
+  máquina es dueña del ajuste en ese estado.
+- Las imágenes persistidas antes de v113 heredan el flag derivado de su
+  encuadre guardado: uno distinto del default queda protegido; el default
+  sigue siendo gestionable por la máquina.
+
 ### Spectrum: por qué el glow manual reventaba el frame
 
 - **La causa real no era el blur, era una copia de objeto por barra.**
@@ -175,7 +189,7 @@ pliega el look Custom legacy dentro del banco normal de slots y traduce la
 selección. El campo legacy se queda en el esquema para que los proyectos
 exportados antes sigan importándose.
 
-`STORE_PERSIST_VERSION` is at **112**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
+`STORE_PERSIST_VERSION` is at **113**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
 ---
 

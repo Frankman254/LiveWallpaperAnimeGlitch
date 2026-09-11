@@ -89,4 +89,7 @@ export const LEGACY_PROJECT_FILE_EXTENSIONS = ['lwag'] as const;
 // logo references migrate without touching user-uploaded logo assets.
 // v112: built-in logo variant mode (vector/pixel/auto), including Logo profile
 // snapshots and per-image Logo overrides.
-export const STORE_PERSIST_VERSION = 112;
+// v113: per-image `coverageFramingEdited` provenance flag for Keep-Covered
+// auto-fit. Pre-v113 persisted items lack the flag; normalize derives it from
+// the stored layout (a custom framing is protected from machine overwrite).
+export const STORE_PERSIST_VERSION = 113;

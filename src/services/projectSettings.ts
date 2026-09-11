@@ -1,5 +1,8 @@
 import { restoreWallpaperAssets } from '@/services/restoreWallpaperAssets';
-import { createBackgroundImageItem } from '@/features/background/backgroundImages';
+import {
+	createBackgroundImageItem,
+	isBackgroundImageUsingDefaultLayout
+} from '@/features/background/backgroundImages';
 import { DEFAULT_STATE } from '@/store/defaultState';
 import {
 	FACTORY_DEFAULT_STATE,
@@ -218,8 +221,8 @@ function normalizeBackgroundImages(
 				typeof image.assetId === 'string' &&
 				image.assetId.length > 0
 		)
-		.map(image =>
-			createBackgroundImageItem(
+		.map(image => {
+			const item = createBackgroundImageItem(
 				image.assetId,
 				null,
 				typeof image.thumbnailUrl === 'string'
@@ -321,8 +324,22 @@ function normalizeBackgroundImages(
 							? (image as { sceneSlotId: string }).sceneSlotId
 							: null
 				}
-			)
-		);
+			);
+			// Imported projects may carry the framing-provenance flag (new
+			// exports) or predate it (older exports). Respect a saved boolean;
+			// otherwise derive from the imported layout so custom framing is
+			// never silently machine-overwritten by Keep-Covered auto-fit.
+			return typeof image.coverageFramingEdited === 'boolean'
+				? {
+						...item,
+						coverageFramingEdited: image.coverageFramingEdited
+					}
+				: {
+						...item,
+						coverageFramingEdited:
+							!isBackgroundImageUsingDefaultLayout(item)
+					};
+		});
 }
 
 function normalizeOverlays(

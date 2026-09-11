@@ -449,3 +449,48 @@ describe('migrateWallpaperStore v112 logo variant', () => {
 		expect(migrated.logoVariantMode).toBe('pixel');
 	});
 });
+
+describe('migrateWallpaperStore v113 framing provenance', () => {
+	it('derives the flag from a custom persisted framing', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				backgroundImages: [
+					{ assetId: 'img-1', scale: 1.5, positionX: 0.2 }
+				]
+			} as never,
+			112
+		);
+		expect(migrated.backgroundImages[0]?.coverageFramingEdited).toBe(true);
+	});
+
+	it('derives false for a default persisted framing', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				backgroundImages: [
+					{
+						assetId: 'img-1',
+						scale: 1,
+						positionX: 0,
+						positionY: 0,
+						focusX: null,
+						focusY: null
+					}
+				]
+			} as never,
+			112
+		);
+		expect(migrated.backgroundImages[0]?.coverageFramingEdited).toBe(false);
+	});
+
+	it('respects an explicitly saved flag', () => {
+		const migrated = migrateWallpaperStore(
+			{
+				backgroundImages: [
+					{ assetId: 'img-1', scale: 1, coverageFramingEdited: true }
+				]
+			} as never,
+			112
+		);
+		expect(migrated.backgroundImages[0]?.coverageFramingEdited).toBe(true);
+	});
+});
