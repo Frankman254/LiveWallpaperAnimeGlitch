@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { usePointerDrag } from '@/ui/lib/usePointerDrag';
 import { useWallpaperStore } from '@/store/wallpaperStore';
 import {
 	isInsideHitArea,
@@ -82,24 +83,13 @@ export default function DragInteractionLayer() {
 		}))
 	);
 
-	const dragStateRef = useRef<{ pointerId: number } | null>(null);
-	// Whether the pointer is currently over the element this tool drags. Drives
-	// `pointerEvents`, so everything outside the element (HUD buttons, editor
-	// panel, bare wallpaper) keeps its own cursor and stays clickable.
-	const [overTarget, setOverTarget] = useState(false);
-	// Mirrors `dragStateRef` for rendering: the ref alone cannot keep the
-	// overlay interactive across a re-render mid-drag.
-	const [dragging, setDragging] = useState(false);
-
-	useEffect(
-		() => () => {
-			dragStateRef.current = null;
-		},
-		[]
-	);
-
 	const isActiveTarget =
 		enableDragMode && DRAG_TARGETS.includes(activeTool as DragTarget);
+	const { dragging, session, start } = usePointerDrag(
+		isActiveTarget,
+		activeTool
+	);
+	const [overTarget, setOverTarget] = useState(false);
 
 	// Tracked on `window` rather than on the overlay itself: while the overlay
 	// is `pointer-events: none` it receives no events of its own, so it could
@@ -112,7 +102,7 @@ export default function DragInteractionLayer() {
 		const handleMove = (event: PointerEvent) => {
 			// Mid-drag the answer is always yes — the pointer is captured and
 			// may legitimately travel outside the element's original bounds.
-			if (dragStateRef.current) return;
+			if (session.isActive()) return;
 			// UI always wins over the wallpaper underneath it. Geometry alone
 			// is not enough: a bottom-edge linear spectrum spans the full width
 			// of the canvas, so its hit area legitimately covers the HUD.
@@ -129,7 +119,7 @@ export default function DragInteractionLayer() {
 		};
 		window.addEventListener('pointermove', handleMove, { passive: true });
 		return () => window.removeEventListener('pointermove', handleMove);
-	}, [activeTool, isActiveTarget]);
+	}, [activeTool, isActiveTarget, session]);
 	if (!isActiveTarget) return null;
 
 	function viewportToNormalized(clientX: number, clientY: number) {
@@ -190,7 +180,8 @@ export default function DragInteractionLayer() {
 		// sense. Keeps the HUD and the editor fully usable with a tool armed.
 		pointerEvents: overTarget || dragging ? 'auto' : 'none',
 		cursor: dragging ? 'grabbing' : 'grab',
-		background: 'transparent'
+		background: 'transparent',
+		touchAction: 'none'
 	};
 
 	return (
@@ -198,33 +189,26 @@ export default function DragInteractionLayer() {
 			role="presentation"
 			style={style}
 			onPointerDown={event => {
-				if (event.button !== 0) return;
-				(event.currentTarget as HTMLElement).setPointerCapture(
-					event.pointerId
+				// Recheck at press time: hover can be stale after editing or scrolling.
+				const area = resolveDragHitArea(
+					activeTool as DragTool,
+					useWallpaperStore.getState(),
+					{ width: window.innerWidth, height: window.innerHeight }
 				);
-				dragStateRef.current = { pointerId: event.pointerId };
-				setDragging(true);
-				commit(event.clientX, event.clientY);
+				if (
+					isOverUiChrome(event.clientX, event.clientY) ||
+					!isInsideHitArea(area, event.clientX, event.clientY)
+				) {
+					setOverTarget(false);
+					return;
+				}
+				if (start(event.currentTarget, event)) {
+					setOverTarget(false);
+					commit(event.clientX, event.clientY);
+				}
 			}}
 			onPointerMove={event => {
-				if (!dragStateRef.current) return;
-				commit(event.clientX, event.clientY);
-			}}
-			onPointerUp={event => {
-				if (!dragStateRef.current) return;
-				try {
-					(event.currentTarget as HTMLElement).releasePointerCapture(
-						event.pointerId
-					);
-				} catch {
-					/* already released */
-				}
-				dragStateRef.current = null;
-				setDragging(false);
-			}}
-			onPointerCancel={() => {
-				dragStateRef.current = null;
-				setDragging(false);
+				if (session.move(event)) commit(event.clientX, event.clientY);
 			}}
 		/>
 	);

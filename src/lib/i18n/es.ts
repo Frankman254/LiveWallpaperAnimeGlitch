@@ -403,6 +403,8 @@ export const es: Record<TranslationKey, string> = {
 		'Usa automáticamente la paleta de la imagen activa actual. Solid usa el color más predominante, gradient usa los 2 colores más predominantes y rainbow usa los 6 colores principales.',
 	hint_theme_palette_auto:
 		'Usa automáticamente la paleta del tema activo del editor. Solid usa el acento del tema, gradient usa el acento y el secundario del tema, y rainbow usa toda la paleta del tema.',
+	hint_lyrics_slot_preview:
+		'Vista previa de los colores que este control pinta sobre la línea de la letra.',
 	// MP3 player
 	label_volume: 'Volumen',
 	label_loop: 'Repetir',

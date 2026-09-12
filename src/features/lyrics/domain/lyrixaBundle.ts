@@ -16,6 +16,7 @@ import type {
 	LyrixaLayerType,
 	LyrixaTextFillConfig
 } from './lyrixaBundleTypes';
+import type { LyrixaLayerOverrideMap } from './types';
 import {
 	DEFAULT_LYRIXA_LYRIC_STYLE,
 	LYRIXA_LAYER_ROLES,
@@ -203,6 +204,45 @@ export function hasTranslationLayer(
 	const ids = translationLayerIds(bundle);
 	if (ids.size === 0) return false;
 	return bundle.project.clips.some(clip => ids.has(clip.layerId));
+}
+
+/** How far below centre (fraction of canvas height) an unpositioned
+ *  translation layer is pushed on import so it doesn't sit on the main
+ *  lyrics. Negative `positionOffsetY` moves down. */
+const DEFAULT_TRANSLATION_OFFSET_Y = -0.15;
+
+/**
+ * Layer overrides to seed on import so a translation layer that carries no
+ * positioning of its own doesn't render on top of the main lyrics.
+ *
+ * A translation layer counts as "already positioned" when any of its clips
+ * carries free `coords` or a non-centre `position`, or the layer declares a
+ * non-centre `renderSettings.positionPreset`. Those bundles respect the
+ * author's layout and get no seeded offset.
+ */
+export function defaultTranslationLayerOffsets(
+	bundle: LyrixaLyricsBundleEnvelope | null | undefined
+): LyrixaLayerOverrideMap {
+	if (!bundle) return {};
+	const ids = translationLayerIds(bundle);
+	if (ids.size === 0) return {};
+
+	const positioned = new Set<string>();
+	for (const clip of bundle.project.clips) {
+		if (!ids.has(clip.layerId)) continue;
+		if (clip.coords || (clip.position && clip.position !== 'center')) {
+			positioned.add(clip.layerId);
+		}
+	}
+
+	const result: LyrixaLayerOverrideMap = {};
+	for (const layer of bundle.project.layers ?? []) {
+		if (!ids.has(layer.id) || positioned.has(layer.id)) continue;
+		const preset = layer.renderSettings?.positionPreset;
+		if (preset && preset !== 'center') continue;
+		result[layer.id] = { positionOffsetY: DEFAULT_TRANSLATION_OFFSET_Y };
+	}
+	return result;
 }
 
 /** Language codes of the translation layers, for labelling the UI. */

@@ -401,6 +401,8 @@ export const en = {
 		'Uses the current active image palette automatically. Solid uses the dominant color, gradient uses the top 2 colors, and rainbow uses the top 6 colors.',
 	hint_theme_palette_auto:
 		'Uses the active editor theme palette automatically. Solid uses the theme accent, gradient uses the theme accent plus secondary, and rainbow uses the full theme palette.',
+	hint_lyrics_slot_preview:
+		'Preview of the colors this control paints on the lyric line.',
 	// MP3 player
 	label_volume: 'Volume',
 	label_loop: 'Loop',

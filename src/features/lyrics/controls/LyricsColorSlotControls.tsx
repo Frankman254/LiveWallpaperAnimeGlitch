@@ -1,10 +1,13 @@
+import { useMemo } from 'react';
 import type { ColorSourceMode } from '@/types/wallpaper';
 import type { LyricsLayerColorMode } from '@/features/lyrics/domain/types';
 import {
 	LYRICS_COLOR_MODES,
 	lyricsColorModeLabel,
 	resolveLyricsColorMode,
-	resolveLyricsColorSource
+	resolveLyricsColorSlot,
+	resolveLyricsColorSource,
+	type LyricsPalettes
 } from '@/features/lyrics/domain/lyricsColorModes';
 import { useT } from '@/lib/i18n';
 import {
@@ -15,6 +18,9 @@ import {
 	UI_COLORS
 } from '@/ui';
 import { ConnectedColorInput as ColorInput } from '@/editor';
+import LyricsColorSlotPreview, {
+	type LyricsSlotPreviewRole
+} from './LyricsColorSlotPreview';
 
 const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
 
@@ -28,6 +34,8 @@ const COLOR_SOURCES: ColorSourceMode[] = ['manual', 'image', 'theme'];
  */
 export default function LyricsColorSlotControls({
 	label,
+	role,
+	palettes,
 	source,
 	onSourceChange,
 	mode,
@@ -38,6 +46,11 @@ export default function LyricsColorSlotControls({
 	onSecondaryColorChange
 }: {
 	label: string;
+	/** Which part of the lyric line this slot paints; drives the preview. */
+	role: LyricsSlotPreviewRole;
+	/** Palettes the image/theme sources sample from; required for an honest
+	 *  preview when `source` isn't `manual`. */
+	palettes?: LyricsPalettes;
 	source: ColorSourceMode;
 	onSourceChange: (value: ColorSourceMode) => void;
 	mode: LyricsLayerColorMode;
@@ -50,6 +63,19 @@ export default function LyricsColorSlotControls({
 	const t = useT();
 	const resolvedMode = resolveLyricsColorMode(mode);
 	const resolvedSource = resolveLyricsColorSource(source);
+	const preview = useMemo(
+		() =>
+			resolveLyricsColorSlot(
+				{
+					source,
+					mode,
+					primary: primaryColor,
+					secondary: secondaryColor
+				},
+				palettes
+			),
+		[source, mode, primaryColor, secondaryColor, palettes]
+	);
 	return (
 		<div
 			className="flex flex-col gap-2 rounded-md border p-2"
@@ -59,6 +85,11 @@ export default function LyricsColorSlotControls({
 			}}
 		>
 			<FieldLabel>{label}</FieldLabel>
+			<LyricsColorSlotPreview
+				role={role}
+				resolved={preview}
+				title={t.hint_lyrics_slot_preview}
+			/>
 			<EnumButtonGroup<ColorSourceMode>
 				options={COLOR_SOURCES}
 				value={resolvedSource}

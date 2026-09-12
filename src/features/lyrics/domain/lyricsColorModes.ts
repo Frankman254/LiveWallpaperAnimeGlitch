@@ -9,8 +9,8 @@ import {
 	sampleWrappedPaletteColor
 } from '@/features/spectrum';
 import type { BackgroundPalette } from '@/lib/backgroundPalette';
-import type { ColorSourceMode } from '@/types/wallpaper';
-import type { LyricsLayerColorMode } from './types';
+import type { ColorSourceMode, WallpaperState } from '@/types/wallpaper';
+import type { LyricsLayerColorMode, LyrixaLayerOverride } from './types';
 
 /**
  * Solid / gradient / rainbow paints for a lyric layer's fill, stroke and glow.
@@ -114,6 +114,84 @@ export function resolveLyricsColorSlot(
 				? resolved.rainbowColors
 				: [...DEFAULT_RAINBOW_PALETTE]
 	};
+}
+
+/**
+ * The fill / stroke / glow / backdrop slots for one lyric group.
+ *
+ * Every field falls back to the global Lyrics Style setting — source, mode
+ * and colors alike — so the Lyrics Style panel and the per-layer panel offer
+ * (and honour) exactly the same behaviour. A missing `source` fallback would
+ * silently drop a global image/theme pick to 'manual' and paint the stock
+ * rainbow instead of the chosen palette.
+ */
+export function resolveLyricStyleSlots(
+	state: WallpaperState,
+	layerOverride: LyrixaLayerOverride | undefined,
+	/** The active line's own color, pre-resolved by the layer registry. */
+	fillFallbackPrimary: string | undefined,
+	palettes?: LyricsPalettes
+): {
+	fillSlot: ResolvedLyricsColorSlot;
+	strokeSlot: ResolvedLyricsColorSlot;
+	glowSlot: ResolvedLyricsColorSlot;
+	backdropSlot: ResolvedLyricsColorSlot;
+} {
+	const fillSlot = resolveLyricsColorSlot(
+		{
+			source:
+				layerOverride?.textColorSource ??
+				state.audioLyricsActiveColorSource,
+			mode:
+				layerOverride?.textColorMode ??
+				state.audioLyricsActiveColorMode,
+			primary:
+				layerOverride?.textColor ?? fillFallbackPrimary ?? '#ffffff',
+			secondary:
+				layerOverride?.textColorSecondary ??
+				state.audioLyricsActiveColorSecondary
+		},
+		palettes
+	);
+	const strokeSlot = resolveLyricsColorSlot(
+		{
+			source:
+				layerOverride?.strokeColorSource ??
+				state.audioLyricsStrokeColorSource,
+			mode:
+				layerOverride?.strokeColorMode ??
+				state.audioLyricsStrokeColorMode,
+			primary: layerOverride?.strokeColor ?? state.audioLyricsStrokeColor,
+			secondary:
+				layerOverride?.strokeColorSecondary ??
+				state.audioLyricsStrokeColorSecondary
+		},
+		palettes
+	);
+	const glowSlot = resolveLyricsColorSlot(
+		{
+			source:
+				layerOverride?.glowColorSource ??
+				state.audioLyricsGlowColorSource,
+			mode:
+				layerOverride?.glowColorMode ?? state.audioLyricsGlowColorMode,
+			primary: layerOverride?.glowColor ?? state.audioLyricsGlowColor,
+			secondary:
+				layerOverride?.glowColorSecondary ??
+				state.audioLyricsGlowColorSecondary
+		},
+		palettes
+	);
+	const backdropSlot = resolveLyricsColorSlot(
+		{
+			source: state.audioLyricsBackdropColorSource,
+			mode: state.audioLyricsBackdropColorMode,
+			primary: state.audioLyricsBackdropColor,
+			secondary: state.audioLyricsBackdropColorSecondary
+		},
+		palettes
+	);
+	return { fillSlot, strokeSlot, glowSlot, backdropSlot };
 }
 
 /**

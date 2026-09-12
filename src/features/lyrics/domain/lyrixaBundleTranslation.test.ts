@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+	defaultTranslationLayerOffsets,
 	hasTranslationLayer,
 	parseLyrixaLyricsBundleEnvelope,
 	translationLanguages,
 	translationLayerIds
 } from './lyrixaBundle';
 import type {
+	LyrixaLyricClip,
 	LyrixaLyricLayer,
 	LyrixaLyricsBundleEnvelope
 } from './lyrixaBundleTypes';
@@ -49,6 +51,26 @@ function bundle(
 			animationConfig: {},
 			fxConfig: {},
 			progressIndicatorConfig: {}
+		}
+	};
+}
+
+function bundleWithClips(
+	layers: LyrixaLyricLayer[],
+	clips: Array<Partial<LyrixaLyricClip> & { layerId: string }>
+): LyrixaLyricsBundleEnvelope {
+	const base = bundle(layers, []);
+	return {
+		...base,
+		project: {
+			...base.project,
+			clips: clips.map((clip, index) => ({
+				id: `clip-${index}`,
+				text: `line ${index}`,
+				startTime: index,
+				endTime: index + 1,
+				...clip
+			}))
 		}
 	};
 }
@@ -186,5 +208,77 @@ describe('bundle parsing of the translation contract', () => {
 			layer({ id: 'layer-backing', layerType: 'backing', order: 1 })
 		]);
 		expect(hasTranslationLayer(envelope)).toBe(false);
+	});
+});
+
+describe('defaultTranslationLayerOffsets', () => {
+	const main = layer({ id: 'layer-main' });
+	const translation = layer({ id: 'layer-tr', role: 'translation' });
+
+	it('pushes an unpositioned translation layer below centre', () => {
+		const offsets = defaultTranslationLayerOffsets(
+			bundle([main, translation])
+		);
+		expect(offsets['layer-tr']).toEqual({ positionOffsetY: -0.15 });
+		expect(offsets['layer-main']).toBeUndefined();
+	});
+
+	it('leaves a translation layer with per-clip coords alone', () => {
+		const offsets = defaultTranslationLayerOffsets(
+			bundleWithClips(
+				[main, translation],
+				[
+					{ layerId: 'layer-main' },
+					{ layerId: 'layer-tr', coords: { x: 0.5, y: 0.8 } }
+				]
+			)
+		);
+		expect(offsets).toEqual({});
+	});
+
+	it('leaves a translation layer with a non-centre clip position alone', () => {
+		const offsets = defaultTranslationLayerOffsets(
+			bundleWithClips(
+				[main, translation],
+				[
+					{ layerId: 'layer-main' },
+					{ layerId: 'layer-tr', position: 'bottom' }
+				]
+			)
+		);
+		expect(offsets).toEqual({});
+	});
+
+	it('leaves a translation layer with a non-centre layer preset alone', () => {
+		const offsets = defaultTranslationLayerOffsets(
+			bundle([
+				main,
+				layer({
+					id: 'layer-tr',
+					role: 'translation',
+					renderSettings: { positionPreset: 'bottom' }
+				})
+			])
+		);
+		expect(offsets).toEqual({});
+	});
+
+	it('a centre preset is not positioning', () => {
+		const offsets = defaultTranslationLayerOffsets(
+			bundle([
+				main,
+				layer({
+					id: 'layer-tr',
+					role: 'translation',
+					renderSettings: { positionPreset: 'center' }
+				})
+			])
+		);
+		expect(offsets['layer-tr']).toEqual({ positionOffsetY: -0.15 });
+	});
+
+	it('handles a bundle without translation layers', () => {
+		expect(defaultTranslationLayerOffsets(bundle([main]))).toEqual({});
+		expect(defaultTranslationLayerOffsets(null)).toEqual({});
 	});
 });

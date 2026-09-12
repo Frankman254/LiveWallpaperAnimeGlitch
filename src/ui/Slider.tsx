@@ -4,6 +4,7 @@ import { RotateCcw } from 'lucide-react';
 import { UI_COLORS, FONT, GLOW, ICON_SIZE, TYPE } from './tokens';
 import { transition } from './tokens/motion';
 import { cn } from './lib/cn';
+import { usePointerDrag } from './lib/usePointerDrag';
 
 export type SliderVariant = 'compact' | 'normal' | 'macro';
 
@@ -72,7 +73,7 @@ export default function Slider({
 }: SliderProps) {
 	const spec = VARIANT_SPEC[variant];
 	const [hover, setHover] = useState(false);
-	const [dragging, setDragging] = useState(false);
+	const { dragging, session, start } = usePointerDrag(!locked);
 	const trackRef = useRef<HTMLDivElement | null>(null);
 	const range = max - min;
 	const pct = range === 0 ? 0 : ((value - min) / range) * 100;
@@ -220,9 +221,8 @@ export default function Slider({
 			<div
 				ref={trackRef}
 				onPointerDown={e => {
-					if (locked) return;
-					e.currentTarget.setPointerCapture(e.pointerId);
-					setDragging(true);
+					if (!start(e.currentTarget, e)) return;
+					e.stopPropagation();
 					// Subtle haptic confirmation on touch devices (Android/iOS 16+).
 					// Silent no-op on desktops and browsers without the API.
 					if (
@@ -235,11 +235,7 @@ export default function Slider({
 					updateFromX(e.clientX);
 				}}
 				onPointerMove={e => {
-					if (dragging) updateFromX(e.clientX);
-				}}
-				onPointerUp={e => {
-					setDragging(false);
-					e.currentTarget.releasePointerCapture(e.pointerId);
+					if (session.move(e)) updateFromX(e.clientX);
 				}}
 				style={{
 					position: 'relative',

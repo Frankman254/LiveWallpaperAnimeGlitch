@@ -11,8 +11,12 @@ import type {
 	LyrixaLayerOverride,
 	LyrixaLayerOverrideMap
 } from '@/features/lyrics/domain/types';
-import { resolveLyricsColorMode } from '@/features/lyrics/domain/lyricsColorModes';
+import {
+	resolveLyricsColorMode,
+	type LyricsPalettes
+} from '@/features/lyrics/domain/lyricsColorModes';
 import LyricsColorSlotControls from './LyricsColorSlotControls';
+import type { LyricsSlotPreviewRole } from './LyricsColorSlotPreview';
 import { seedSecondaryColor } from '@/features/lyrics/domain/lyricsColorModes';
 import ToggleControl from '@/editor/ToggleControl';
 import SliderControl from '@/editor/SliderControl';
@@ -22,10 +26,20 @@ import LabeledSection from '@/editor/LabeledSection';
  * The three independently colorable parts of a lyric layer. `bundleColor`
  * seeds the picker from whatever the imported bundle already carried.
  */
-const COLOR_SLOTS = [
+const COLOR_SLOTS: Array<{
+	key: 'text' | 'stroke' | 'glow';
+	labelKey:
+		| 'label_lyrics_active_color'
+		| 'lyrics_label_stroke_color'
+		| 'label_glow_color';
+	role: LyricsSlotPreviewRole;
+	fallback: string;
+	bundleColor: (style: LyrixaLyricVisualStyle) => string | undefined;
+}> = [
 	{
 		key: 'text',
 		labelKey: 'label_lyrics_active_color',
+		role: 'fill',
 		fallback: '#ffffff',
 		bundleColor: (style: LyrixaLyricVisualStyle) => style.textColor
 	},
@@ -34,16 +48,18 @@ const COLOR_SLOTS = [
 		// Hex, deliberately: the bundle defaults are rgba() strings, which the
 		// native color input cannot display (it showed a raw "rgba(0, 0, …").
 		labelKey: 'lyrics_label_stroke_color',
+		role: 'stroke',
 		fallback: '#000000',
 		bundleColor: (style: LyrixaLyricVisualStyle) => style.strokeColor
 	},
 	{
 		key: 'glow',
 		labelKey: 'label_glow_color',
+		role: 'glow',
 		fallback: '#ffffff',
 		bundleColor: (style: LyrixaLyricVisualStyle) => style.glowColor
 	}
-] as const;
+];
 
 /** Mirrors the global lyrics stroke width default. */
 const DEFAULT_LAYER_STROKE_WIDTH = 1.6;
@@ -52,6 +68,8 @@ type Props = {
 	bundle: LyrixaLyricsBundleEnvelope;
 	overrides: LyrixaLayerOverrideMap;
 	onOverridesChange: (next: LyrixaLayerOverrideMap) => void;
+	/** Palettes for the image/theme slot previews; threaded from LyricsTabBody. */
+	palettes?: LyricsPalettes;
 };
 
 /** Hex the native color input can display; bundle colors may be rgba()/named. */
@@ -76,7 +94,8 @@ function toHexOrDefault(color: string | undefined, fallback: string): string {
 export default function LyricsLayersPanel({
 	bundle,
 	overrides,
-	onOverridesChange
+	onOverridesChange,
+	palettes
 }: Props) {
 	const t = useT();
 	const layers = [...bundle.project.layers].sort((a, b) => a.order - b.order);
@@ -230,6 +249,8 @@ export default function LyricsLayersPanel({
 								<LyricsColorSlotControls
 									key={slot.key}
 									label={t[slot.labelKey]}
+									role={slot.role}
+									palettes={palettes}
 									source={override[sourceKey] ?? 'manual'}
 									onSourceChange={value =>
 										patchLayer(layer.id, {

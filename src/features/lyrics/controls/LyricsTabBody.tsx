@@ -32,6 +32,7 @@ import {
 	TRACK_TITLE_LAYOUT_LABELS
 } from '@/lib/canvasText/trackTitleOptions';
 import {
+	defaultTranslationLayerOffsets,
 	hasTranslationLayer,
 	resolveLyrixaBundlePreviewText,
 	translationLanguages
@@ -45,7 +46,12 @@ import { Caption, FeatureGate, Select } from '@/ui';
 import LyricsLayersPanel from './LyricsLayersPanel';
 import AdaptiveColorInput from '@/editor/AdaptiveColorInput';
 import LyricsColorSlotControls from './LyricsColorSlotControls';
-import { seedSecondaryColor } from '@/features/lyrics/domain/lyricsColorModes';
+import {
+	seedSecondaryColor,
+	type LyricsPalettes
+} from '@/features/lyrics/domain/lyricsColorModes';
+import { getEditorThemePalette } from '@/lib/backgroundPalette';
+import { useBackgroundPalette } from '@/hooks/useBackgroundPalette';
 import type { LyricsLayerColorMode } from '@/features/lyrics/domain/types';
 import ColorSourceShortcuts from '@/editor/ColorSourceShortcuts';
 import { resolveSharedColorSource } from '@/editor/colorSourceUtils';
@@ -149,6 +155,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			audioLyricsGlowColorSource: s.audioLyricsGlowColorSource,
 			audioLyricsGlowColorMode: s.audioLyricsGlowColorMode,
 			audioLyricsGlowColorSecondary: s.audioLyricsGlowColorSecondary,
+			editorTheme: s.editorTheme,
 			setAudioLyricsGlowColorMode: s.setAudioLyricsGlowColorMode,
 			setAudioLyricsGlowColorSecondary:
 				s.setAudioLyricsGlowColorSecondary,
@@ -217,6 +224,14 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 			upsertAudioLyricsTrackEntry: s.upsertAudioLyricsTrackEntry,
 			updateAudioLyricsTrackEntry: s.updateAudioLyricsTrackEntry
 		}))
+	);
+	const backgroundPalette = useBackgroundPalette();
+	const lyricsPalettes = useMemo<LyricsPalettes>(
+		() => ({
+			background: backgroundPalette,
+			theme: getEditorThemePalette(store.editorTheme)
+		}),
+		[backgroundPalette, store.editorTheme]
 	);
 	const fullStore = useWallpaperStore.getState() as WallpaperState;
 	const { captureMode, getCurrentTime, getFileName } = useAudioContext();
@@ -319,7 +334,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 				rawText: '',
 				lyrixaBundle: bundle,
 				lyrixaRenderMode: 'editor',
-				lyrixaLayerOverrides: {}
+				lyrixaLayerOverrides: defaultTranslationLayerOffsets(bundle)
 			});
 			// Turn the lyrics layer on so the imported lyrics actually appear —
 			// the renderer early-returns when audioLyricsEnabled is false (its
@@ -983,6 +998,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 								<div className="flex flex-col gap-2.5">
 									<LyricsColorSlotControls
 										label={t.label_lyrics_active_color}
+										role="fill"
+										palettes={lyricsPalettes}
 										source={
 											store.audioLyricsActiveColorSource
 										}
@@ -1027,6 +1044,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									/>
 									<LyricsColorSlotControls
 										label={t.lyrics_label_stroke_color}
+										role="stroke"
+										palettes={lyricsPalettes}
 										source={
 											store.audioLyricsStrokeColorSource
 										}
@@ -1067,6 +1086,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									/>
 									<LyricsColorSlotControls
 										label={t.label_glow_color}
+										role="glow"
+										palettes={lyricsPalettes}
 										source={
 											store.audioLyricsGlowColorSource
 										}
@@ -1125,6 +1146,8 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 									<>
 										<LyricsColorSlotControls
 											label={t.label_backdrop_color}
+											role="backdrop"
+											palettes={lyricsPalettes}
 											source={
 												store.audioLyricsBackdropColorSource
 											}
@@ -1223,6 +1246,7 @@ export default function LyricsTabBody(_props: { onReset?: () => void }) {
 							bundle={selectedLyrixaBundle}
 							overrides={selectedLayerOverrides}
 							onOverridesChange={handleLayerOverridesChange}
+							palettes={lyricsPalettes}
 						/>
 					</FeatureGate>
 				</LabeledSection>

@@ -15,7 +15,7 @@ import {
 import {
 	createLyricsHorizontalPaint,
 	lyricsColorSlotCacheKey,
-	resolveLyricsColorSlot,
+	resolveLyricStyleSlots,
 	resolveLyricsRotationStep,
 	rotationStepToPhase
 } from '@/features/lyrics/domain/lyricsColorModes';
@@ -25,6 +25,7 @@ import type {
 } from '@/features/lyrics/domain/lyricsColorModes';
 import type {
 	LyrixaClipPositionPreset,
+	LyrixaLyricCoordinates,
 	LyrixaLyricLayer,
 	LyrixaLyricsBundleEnvelope
 } from '@/features/lyrics/domain/lyrixaBundleTypes';
@@ -842,6 +843,10 @@ export function drawLyricsOverlay(
 		endTime: number;
 		layerId?: string;
 		layer?: LyrixaLyricLayer;
+		/** Per-clip free position from the bundle, normalised 0..1. */
+		coords?: LyrixaLyricCoordinates;
+		/** Per-clip preset; overrides the layer's own preset. */
+		clipPosition?: LyrixaClipPositionPreset;
 	};
 	const sourceLines: SourceLine[] = [];
 	const visibleLyricLines = Math.max(
@@ -889,7 +894,9 @@ export function drawLyricsOverlay(
 				startTime: clip.startTime,
 				endTime: clip.endTime,
 				layerId: clip.layerId,
-				layer
+				layer,
+				coords: clip.coords,
+				clipPosition: clip.position
 			});
 		}
 		// "Visible lines" also applies to bundles: when a layer has several
@@ -969,6 +976,8 @@ export function drawLyricsOverlay(
 		endTime: number;
 		layerId: string;
 		layer?: LyrixaLyricLayer;
+		coords?: LyrixaLyricCoordinates;
+		clipPosition?: LyrixaClipPositionPreset;
 	}> = [];
 
 	const layerOverridesForWrap = entry?.lyrixaLayerOverrides ?? {};
@@ -1008,7 +1017,9 @@ export function drawLyricsOverlay(
 				startTime: source.startTime,
 				endTime: source.endTime,
 				layerId: source.layerId ?? '__default__',
-				layer: source.layer
+				layer: source.layer,
+				coords: source.coords,
+				clipPosition: source.clipPosition
 			});
 		}
 	}
@@ -1018,14 +1029,32 @@ export function drawLyricsOverlay(
 		return;
 	}
 
-	const groupedLines = new Map<string, typeof physicalLines>();
+	// Split each layer's lines by anchor: a clip carrying its own coords or
+	// position preset renders at ITS anchor (mirroring the bundle
+	// renderer's resolveLineAnchor), not the layer's shared one. Lines that
+	// resolve to the same anchor keep stacking against it.
+	const groupedLines = new Map<
+		string,
+		{ layerId: string; lines: typeof physicalLines }
+	>();
 	for (const line of physicalLines) {
-		const group = groupedLines.get(line.layerId) ?? [];
-		group.push(line);
-		groupedLines.set(line.layerId, group);
+		const anchorKey = line.coords
+			? `@${line.coords.x.toFixed(4)},${line.coords.y.toFixed(4)}`
+			: line.clipPosition && line.clipPosition !== 'center'
+				? `#${line.clipPosition}`
+				: '';
+		const groupKey = `${line.layerId}|${anchorKey}`;
+		const group = groupedLines.get(groupKey) ?? {
+			layerId: line.layerId,
+			lines: []
+		};
+		group.lines.push(line);
+		groupedLines.set(groupKey, group);
 	}
 
-	groupedLines.forEach((lines, layerId) => {
+	groupedLines.forEach(group => {
+		const lines = group.lines;
+		const layerId = group.layerId;
 		const layer = lines[0]?.layer;
 		const layerOverride =
 			layerId !== '__default__'
@@ -1033,14 +1062,22 @@ export function drawLyricsOverlay(
 				: undefined;
 		const layerScale = clamp(layerOverride?.scale ?? 1, 0.2, 4);
 		const groupLineHeightPx = lineHeightPx * layerScale;
-		const presetAnchor = resolveAnchorFromLyrixaPreset(
-			layer?.renderSettings?.positionPreset,
-			canvas
-		);
-		const layerAnchor = presetAnchor
+		const first = lines[0];
+		const baseAnchor = first?.coords
 			? {
-					x: presetAnchor.x + globalOffsetX,
-					y: presetAnchor.y + globalOffsetY
+					x: first.coords.x * canvas.width,
+					y: first.coords.y * canvas.height
+				}
+			: (resolveAnchorFromLyrixaPreset(
+					first?.clipPosition && first.clipPosition !== 'center'
+						? first.clipPosition
+						: layer?.renderSettings?.positionPreset,
+					canvas
+				) ?? null);
+		const layerAnchor = baseAnchor
+			? {
+					x: baseAnchor.x + globalOffsetX,
+					y: baseAnchor.y + globalOffsetY
 				}
 			: { x: centerX, y: anchorY };
 		// positionOffset maps to a full screen dimension so any layer can be
@@ -1086,59 +1123,13 @@ export function drawLyricsOverlay(
 				: layerConfiguresGlow
 					? LAYER_GLOW_FALLBACK_BLUR
 					: 0;
-		// Each slot falls back to the global Lyrics Style setting, so the two
-		// panels now offer — and honour — exactly the same modes. The colors
-		// themselves arrive already source-resolved from the layer registry.
-		const fillSlot = resolveLyricsColorSlot(
-			{
-				source: layerOverride?.textColorSource,
-				mode:
-					layerOverride?.textColorMode ??
-					state.audioLyricsActiveColorMode,
-				primary:
-					layerOverride?.textColor ?? lines[0]?.color ?? '#ffffff',
-				secondary:
-					layerOverride?.textColorSecondary ??
-					state.audioLyricsActiveColorSecondary
-			},
-			palettes
-		);
-		const strokeSlot = resolveLyricsColorSlot(
-			{
-				source: layerOverride?.strokeColorSource,
-				mode:
-					layerOverride?.strokeColorMode ??
-					state.audioLyricsStrokeColorMode,
-				primary:
-					layerOverride?.strokeColor ?? state.audioLyricsStrokeColor,
-				secondary:
-					layerOverride?.strokeColorSecondary ??
-					state.audioLyricsStrokeColorSecondary
-			},
-			palettes
-		);
-		const glowSlot = resolveLyricsColorSlot(
-			{
-				source: layerOverride?.glowColorSource,
-				mode:
-					layerOverride?.glowColorMode ??
-					state.audioLyricsGlowColorMode,
-				primary: layerOverride?.glowColor ?? state.audioLyricsGlowColor,
-				secondary:
-					layerOverride?.glowColorSecondary ??
-					state.audioLyricsGlowColorSecondary
-			},
-			palettes
-		);
-		const backdropSlot = resolveLyricsColorSlot(
-			{
-				source: state.audioLyricsBackdropColorSource,
-				mode: state.audioLyricsBackdropColorMode,
-				primary: state.audioLyricsBackdropColor,
-				secondary: state.audioLyricsBackdropColorSecondary
-			},
-			palettes
-		);
+		const { fillSlot, strokeSlot, glowSlot, backdropSlot } =
+			resolveLyricStyleSlots(
+				state,
+				layerOverride,
+				lines[0]?.color,
+				palettes
+			);
 		const strokeWidth = Math.max(
 			0,
 			layerOverride?.strokeWidth ?? state.audioLyricsStrokeWidth
