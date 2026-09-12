@@ -63,18 +63,34 @@ function clampSpectrumScale(value: number | undefined): number {
 	return Math.min(3, Math.max(0.2, value ?? 1));
 }
 
-function resolveScaledSpectrumSettings(
+export function resolveScaledSpectrumSettings(
 	settings: SpectrumSettings
 ): SpectrumSettings {
 	const scale = clampSpectrumScale(settings.spectrumScale);
 	if (Math.abs(scale - 1) < 0.0001) return settings;
+	// Scope: the radial figure is a contour wrapped around `innerRadius`, so
+	// Scale has to grow it — without this, Scale fattens the wave (amplitude)
+	// while the ring stays put and the figure looks unchanged. Skip when
+	// Follow Logo is effective: innerRadius then comes from the logo (which
+	// carries its own scale), and multiplying it would drift the ring off.
+	const followLogoEffective =
+		settings.spectrumMode === 'radial' &&
+		settings.spectrumFollowLogo &&
+		settings.logoEnabled;
+	const scaleInnerRadius =
+		settings.spectrumFamily === 'oscilloscope' && !followLogoEffective;
 	return {
 		...settings,
 		spectrumMinHeight: settings.spectrumMinHeight * scale,
 		spectrumMaxHeight: settings.spectrumMaxHeight * scale,
 		spectrumBarWidth: Math.max(0.5, settings.spectrumBarWidth * scale),
 		spectrumShadowBlur: settings.spectrumShadowBlur * scale,
-		spectrumSpiralOuterRadius: settings.spectrumSpiralOuterRadius * scale
+		spectrumSpiralOuterRadius: settings.spectrumSpiralOuterRadius * scale,
+		...(scaleInnerRadius
+			? {
+					spectrumInnerRadius: settings.spectrumInnerRadius * scale
+				}
+			: {})
 	};
 }
 

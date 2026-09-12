@@ -75,6 +75,28 @@ snapshot — a separate concept from single-target profiles.)
 
 Capabilities per family: `spectrumFamilyCapabilities.ts`
 
+### Scale semantics (`spectrumScale`)
+
+`resolveScaledSpectrumSettings` (in `CircularSpectrum.ts`) multiplies the
+geometry before any renderer sees it, so every downstream consumer (trace,
+grid, glow, clip) stays consistent.
+
+- **Classic / tunnel / liquid / orbital / spiral:** Scale grows bar length,
+  width, blur — the radial hole (`spectrumInnerRadius`) is untouched, matching
+  every factory preset ever tuned.
+- **Scope (`oscilloscope`):** the radial figure _is_ a contour around
+  `spectrumInnerRadius`, so Scale also grows that radius — otherwise Scale
+  only fattens the wave and the ring never moves. Skipped when Follow Logo is
+  effective (`radial + spectrumFollowLogo + logoEnabled`): the ring then
+  belongs to the logo, which carries its own scale.
+
+Rotation (drive / direction / invert) is gated by `supportsRotation && isRadial`
+in the FX panel. Scope radial consumes `runtime.rotation` in
+`drawRadialTrace`, so `oscilloscope.supportsRotation` is `true`; scope linear
+never spins, and the panel's radial gate keeps the section hidden there.
+
+Guards: `runtime/CircularSpectrum.test.ts`.
+
 ## Instance model
 
 - Settings keys partitioned in `spectrumInstanceModel.ts`

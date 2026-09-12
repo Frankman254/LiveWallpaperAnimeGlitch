@@ -1,6 +1,6 @@
 # Current System Status
 
-**As of:** `b54c51bb` (`main`) · App `0.3.0-alpha.1` · Store persist **v113**
+**As of:** `3f878231` (`main`) · App `0.3.0-alpha.1` · Store persist **v113**
 
 This document describes the product **as implemented in code**, not aspirational roadmaps.
 
@@ -135,6 +135,9 @@ Does **not** include an internal video encoder — see Recording subsystem.
 - Manual glow, RGB split (classic wave)
 - **Pixel shape** (classic linear LED cells) — store v96
 - **Pixelate post-process** (full-spectrum grid, **per-target**) — store v96
+- **Scope radial Scale + rotation**: `spectrumScale` grows the scope's
+  `spectrumInnerRadius` (the figure IS the ring; skipped while Follow Logo
+  drives it); rotation controls available for scope radial. No new store keys
 
 See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
 `docs/features/SPECTRUM_PIXEL_ART.md`.

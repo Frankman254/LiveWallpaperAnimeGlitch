@@ -11,7 +11,8 @@ export type SpectrumFamilyCapabilities = {
 	supportsBarWidth: boolean;
 	/** Wave fill opacity control */
 	supportsWaveFill: boolean;
-	/** Rotation speed + direction (hidden for scope linear — no visible spin) */
+	/** Rotation speed + direction (panel also gates on radial mode; scope
+	 *  linear consumes `runtime.rotation` but draws no visible spin) */
 	supportsRotation: boolean;
 	/** Tunnel-only depth / wall controls */
 	supportsTunnelFx: boolean;
@@ -51,7 +52,7 @@ const CAPABILITIES: Record<SpectrumFamily, SpectrumFamilyCapabilities> = {
 		supportsMirror: true,
 		supportsBarWidth: false,
 		supportsWaveFill: true,
-		supportsRotation: false,
+		supportsRotation: true,
 		supportsTunnelFx: false,
 		supportsLiquidLayers: false,
 		supportsOscilloscopeLineWidth: true,

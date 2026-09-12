@@ -15,6 +15,19 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+### Spectrum (scope): Scale agranda la figura y la rotación vuelve al radial
+
+- En la familia scope, `Scale` solo engordaba la onda (amplitud) y el anillo
+  quedaba fijo: la figura radial del osciloscopio _es_ el contorno alrededor
+  de `Inner Radius`, así que ahora `Scale` también escala ese radio. Con
+  Follow Logo activo se mantiene el comportamiento viejo — el anillo pertenece
+  al logo, que ya tiene su propio scale.
+- La sección de rotación (drive / dirección / invert) vuelve a estar
+  disponible en scope radial: el renderer ya consumía `runtime.rotation`; la
+  capacidad estaba mal apagada. En scope lineal sigue oculta (no hay giro
+  visible). Classic y las demás familias no cambian.
+- Sin claves nuevas de store: no hace falta bump de `STORE_PERSIST_VERSION`.
+
 ### Fondo: Keep Covered respeta el encuadre manual (store v113)
 
 - Cada imagen guarda ahora la procedencia de su encuadre
