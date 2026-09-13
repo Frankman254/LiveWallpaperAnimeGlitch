@@ -174,6 +174,26 @@ karaoke, glow progresivo, glitch por palabra, animación atada a la pronunciaci�
 
 ---
 
+## 5b · Posición de un clip: preset gana a `coords`
+
+Lyrixa lo declara en `core/types/clip.ts`: _"Named position preset; wins over
+`coords` when both are present"_. `'center'` es el valor con el que nace todo
+clip, así que cuenta como "sin preset".
+
+| `position`            | `coords` | Dónde se dibuja                            |
+| --------------------- | -------- | ------------------------------------------ |
+| ausente o `'center'`  | sí       | En `coords` (fracción 0–1 del canvas)      |
+| ausente o `'center'`  | no       | `renderSettings.positionPreset` de la capa |
+| cualquier otro preset | sí / no  | El preset del clip; `coords` se ignora     |
+
+Hasta 2026-09-13 los dos renderers de Vibrix hacían lo contrario (`coords`
+ganaba). Ahora ambos pasan por `resolveClipCoords(clip)`
+(`src/features/lyrics/domain/lyrixaBundle.ts`). Hoy ni Lyrixa ni el
+Transcriptor emiten `coords`; la regla existe para que no diverjan cuando
+alguien lo haga.
+
+---
+
 ## 6 · Lo que queda para una fase siguiente
 
 1. **UI de selección primaria/secundaria.** El motor está; falta la key

@@ -15,6 +15,7 @@
 import { useEffect, useRef } from 'react';
 import { useAudioContext } from '@/context/useAudioContext';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { useT } from '@/lib/i18n';
 import { createAudioEnvelope } from '@/utils/audioEnvelope';
 import { syntheticKickValue } from '@/features/calibration/syntheticDrive';
 import { Button, SegmentedControl, UI_COLORS, FONT } from '@/ui';
@@ -67,6 +68,7 @@ export function EnvelopeWaveformPreview({
 	params,
 	envelopeColor = '#7dd3fc'
 }: Props) {
+	const t = useT();
 	const { getAudioSnapshot } = useAudioContext();
 	const audioPaused = useWallpaperStore(s => s.audioPaused);
 	const mode: PreviewMode = useWallpaperStore(s =>
@@ -184,9 +186,12 @@ export function EnvelopeWaveformPreview({
 					>
 						{mode === 'live'
 							? liveAvailable
-								? `canal: ${channel}`
-								: 'audio pausado'
-							: 'kick sintético @ 120 BPM'}
+								? t.calibration_preview_channel_template.replace(
+										'{channel}',
+										channel
+									)
+								: t.calibration_preview_audio_paused
+							: t.calibration_preview_synthetic_status}
 					</span>
 				</div>
 				<div className="flex items-center gap-1">
@@ -194,8 +199,14 @@ export function EnvelopeWaveformPreview({
 						value={mode}
 						onChange={setMode}
 						options={[
-							{ value: 'live', label: 'Real' },
-							{ value: 'synthetic', label: 'Sintético' }
+							{
+								value: 'live',
+								label: t.calibration_preview_mode_live
+							},
+							{
+								value: 'synthetic',
+								label: t.calibration_preview_mode_synthetic
+							}
 						]}
 						size="sm"
 					/>
@@ -205,7 +216,7 @@ export function EnvelopeWaveformPreview({
 						variant="ghost"
 						onClick={reset}
 					>
-						Reset
+						{t.label_reset}
 					</Button>
 				</div>
 			</div>
@@ -229,14 +240,14 @@ export function EnvelopeWaveformPreview({
 						className="inline-block h-0.5 w-3"
 						style={{ background: UI_COLORS.fgMute }}
 					/>
-					señal raw
+					{t.calibration_preview_legend_raw}
 				</span>
 				<span className="inline-flex items-center gap-1">
 					<span
 						className="inline-block h-0.5 w-3"
 						style={{ background: envelopeColor }}
 					/>
-					envelope
+					{t.calibration_preview_legend_envelope}
 				</span>
 			</div>
 		</div>

@@ -5,7 +5,7 @@
  *   1. A slider in the Calibration tab (under its group).
  *   2. A per-parameter editable min/max/step override (persisted in store).
  *   3. Inclusion in the calibration profile slots (save/load named bundles).
- *   4. A "suggested" value applied by the "Aplicar calibración sugerida" button.
+ *   4. A "suggested" value applied by the "Apply suggested calibration" button.
  *
  * The `key` MUST match a numeric field on WallpaperState and a setter on
  * WallpaperStore named `set<PascalCase(key)>`. The CalibrationTab uses that
@@ -13,6 +13,7 @@
  */
 
 import type { WallpaperState } from '@/types/wallpaper';
+import type { TranslationKey } from '@/lib/i18n/en';
 import type { SliderRange } from '@/config/ranges';
 import {
 	AUDIO_ROUTING_RANGES,
@@ -44,9 +45,10 @@ export type CalibrationSyntheticGroups = Partial<
 export interface CalibrationParam {
 	/** Field name on WallpaperState (used to derive setter as `set${Pascal(key)}`). */
 	key: keyof WallpaperState & string;
-	label: string;
+	/** i18n key — resolve with `useT()` at render time. */
+	labelKey: TranslationKey;
 	group: CalibrationGroupId;
-	hint?: string;
+	hintKey?: TranslationKey;
 	defaultRange: SliderRange;
 	/** Decimal places for slider value display (default 2). */
 	precision?: number;
@@ -54,46 +56,40 @@ export interface CalibrationParam {
 
 export interface CalibrationGroupMeta {
 	id: CalibrationGroupId;
-	label: string;
-	description: string;
+	labelKey: TranslationKey;
+	descriptionKey: TranslationKey;
 }
 
 export const CALIBRATION_GROUPS: ReadonlyArray<CalibrationGroupMeta> = [
 	{
 		id: 'logo',
-		label: 'Logo',
-		description:
-			'Controla cuánto crece el logo con la música y qué tan rápido vuelve a su tamaño.'
+		labelKey: 'calibration_group_logo',
+		descriptionKey: 'calibration_group_logo_description'
 	},
 	{
 		id: 'bgZoom',
-		label: 'BG Zoom',
-		description:
-			'Controla el zoom musical del fondo. Smoothing reduce jitter; attack/release definen rapidez.'
+		labelKey: 'calibration_group_bgZoom',
+		descriptionKey: 'calibration_group_bgZoom_description'
 	},
 	{
 		id: 'bgReactive',
-		label: 'BG Opacity / Blur',
-		description:
-			'Controla blur y opacidad por audio. Blur alto suaviza la imagen, pero cuesta GPU.'
+		labelKey: 'calibration_group_bgReactive',
+		descriptionKey: 'calibration_group_bgReactive_description'
 	},
 	{
 		id: 'glitch',
-		label: 'Glitch / RGB',
-		description:
-			'Controla el desplazamiento RGB. Mucha sensibilidad puede generar temblor visual.'
+		labelKey: 'calibration_group_glitch',
+		descriptionKey: 'calibration_group_glitch_description'
 	},
 	{
 		id: 'audio',
-		label: 'Audio global',
-		description:
-			'Parámetros que aplican al analizador FFT y al routing automático de canales. El suavizado lo maneja cada subsistema (logo, BG, spectrum, partículas).'
+		labelKey: 'calibration_group_audio',
+		descriptionKey: 'calibration_group_audio_description'
 	},
 	{
 		id: 'particles',
-		label: 'Partículas',
-		description:
-			'Controla cuánto crecen o brillan las partículas con la música. Valores altos cuestan FPS.'
+		labelKey: 'calibration_group_particles',
+		descriptionKey: 'calibration_group_particles_description'
 	}
 ];
 
@@ -101,262 +97,262 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 	// ─── Logo ──────────────────────────────────────────────────────────────────
 	{
 		key: 'logoAudioSmoothing',
-		label: 'Smoothing pre-envelope',
+		labelKey: 'calibration_param_logoAudioSmoothing',
 		group: 'logo',
-		hint: 'Suaviza la señal del canal antes del envelope. 0 = sin filtro, 0.9 = mucho.',
+		hintKey: 'calibration_param_logoAudioSmoothing_hint',
 		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
 	},
 	{
 		key: 'logoAudioSensitivity',
-		label: 'Sensibilidad',
+		labelKey: 'calibration_param_logoAudioSensitivity',
 		group: 'logo',
-		hint: 'Ganancia bruta antes del envelope. Si lo subes mucho satura.',
+		hintKey: 'calibration_param_logoAudioSensitivity_hint',
 		defaultRange: LOGO_RANGES.audioSensitivity
 	},
 	{
 		key: 'logoMinScale',
-		label: 'Min scale',
+		labelKey: 'calibration_param_logoMinScale',
 		group: 'logo',
-		hint: 'Tamaño mínimo del logo en silencio.',
+		hintKey: 'calibration_param_logoMinScale_hint',
 		defaultRange: LOGO_RANGES.minScale
 	},
 	{
 		key: 'logoMaxScale',
-		label: 'Max scale',
+		labelKey: 'calibration_param_logoMaxScale',
 		group: 'logo',
-		hint: 'Tamaño máximo en pico de audio.',
+		hintKey: 'calibration_param_logoMaxScale_hint',
 		defaultRange: LOGO_RANGES.maxScale
 	},
 	{
 		key: 'logoReactiveScaleIntensity',
-		label: 'Intensidad de escala',
+		labelKey: 'calibration_param_logoReactiveScaleIntensity',
 		group: 'logo',
-		hint: 'Cuánto del envelope se aplica al tamaño final.',
+		hintKey: 'calibration_param_logoReactiveScaleIntensity_hint',
 		defaultRange: LOGO_RANGES.reactiveScaleIntensity
 	},
 	{
 		key: 'logoReactivitySpeed',
-		label: 'Velocidad de respuesta',
+		labelKey: 'calibration_param_logoReactivitySpeed',
 		group: 'logo',
-		hint: 'Multiplica el ritmo global de attack/release.',
+		hintKey: 'calibration_param_logoReactivitySpeed_hint',
 		defaultRange: LOGO_RANGES.reactivitySpeed
 	},
 	{
 		key: 'logoAttack',
-		label: 'Attack',
+		labelKey: 'calibration_param_logoAttack',
 		group: 'logo',
-		hint: 'Velocidad de subida ante un golpe.',
+		hintKey: 'calibration_param_logoAttack_hint',
 		defaultRange: LOGO_RANGES.attack
 	},
 	{
 		key: 'logoRelease',
-		label: 'Release',
+		labelKey: 'calibration_param_logoRelease',
 		group: 'logo',
-		hint: 'Velocidad de caída tras un golpe.',
+		hintKey: 'calibration_param_logoRelease_hint',
 		defaultRange: LOGO_RANGES.release
 	},
 	{
 		key: 'logoPunch',
-		label: 'Punch',
+		labelKey: 'calibration_param_logoPunch',
 		group: 'logo',
-		hint: 'Boost extra sobre transientes (saltos bruscos de volumen).',
+		hintKey: 'calibration_param_logoPunch_hint',
 		defaultRange: LOGO_RANGES.punch
 	},
 	{
 		key: 'logoPeakWindow',
-		label: 'Peak Window',
+		labelKey: 'calibration_param_logoPeakWindow',
 		group: 'logo',
-		hint: 'Segundos que el pico se "recuerda" antes de adaptarse.',
+		hintKey: 'calibration_param_logoPeakWindow_hint',
 		defaultRange: LOGO_RANGES.peakWindow
 	},
 	{
 		key: 'logoPeakFloor',
-		label: 'Peak Floor',
+		labelKey: 'calibration_param_logoPeakFloor',
 		group: 'logo',
-		hint: 'Fracción del pico que se trata como silencio.',
+		hintKey: 'calibration_param_logoPeakFloor_hint',
 		defaultRange: LOGO_RANGES.peakFloor
 	},
 
 	// ─── BG Zoom (envelope) ────────────────────────────────────────────────────
 	{
 		key: 'imageAudioSmoothing',
-		label: 'Smoothing pre-envelope',
+		labelKey: 'calibration_param_imageAudioSmoothing',
 		group: 'bgZoom',
-		hint: 'Suaviza la señal del canal de fondo antes del envelope.',
+		hintKey: 'calibration_param_imageAudioSmoothing_hint',
 		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
 	},
 	{
 		key: 'imageAudioReactiveDecay',
-		label: 'Decay (legacy)',
+		labelKey: 'calibration_param_imageAudioReactiveDecay',
 		group: 'bgZoom',
-		hint: 'Path antiguo de smoothing. 0.62 ≈ release 0.096 del envelope nuevo.',
+		hintKey: 'calibration_param_imageAudioReactiveDecay_hint',
 		defaultRange: { min: 0, max: 1, step: 0.01 }
 	},
 	{
 		key: 'imageBassScaleIntensity',
-		label: 'Zoom intensity',
+		labelKey: 'calibration_param_imageBassScaleIntensity',
 		group: 'bgZoom',
-		hint: 'Multiplicador del zoom final aplicado al fondo.',
+		hintKey: 'calibration_param_imageBassScaleIntensity_hint',
 		defaultRange: IMAGE_RANGES.bassIntensity
 	},
 	{
 		key: 'imageBassAttack',
-		label: 'Attack',
+		labelKey: 'calibration_param_imageBassAttack',
 		group: 'bgZoom',
-		hint: 'Qué tan rápido crece el zoom cuando entra un golpe.',
+		hintKey: 'calibration_param_imageBassAttack_hint',
 		defaultRange: LOGO_RANGES.attack
 	},
 	{
 		key: 'imageBassRelease',
-		label: 'Release',
+		labelKey: 'calibration_param_imageBassRelease',
 		group: 'bgZoom',
-		hint: 'Qué tan rápido vuelve el zoom después del golpe.',
+		hintKey: 'calibration_param_imageBassRelease_hint',
 		defaultRange: LOGO_RANGES.release
 	},
 	{
 		key: 'imageBassReactivitySpeed',
-		label: 'Velocidad de respuesta',
+		labelKey: 'calibration_param_imageBassReactivitySpeed',
 		group: 'bgZoom',
-		hint: 'Multiplica attack/release: alto = más nervioso, bajo = más suave.',
+		hintKey: 'calibration_param_imageBassReactivitySpeed_hint',
 		defaultRange: LOGO_RANGES.reactivitySpeed
 	},
 	{
 		key: 'imageBassPeakWindow',
-		label: 'Peak Window',
+		labelKey: 'calibration_param_imageBassPeakWindow',
 		group: 'bgZoom',
-		hint: 'Cuánto tiempo recuerda el pico reciente para estabilizar la reacción.',
+		hintKey: 'calibration_param_imageBassPeakWindow_hint',
 		defaultRange: LOGO_RANGES.peakWindow
 	},
 	{
 		key: 'imageBassPeakFloor',
-		label: 'Peak Floor',
+		labelKey: 'calibration_param_imageBassPeakFloor',
 		group: 'bgZoom',
-		hint: 'Piso de energía: sube esto si el fondo se mueve aun en partes suaves.',
+		hintKey: 'calibration_param_imageBassPeakFloor_hint',
 		defaultRange: LOGO_RANGES.peakFloor
 	},
 	{
 		key: 'imageBassPunch',
-		label: 'Punch',
+		labelKey: 'calibration_param_imageBassPunch',
 		group: 'bgZoom',
-		hint: 'Empuje extra en golpes cortos. Alto puede verse brusco.',
+		hintKey: 'calibration_param_imageBassPunch_hint',
 		defaultRange: LOGO_RANGES.punch
 	},
 	{
 		key: 'imageBassReactiveScaleIntensity',
-		label: 'Reactive scale',
+		labelKey: 'calibration_param_imageBassReactiveScaleIntensity',
 		group: 'bgZoom',
-		hint: 'Intensidad post-normalize (0.01–2.5).',
+		hintKey: 'calibration_param_imageBassReactiveScaleIntensity_hint',
 		defaultRange: { min: 0.01, max: 2.5, step: 0.01 }
 	},
 
 	// ─── BG Opacity / Blur reactive ────────────────────────────────────────────
 	{
 		key: 'imageOpacityReactiveAmount',
-		label: 'Opacity amount',
+		labelKey: 'calibration_param_imageOpacityReactiveAmount',
 		group: 'bgReactive',
-		hint: 'Cuánto cambia la opacidad del fondo con el audio.',
+		hintKey: 'calibration_param_imageOpacityReactiveAmount_hint',
 		defaultRange: IMAGE_RANGES.audioOpacityAmount
 	},
 	{
 		key: 'imageOpacityReactiveThreshold',
-		label: 'Opacity threshold',
+		labelKey: 'calibration_param_imageOpacityReactiveThreshold',
 		group: 'bgReactive',
-		hint: 'Umbral mínimo de audio para activar el cambio de opacidad.',
+		hintKey: 'calibration_param_imageOpacityReactiveThreshold_hint',
 		defaultRange: IMAGE_RANGES.audioReactiveThreshold
 	},
 	{
 		key: 'imageOpacityReactiveSoftness',
-		label: 'Opacity softness',
+		labelKey: 'calibration_param_imageOpacityReactiveSoftness',
 		group: 'bgReactive',
-		hint: 'Suavidad de la transición alrededor del umbral.',
+		hintKey: 'calibration_param_imageOpacityReactiveSoftness_hint',
 		defaultRange: IMAGE_RANGES.audioReactiveSoftness
 	},
 	{
 		key: 'imageBlurReactiveAmount',
-		label: 'Blur amount',
+		labelKey: 'calibration_param_imageBlurReactiveAmount',
 		group: 'bgReactive',
-		hint: 'Cuántos px de blur añadir en el pico.',
+		hintKey: 'calibration_param_imageBlurReactiveAmount_hint',
 		defaultRange: IMAGE_RANGES.audioBlurAmount
 	},
 	{
 		key: 'imageBlurReactiveThreshold',
-		label: 'Blur threshold',
+		labelKey: 'calibration_param_imageBlurReactiveThreshold',
 		group: 'bgReactive',
-		hint: 'Umbral mínimo de audio para activar el blur.',
+		hintKey: 'calibration_param_imageBlurReactiveThreshold_hint',
 		defaultRange: IMAGE_RANGES.audioReactiveThreshold
 	},
 	{
 		key: 'imageBlurReactiveSoftness',
-		label: 'Blur softness',
+		labelKey: 'calibration_param_imageBlurReactiveSoftness',
 		group: 'bgReactive',
-		hint: 'Suavidad de la transición de blur.',
+		hintKey: 'calibration_param_imageBlurReactiveSoftness_hint',
 		defaultRange: IMAGE_RANGES.audioReactiveSoftness
 	},
 
 	// ─── Glitch / RGB shift ────────────────────────────────────────────────────
 	{
 		key: 'rgbShift',
-		label: 'RGB shift base',
+		labelKey: 'calibration_param_rgbShift',
 		group: 'glitch',
-		hint: 'Magnitud base del chromatic shift (siempre presente).',
+		hintKey: 'calibration_param_rgbShift_hint',
 		defaultRange: IMAGE_EFFECT_RANGES.rgbShift,
 		precision: 3
 	},
 	{
 		key: 'rgbShiftAudioSensitivity',
-		label: 'RGB shift sensibilidad',
+		labelKey: 'calibration_param_rgbShiftAudioSensitivity',
 		group: 'glitch',
-		hint: 'Magnitud del chromatic shift por unidad de canal.',
+		hintKey: 'calibration_param_rgbShiftAudioSensitivity_hint',
 		defaultRange: IMAGE_EFFECT_RANGES.rgbAudioSensitivity,
 		precision: 3
 	},
 	{
 		key: 'rgbShiftAudioSmoothing',
-		label: 'RGB shift smoothing',
+		labelKey: 'calibration_param_rgbShiftAudioSmoothing',
 		group: 'glitch',
-		hint: 'Suaviza los picos del canal antes del envelope.',
+		hintKey: 'calibration_param_rgbShiftAudioSmoothing_hint',
 		defaultRange: SPECTRUM_RANGES.smoothing
 	},
 	{
 		key: 'rgbShiftAudioAttack',
-		label: 'RGB attack',
+		labelKey: 'calibration_param_rgbShiftAudioAttack',
 		group: 'glitch',
-		hint: 'Velocidad de subida del envelope.',
+		hintKey: 'calibration_param_rgbShiftAudioAttack_hint',
 		defaultRange: LOGO_RANGES.attack
 	},
 	{
 		key: 'rgbShiftAudioRelease',
-		label: 'RGB release',
+		labelKey: 'calibration_param_rgbShiftAudioRelease',
 		group: 'glitch',
-		hint: 'Velocidad de caída del envelope.',
+		hintKey: 'calibration_param_rgbShiftAudioRelease_hint',
 		defaultRange: LOGO_RANGES.release
 	},
 	{
 		key: 'rgbShiftAudioReactivitySpeed',
-		label: 'RGB response speed',
+		labelKey: 'calibration_param_rgbShiftAudioReactivitySpeed',
 		group: 'glitch',
-		hint: 'Multiplica attack/release.',
+		hintKey: 'calibration_param_rgbShiftAudioReactivitySpeed_hint',
 		defaultRange: LOGO_RANGES.reactivitySpeed
 	},
 	{
 		key: 'rgbShiftAudioPeakWindow',
-		label: 'RGB peak window',
+		labelKey: 'calibration_param_rgbShiftAudioPeakWindow',
 		group: 'glitch',
-		hint: 'Segundos que el pico se recuerda.',
+		hintKey: 'calibration_param_rgbShiftAudioPeakWindow_hint',
 		defaultRange: LOGO_RANGES.peakWindow
 	},
 	{
 		key: 'rgbShiftAudioPeakFloor',
-		label: 'RGB peak floor',
+		labelKey: 'calibration_param_rgbShiftAudioPeakFloor',
 		group: 'glitch',
-		hint: 'Fracción del pico tratada como silencio.',
+		hintKey: 'calibration_param_rgbShiftAudioPeakFloor_hint',
 		defaultRange: LOGO_RANGES.peakFloor
 	},
 	{
 		key: 'rgbShiftAudioPunch',
-		label: 'RGB punch',
+		labelKey: 'calibration_param_rgbShiftAudioPunch',
 		group: 'glitch',
-		hint: 'Boost extra en transientes.',
+		hintKey: 'calibration_param_rgbShiftAudioPunch_hint',
 		defaultRange: LOGO_RANGES.punch
 	},
 
@@ -366,23 +362,23 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 	// responsabilidad de cada subsistema (no hay una sola "física" universal).
 	{
 		key: 'audioSmoothing',
-		label: 'FFT smoothing',
+		labelKey: 'calibration_param_audioSmoothing',
 		group: 'audio',
-		hint: 'Smoothing del AnalyserNode (afecta los bins crudos antes de cualquier subsistema). No es channel smoothing.',
+		hintKey: 'calibration_param_audioSmoothing_hint',
 		defaultRange: { min: 0, max: 0.99, step: 0.01 }
 	},
 	{
 		key: 'audioAutoKickThreshold',
-		label: 'Auto-kick threshold',
+		labelKey: 'calibration_param_audioAutoKickThreshold',
 		group: 'audio',
-		hint: 'Umbral para detectar kicks en routing automático.',
+		hintKey: 'calibration_param_audioAutoKickThreshold_hint',
 		defaultRange: AUDIO_ROUTING_RANGES.autoKickThreshold
 	},
 	{
 		key: 'audioAutoSwitchHoldMs',
-		label: 'Auto-switch hold (ms)',
+		labelKey: 'calibration_param_audioAutoSwitchHoldMs',
 		group: 'audio',
-		hint: 'Ventana mínima en ms para mantener un canal antes de cambiar.',
+		hintKey: 'calibration_param_audioAutoSwitchHoldMs_hint',
 		defaultRange: AUDIO_ROUTING_RANGES.autoSwitchHoldMs,
 		precision: 0
 	},
@@ -390,151 +386,151 @@ export const CALIBRATION_PARAMS: ReadonlyArray<CalibrationParam> = [
 	// ─── Partículas ────────────────────────────────────────────────────────────
 	{
 		key: 'particleAudioSmoothing',
-		label: 'Smoothing pre-envelope',
+		labelKey: 'calibration_param_particleAudioSmoothing',
 		group: 'particles',
-		hint: 'Suaviza el canal antes del envelope. 0 = raw, 0.9 = mucho.',
+		hintKey: 'calibration_param_particleAudioSmoothing_hint',
 		defaultRange: AUDIO_ROUTING_RANGES.selectedChannelSmoothing
 	},
 	{
 		key: 'particleAudioSizeBoost',
-		label: 'Particle size boost',
+		labelKey: 'calibration_param_particleAudioSizeBoost',
 		group: 'particles',
-		hint: 'Cuánto crecen las partículas por audio. Solo aplica si están audio-reactivas.',
+		hintKey: 'calibration_param_particleAudioSizeBoost_hint',
 		defaultRange: { min: 0, max: 30, step: 1 },
 		precision: 0
 	},
 	{
 		key: 'particleAudioOpacityBoost',
-		label: 'Particle opacity boost',
+		labelKey: 'calibration_param_particleAudioOpacityBoost',
 		group: 'particles',
-		hint: 'Cuánto aumenta la opacidad por audio. Solo si audio-reactivas.',
+		hintKey: 'calibration_param_particleAudioOpacityBoost_hint',
 		defaultRange: { min: 0, max: 1, step: 0.05 }
 	},
 	{
 		key: 'particleAudioAttack',
-		label: 'Attack',
+		labelKey: 'calibration_param_particleAudioAttack',
 		group: 'particles',
-		hint: 'Velocidad de subida del envelope.',
+		hintKey: 'calibration_param_particleAudioAttack_hint',
 		defaultRange: LOGO_RANGES.attack
 	},
 	{
 		key: 'particleAudioRelease',
-		label: 'Release',
+		labelKey: 'calibration_param_particleAudioRelease',
 		group: 'particles',
-		hint: 'Velocidad de caída del envelope.',
+		hintKey: 'calibration_param_particleAudioRelease_hint',
 		defaultRange: LOGO_RANGES.release
 	},
 	{
 		key: 'particleAudioReactivitySpeed',
-		label: 'Response speed',
+		labelKey: 'calibration_param_particleAudioReactivitySpeed',
 		group: 'particles',
-		hint: 'Multiplica attack/release.',
+		hintKey: 'calibration_param_particleAudioReactivitySpeed_hint',
 		defaultRange: LOGO_RANGES.reactivitySpeed
 	},
 	{
 		key: 'particleAudioPeakWindow',
-		label: 'Peak window',
+		labelKey: 'calibration_param_particleAudioPeakWindow',
 		group: 'particles',
-		hint: 'Segundos que el pico se recuerda.',
+		hintKey: 'calibration_param_particleAudioPeakWindow_hint',
 		defaultRange: LOGO_RANGES.peakWindow
 	},
 	{
 		key: 'particleAudioPeakFloor',
-		label: 'Peak floor',
+		labelKey: 'calibration_param_particleAudioPeakFloor',
 		group: 'particles',
-		hint: 'Fracción del pico tratada como silencio.',
+		hintKey: 'calibration_param_particleAudioPeakFloor_hint',
 		defaultRange: LOGO_RANGES.peakFloor
 	},
 	{
 		key: 'particleAudioPunch',
-		label: 'Punch',
+		labelKey: 'calibration_param_particleAudioPunch',
 		group: 'particles',
-		hint: 'Boost extra en transientes.',
+		hintKey: 'calibration_param_particleAudioPunch_hint',
 		defaultRange: LOGO_RANGES.punch
 	},
 	{
 		key: 'particleAudioDriftAngle',
-		label: 'Audio wind angle',
+		labelKey: 'calibration_param_particleAudioDriftAngle',
 		group: 'particles',
-		hint: 'Dirección del empuje por audio.',
+		hintKey: 'calibration_param_particleAudioDriftAngle_hint',
 		defaultRange: PARTICLE_RANGES.audioDriftAngle,
 		precision: 0
 	},
 	{
 		key: 'particleAudioDriftAmount',
-		label: 'Audio wind amount',
+		labelKey: 'calibration_param_particleAudioDriftAmount',
 		group: 'particles',
-		hint: 'Fuerza máxima del empuje por audio.',
+		hintKey: 'calibration_param_particleAudioDriftAmount_hint',
 		defaultRange: PARTICLE_RANGES.audioDriftAmount
 	},
 	{
 		key: 'particleAudioDriftBase',
-		label: 'Base wind',
+		labelKey: 'calibration_param_particleAudioDriftBase',
 		group: 'particles',
-		hint: 'Movimiento direccional constante aunque no haya pico.',
+		hintKey: 'calibration_param_particleAudioDriftBase_hint',
 		defaultRange: PARTICLE_RANGES.audioDriftBase
 	},
 	{
 		key: 'particleAudioDriftThreshold',
-		label: 'Wind threshold',
+		labelKey: 'calibration_param_particleAudioDriftThreshold',
 		group: 'particles',
-		hint: 'Nivel mínimo de la banda para activar el empuje.',
+		hintKey: 'calibration_param_particleAudioDriftThreshold_hint',
 		defaultRange: PARTICLE_RANGES.audioDriftThreshold
 	},
 	{
 		key: 'particleAudioDriftRelease',
-		label: 'Wind release',
+		labelKey: 'calibration_param_particleAudioDriftRelease',
 		group: 'particles',
-		hint: 'Qué tan rápido cae el empuje después del pico.',
+		hintKey: 'calibration_param_particleAudioDriftRelease_hint',
 		defaultRange: PARTICLE_RANGES.audioDriftRelease
 	},
 	{
 		key: 'particleDepthFlowAmount',
-		label: 'Depth amount',
+		labelKey: 'calibration_param_particleDepthFlowAmount',
 		group: 'particles',
-		hint: 'Fuerza macro del efecto Depth Flow.',
+		hintKey: 'calibration_param_particleDepthFlowAmount_hint',
 		defaultRange: PARTICLE_RANGES.depthFlowAmount
 	},
 	{
 		key: 'particleDepthFlowThreshold',
-		label: 'Depth threshold',
+		labelKey: 'calibration_param_particleDepthFlowThreshold',
 		group: 'particles',
-		hint: 'Nivel mínimo de la banda para activar Depth Flow.',
+		hintKey: 'calibration_param_particleDepthFlowThreshold_hint',
 		defaultRange: PARTICLE_RANGES.depthFlowThreshold
 	},
 	{
 		key: 'particleDepthFlowSensitivity',
-		label: 'Depth sensitivity',
+		labelKey: 'calibration_param_particleDepthFlowSensitivity',
 		group: 'particles',
-		hint: 'Multiplica la respuesta del envelope de profundidad.',
+		hintKey: 'calibration_param_particleDepthFlowSensitivity_hint',
 		defaultRange: PARTICLE_RANGES.depthFlowSensitivity
 	},
 	{
 		key: 'particleDepthFlowAttack',
-		label: 'Depth attack',
+		labelKey: 'calibration_param_particleDepthFlowAttack',
 		group: 'particles',
-		hint: 'Qué tan rápido entra el burst de profundidad.',
+		hintKey: 'calibration_param_particleDepthFlowAttack_hint',
 		defaultRange: PARTICLE_RANGES.depthFlowAttack
 	},
 	{
 		key: 'particleDepthFlowRelease',
-		label: 'Depth release',
+		labelKey: 'calibration_param_particleDepthFlowRelease',
 		group: 'particles',
-		hint: 'Qué tan rápido cae el Depth Flow después del pico.',
+		hintKey: 'calibration_param_particleDepthFlowRelease_hint',
 		defaultRange: PARTICLE_RANGES.depthFlowRelease
 	},
 	{
 		key: 'particleDepthFlowSpeed',
-		label: 'Depth speed',
+		labelKey: 'calibration_param_particleDepthFlowSpeed',
 		group: 'particles',
-		hint: 'Velocidad radial máxima del efecto.',
+		hintKey: 'calibration_param_particleDepthFlowSpeed_hint',
 		defaultRange: PARTICLE_RANGES.depthFlowSpeed
 	},
 	{
 		key: 'particleDepthFlowSpread',
-		label: 'Depth spread',
+		labelKey: 'calibration_param_particleDepthFlowSpread',
 		group: 'particles',
-		hint: 'Apertura del movimiento respecto al punto focal.',
+		hintKey: 'calibration_param_particleDepthFlowSpread_hint',
 		defaultRange: PARTICLE_RANGES.depthFlowSpread
 	}
 ];
@@ -590,7 +586,7 @@ export function createDefaultCalibrationProfileSlots(): CalibrationProfileSlot[]
 	return Array.from(
 		{ length: CALIBRATION_PROFILE_SLOT_COUNT },
 		(_, index) => ({
-			name: `Calibración ${index + 1}`,
+			name: `Calibration ${index + 1}`,
 			values: null
 		})
 	);
@@ -614,6 +610,6 @@ export function buildCalibrationProfileName(
 ): string {
 	const overridden = overrides ? Object.keys(overrides).length : 0;
 	return overridden > 0
-		? `Calibración (${overridden} rangos)`
-		: 'Calibración';
+		? `Calibration (${overridden} ranges)`
+		: 'Calibration';
 }

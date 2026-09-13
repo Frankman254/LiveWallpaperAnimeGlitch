@@ -3068,25 +3068,30 @@ function migrateLegacyCustomLook(migratedState: WallpaperStore): void {
 
 	const legacy = migratedState.customFilterLookSettings;
 	if (!legacy) return;
-	const slot = {
-		id: createProfileSlotId(),
-		name: 'Custom Look',
-		values: {
-			...extractLooksProfileSettings(DEFAULT_STATE),
-			...legacy
-		}
+	const values = {
+		...extractLooksProfileSettings(DEFAULT_STATE),
+		...legacy
 	};
-	if (migratedState.looksProfileSlots.length < MAX_LOOKS_SLOT_COUNT) {
-		migratedState.looksProfileSlots.push(slot);
-		if (migratedState.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
-			migratedState.activeFilterLookId = toFilterLookSlotSelectionId(
-				slot.id
-			);
-		}
-	} else if (migratedState.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
-		migratedState.activeFilterLookId = null;
+	const slots = migratedState.looksProfileSlots;
+	// Prefer an empty slot, then a new one. A full bank used to drop the look
+	// silently; now it stays in the legacy field (still persisted and
+	// exported) instead of being thrown away.
+	const emptySlot = slots.find(slot => !slot.values);
+	let target: (typeof slots)[number] | null = null;
+	if (emptySlot) {
+		emptySlot.name = 'Custom Look';
+		emptySlot.values = values;
+		target = emptySlot;
+	} else if (slots.length < MAX_LOOKS_SLOT_COUNT) {
+		target = { id: createProfileSlotId(), name: 'Custom Look', values };
+		slots.push(target);
 	}
-	migratedState.customFilterLookSettings = null;
+	if (migratedState.activeFilterLookId === CUSTOM_FILTER_LOOK_ID) {
+		migratedState.activeFilterLookId = target
+			? toFilterLookSlotSelectionId(target.id)
+			: null;
+	}
+	if (target) migratedState.customFilterLookSettings = null;
 }
 
 type LegacyMotionSlot = {

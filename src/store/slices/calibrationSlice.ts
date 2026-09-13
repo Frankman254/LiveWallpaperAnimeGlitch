@@ -107,7 +107,7 @@ export function createCalibrationSlice(
 					calibrationProfileSlots: [
 						...state.calibrationProfileSlots,
 						{
-							name: `Calibración ${state.calibrationProfileSlots.length + 1}`,
+							name: `Calibration ${state.calibrationProfileSlots.length + 1}`,
 							values: null
 						}
 					]

@@ -1,6 +1,6 @@
 # Current System Status
 
-**As of:** `3f878231` (`main`) · App `0.4.0-alpha.1` · Store persist **v113**
+**As of:** `chore/fase-0-higiene` (`main`) · App `0.4.1-alpha` · Store persist **v113**
 
 This document describes the product **as implemented in code**, not aspirational roadmaps.
 
@@ -169,12 +169,12 @@ See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
 
 ## Persistence and schemas
 
-| Constant                  | Value           | Location                                    |
-| ------------------------- | --------------- | ------------------------------------------- |
-| `APP_VERSION`             | `0.4.0-alpha.1` | `src/lib/version.ts`, `package.json`        |
-| `STORE_PERSIST_VERSION`   | **113**         | Migrations in `wallpaperStoreMigrations.ts` |
-| `PROJECT_SCHEMA_VERSION`  | 1               |                                             |
-| `SETTINGS_SCHEMA_VERSION` | 1               |                                             |
+| Constant                  | Value         | Location                                    |
+| ------------------------- | ------------- | ------------------------------------------- |
+| `APP_VERSION`             | `0.4.1-alpha` | `src/lib/version.ts`, `package.json`        |
+| `STORE_PERSIST_VERSION`   | **113**       | Migrations in `wallpaperStoreMigrations.ts` |
+| `PROJECT_SCHEMA_VERSION`  | 1             |                                             |
+| `SETTINGS_SCHEMA_VERSION` | 1             |                                             |
 
 Recent schema steps (full history in `src/lib/version.ts` and `CHANGELOG.md`):
 

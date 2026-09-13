@@ -1,7 +1,7 @@
 {
 	"name": "vibrix",
 	"private": true,
-	"version": "0.4.0-alpha.1",
+	"version": "0.4.1-alpha",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -17,6 +17,7 @@
 		"test:run": "vitest run",
 		"test:types": "tsc -p tsconfig.test.json --noEmit",
 		"docs:check": "node scripts/check-doc-consistency.mjs",
+		"i18n:check": "node scripts/check-i18n-literals.mjs",
 		"structure:check": "node scripts/check-codebase-structure.mjs",
 		"architecture:check": "node scripts/check-architecture.mjs",
 		"dead:check": "node scripts/find-unreachable.mjs"

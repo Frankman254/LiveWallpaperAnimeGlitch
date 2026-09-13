@@ -4,6 +4,7 @@ import { DEFAULT_STATE, PARTICLE_LIMITS } from '@/store/defaultState';
 import { useT } from '@/lib/i18n';
 import { useWindowPresentationControls } from '@/hooks/useWindowPresentationControls';
 import { useWallpaperStore } from '@/store/wallpaperStore';
+import { clearPersistedState } from '@/store/indexedDbStorage';
 import type { PerformanceMode } from '@/types/wallpaper';
 import {
 	Button,
@@ -154,10 +155,9 @@ export default function PerformanceTab() {
 
 	async function handleClearStorage() {
 		if (!(await confirmClearStorage(confirm, t))) return;
-		// Both names: the pre-rename key is still readable as a fallback, so
-		// leaving it behind would let the old state come back on the next load.
-		localStorage.removeItem('vibrix-state');
-		localStorage.removeItem('lwag-state');
+		// IndexedDB is where the state actually lives; clearing only
+		// localStorage left it (and the pre-rename copy) behind.
+		await clearPersistedState('vibrix-state');
 		useWallpaperStore.setState({ ...DEFAULT_STATE });
 	}
 

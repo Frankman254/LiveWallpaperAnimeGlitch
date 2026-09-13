@@ -12,7 +12,10 @@ import type {
 	LyrixaLyricVisualStyle
 } from '@/features/lyrics/domain/lyrixaBundleTypes';
 import { DEFAULT_LYRIXA_LYRIC_STYLE } from '@/features/lyrics/domain/lyrixaBundleTypes';
-import { mergeLyrixaVisualStyle } from '@/features/lyrics/domain/lyrixaBundle';
+import {
+	mergeLyrixaVisualStyle,
+	resolveClipCoords
+} from '@/features/lyrics/domain/lyrixaBundle';
 import {
 	createLyricsHorizontalPaint,
 	isMultiColorLyricsMode,
@@ -129,10 +132,11 @@ function resolveLineAnchor(
 	indexInLayer: number,
 	lineHeightPx: number
 ): Anchor {
-	if (clip.coords) {
+	const coords = resolveClipCoords(clip);
+	if (coords) {
 		return {
-			x: clip.coords.x * canvas.width,
-			y: clip.coords.y * canvas.height + indexInLayer * lineHeightPx,
+			x: coords.x * canvas.width,
+			y: coords.y * canvas.height + indexInLayer * lineHeightPx,
 			align: 'center'
 		};
 	}

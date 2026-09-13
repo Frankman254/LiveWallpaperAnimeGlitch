@@ -37,6 +37,7 @@ pnpm lint
 pnpm architecture:check
 pnpm structure:check
 pnpm docs:check
+pnpm i18n:check
 pnpm test:run
 pnpm build
 ```

@@ -89,8 +89,11 @@ export function useCoverageLockedImageTransform(
 
 	function handleToggleCoverageLock(enabled: boolean) {
 		store.setImageCoverageLockEnabled(enabled);
-		// ON refits to the same full-bleed auto-fit produces, not a clamp
-		// (a clamp would leave a dishonest fitMode/scale pair).
+		// ON refits to the full-bleed framing auto-fit produces — unless the
+		// user hand-tuned this image (`coverageFramingEdited`). Then the refit
+		// is skipped on purpose and `normalizeCoveredTransform` below only
+		// grows/shifts the composition the minimum needed to cover, keeping
+		// their fitMode. The explicit "Auto-fit" action still overrides it.
 		if (enabled) void store.autoFitCoveredActiveImage();
 	}
 

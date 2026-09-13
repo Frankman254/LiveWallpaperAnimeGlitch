@@ -363,8 +363,10 @@ export default function LooksTab({ onReset }: { onReset: () => void }) {
 													className="line-clamp-2"
 												>
 													{isFactory
-														? entry.preset
-																.description
+														? t[
+																entry.preset
+																	.descriptionKey
+															]
 														: hasValues
 															? t.looks_user_slot
 															: t.looks_empty_slot_hint}

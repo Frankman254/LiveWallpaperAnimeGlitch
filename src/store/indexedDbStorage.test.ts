@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
+	clearPersistedState,
 	indexedDbStorage,
 	resetIndexedDbStorageForTests
 } from './indexedDbStorage';
@@ -107,6 +108,18 @@ describe('indexedDbStorage', () => {
 
 		expect(await indexedDbStorage.getItem('k3')).toBeNull();
 		expect(local.get('k3')).toBeUndefined();
+	});
+
+	it('clearPersistedState does not let the pre-rename copy come back', async () => {
+		await indexedDbStorage.setItem('vibrix-state', '{"state":{"now":1}}');
+		local.set('vibrix-state', '{"state":{"now":1}}');
+		local.set('lwag-state', '{"state":{"old":1}}');
+
+		await clearPersistedState('vibrix-state');
+
+		// Without the legacy wipe, getItem would adopt `lwag-state` here.
+		expect(await indexedDbStorage.getItem('vibrix-state')).toBeNull();
+		expect(local.get('lwag-state')).toBeUndefined();
 	});
 
 	it('falls back to localStorage when IndexedDB is unavailable', async () => {

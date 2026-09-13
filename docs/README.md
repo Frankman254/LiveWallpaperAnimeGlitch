@@ -1,8 +1,10 @@
 # Project Documentation
 
-**Current product version:** `0.4.0-alpha.1` · **Store persist:** v113 · **HEAD:** see `git rev-parse HEAD`
+**Current product version:** `0.4.1-alpha` · **Store persist:** v113 · **HEAD:** see `git rev-parse HEAD`
 
 ## Start here
+
+**Plan activo:** [plans/PLAN_MAESTRO_LANZAMIENTO.md](plans/PLAN_MAESTRO_LANZAMIENTO.md) — hoja de ruta hacia `1.0.0` (export de vídeo → plantillas → rendimiento → pagos → lanzamiento).
 
 1. [product/V1_ALPHA_SCOPE.md](product/V1_ALPHA_SCOPE.md) — what's in / out of alpha
 2. [status/CURRENT_SYSTEM_STATUS.md](status/CURRENT_SYSTEM_STATUS.md) — **as-built system status**
@@ -39,7 +41,7 @@
 
 ## Onboarding (developer)
 
-`onboarding/` — deep dives; verify `STORE_PERSIST_VERSION` against `src/lib/version.ts` (currently **111**).
+`onboarding/` — deep dives; verify `STORE_PERSIST_VERSION` against `src/lib/version.ts` (currently **113**).
 
 ## Archive
 
