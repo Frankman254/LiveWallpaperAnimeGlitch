@@ -1849,6 +1849,8 @@ export const en = {
 	calibration_preview_synthetic_status: 'synthetic kick @ 120 BPM',
 	calibration_preview_mode_live: 'Live',
 	calibration_preview_mode_synthetic: 'Synthetic',
+	calibration_preview_legend_raw: 'raw signal',
+	calibration_preview_legend_envelope: 'envelope',
 	// Spectrum drive modes (Manual Control)
 	spectrum_drive_mode_audio_label: 'Audio only',
 	spectrum_drive_mode_audio_hint:

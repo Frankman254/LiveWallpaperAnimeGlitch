@@ -1873,6 +1873,8 @@ export const es: Record<TranslationKey, string> = {
 	calibration_preview_synthetic_status: 'kick sintético @ 120 BPM',
 	calibration_preview_mode_live: 'Real',
 	calibration_preview_mode_synthetic: 'Sintético',
+	calibration_preview_legend_raw: 'señal raw',
+	calibration_preview_legend_envelope: 'envelope',
 	// Modos de drive del espectro (Control manual)
 	spectrum_drive_mode_audio_label: 'Solo audio',
 	spectrum_drive_mode_audio_hint:

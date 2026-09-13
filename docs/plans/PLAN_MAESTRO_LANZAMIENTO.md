@@ -194,9 +194,9 @@ conocidos.
 
 ### Criterios de salida
 
-- [ ] App en inglés sin un solo texto en español (verificado navegando todas las pestañas).
-- [ ] Tests nuevos para 0.4 y 0.6.
-- [ ] Pipeline verde, tag `v0.4.1-alpha`.
+- [x] App en inglés sin un solo texto en español (verificado navegando todas las pestañas).
+- [x] Tests nuevos para 0.4 y 0.6.
+- [x] Pipeline verde, tag `v0.4.1-alpha`.
 
 ---
 
@@ -437,14 +437,14 @@ Orden sugerido **solo si** los datos lo justifican:
 
 ## Seguimiento
 
-| Fase | Estado    | Inicio     | Cierre | Release |
-| ---- | --------- | ---------- | ------ | ------- |
-| 0    | En curso  | 2026-09-13 | —      | —       |
-| 1    | Pendiente | —          | —      | —       |
-| 2    | Pendiente | —          | —      | —       |
-| 3    | Pendiente | —          | —      | —       |
-| 4    | Pendiente | —          | —      | —       |
-| 5    | Pendiente | —          | —      | —       |
+| Fase | Estado    | Inicio     | Cierre     | Release       |
+| ---- | --------- | ---------- | ---------- | ------------- |
+| 0    | Hecha     | 2026-09-13 | 2026-09-13 | `0.4.1-alpha` |
+| 1    | Pendiente | —          | —          | —             |
+| 2    | Pendiente | —          | —          | —             |
+| 3    | Pendiente | —          | —          | —             |
+| 4    | Pendiente | —          | —          | —             |
+| 5    | Pendiente | —          | —          | —             |
 
 Actualizar esta tabla al abrir y cerrar cada fase. El estado _as-built_ sigue
 viviendo en [../status/CURRENT_SYSTEM_STATUS.md](../status/CURRENT_SYSTEM_STATUS.md).

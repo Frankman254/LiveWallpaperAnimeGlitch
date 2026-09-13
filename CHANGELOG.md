@@ -15,6 +15,50 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+## [0.4.1-alpha] — 2026-09-13
+
+**Fase 0 del [plan maestro de lanzamiento](docs/plans/PLAN_MAESTRO_LANZAMIENTO.md):**
+higiene y deuda de la review del 2026-09-12. Sin features nuevas; store sigue en v113.
+
+### i18n: la UI en inglés ya no muestra español
+
+- Calibration (60 parámetros, 6 grupos, preview de envelope), descripciones de
+  los Looks de fábrica, panel Insights y el pie de Diagnostics estaban escritos
+  en español dentro del código. `calibrationConfig.ts` y `filterLooks.ts` ahora
+  llevan `TranslationKey`s que se resuelven con `useT()`.
+- Nombres por defecto de slots de calibración: `Calibration N` (como el resto
+  de familias). Los slots ya guardados conservan su nombre.
+- **Nuevo `pnpm i18n:check`** (`scripts/check-i18n-literals.mjs`): falla si un
+  literal o texto JSX fuera de `src/lib/i18n` contiene caracteres solo del
+  español. Añadido a la lista de AGENTS.md.
+
+### Clear saved settings borra de verdad
+
+- Solo quitaba claves de `localStorage`, pero el estado vive en IndexedDB y las
+  copias `lwag-*` previas al renombrado se re-adoptan si falta la nueva: lo
+  borrado podía volver. Nuevo `clearPersistedState()` limpia las tres. La
+  biblioteca de imágenes/carpetas se conserva a propósito y el diálogo lo dice.
+
+### Migración v110 ya no pierde el Custom look
+
+- Con los 60 slots de Looks llenos, el Custom look legacy se descartaba en
+  silencio. Ahora ocupa un slot vacío si lo hay y, si el banco está realmente
+  lleno, se queda en `customFilterLookSettings` (persistido y exportable).
+
+### Lyrics: el preset de posición gana a `coords`
+
+- Los dos renderers dejaban que `coords` pisara un `position` no-centro, al
+  revés de lo que declara Lyrixa. `resolveClipCoords()` unifica la regla;
+  documentado en `LYRIXA_CONTRACT.md` §5b.
+
+### Docs
+
+- Plan maestro con la suite Vibrix + Lyrixa + Transcriptor (§0.5): qué se
+  lanza, qué formatos de letra exportar, qué queda interno.
+- Comentario de Keep Covered alineado con la procedencia `coverageFramingEdited`
+  (el encuadre manual se respeta; solo se ajusta lo mínimo para cubrir).
+- CHANGELOG: fusionadas las dos cabeceras duplicadas de `0.3.0-alpha.1`.
+
 ## [0.4.0-alpha.1] — 2026-09-12
 
 Primer corte desde `0.3.0-alpha.1` (2026-06-16): ~150 commits, store

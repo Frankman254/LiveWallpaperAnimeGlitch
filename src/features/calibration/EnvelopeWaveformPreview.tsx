@@ -240,14 +240,14 @@ export function EnvelopeWaveformPreview({
 						className="inline-block h-0.5 w-3"
 						style={{ background: UI_COLORS.fgMute }}
 					/>
-					señal raw
+					{t.calibration_preview_legend_raw}
 				</span>
 				<span className="inline-flex items-center gap-1">
 					<span
 						className="inline-block h-0.5 w-3"
 						style={{ background: envelopeColor }}
 					/>
-					envelope
+					{t.calibration_preview_legend_envelope}
 				</span>
 			</div>
 		</div>

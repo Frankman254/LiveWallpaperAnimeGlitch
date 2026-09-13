@@ -61,6 +61,17 @@ walk(resolve(root, 'src'), file => {
 		.split('\n')
 		.forEach((raw, index) => {
 			const code = stripComments(raw, state);
+			// JSX text on its own line (`<span>\n  texto\n</span>`) has no
+			// quotes or brackets for LITERAL to catch.
+			const bare = code.trim();
+			if (
+				file.endsWith('.tsx') &&
+				SPANISH.test(bare) &&
+				!/[=(){};'"`<>]/.test(bare)
+			) {
+				offenders.push(`${rel}:${index + 1}  ${bare}`);
+				return;
+			}
 			for (const match of code.matchAll(LITERAL)) {
 				const text = match[2] ?? match[3] ?? '';
 				if (!SPANISH.test(text)) continue;
