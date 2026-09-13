@@ -67,7 +67,7 @@ export const en = {
 		'Restore the entire wallpaper to factory defaults. Playlists, images, and custom slots may be cleared depending on what is stored.',
 	confirm_clear_storage_title: 'Clear saved settings?',
 	confirm_clear_storage_message:
-		'Remove all persisted settings from this browser (localStorage). The editor will reload defaults. This cannot be undone.',
+		'Remove all saved settings from this browser. The editor will load defaults. Your image and folder library is kept. This cannot be undone.',
 	confirm_reset_slideshow_timestamps_title: 'Clear manual timestamps?',
 	confirm_reset_slideshow_timestamps_message:
 		'Remove manual clip timing on every slideshow image and return to auto-calculated durations.',

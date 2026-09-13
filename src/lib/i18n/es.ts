@@ -69,7 +69,7 @@ export const es: Record<TranslationKey, string> = {
 		'Vuelve el wallpaper a los valores de fábrica. Playlists, imágenes y slots personalizados pueden perderse según lo guardado.',
 	confirm_clear_storage_title: '¿Borrar ajustes guardados?',
 	confirm_clear_storage_message:
-		'Elimina toda la configuración persistida en este navegador (localStorage). Se cargarán los defaults. No se puede deshacer.',
+		'Elimina toda la configuración guardada en este navegador. Se cargarán los valores por defecto. Tu biblioteca de imágenes y carpetas se conserva. No se puede deshacer.',
 	confirm_reset_slideshow_timestamps_title: '¿Borrar timestamps manuales?',
 	confirm_reset_slideshow_timestamps_message:
 		'Quita el timing manual de cada imagen del slideshow y vuelve a duraciones auto-calculadas.',

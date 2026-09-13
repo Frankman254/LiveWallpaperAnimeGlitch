@@ -266,3 +266,34 @@ export const indexedDbStorage = {
 		}
 	}
 };
+
+/**
+ * Wipe a persisted state everywhere it can come back from: IndexedDB, the
+ * localStorage copy, and the pre-rename key and database.
+ *
+ * `removeItem` alone is not enough for "Clear saved settings". It leaves the
+ * `lwag-*` copies, which `getItem` adopts whenever the new key is missing — so
+ * the state the user just cleared would reappear on the next load. Images and
+ * folders live in their own databases and are intentionally not touched.
+ */
+export async function clearPersistedState(name: string): Promise<void> {
+	await indexedDbStorage.removeItem(name);
+	const legacyKey = LEGACY_STORAGE.keys[name];
+	if (!legacyKey) return;
+	try {
+		localStorage.removeItem(legacyKey);
+	} catch {
+		// Ignored — no localStorage means there is no legacy copy there either.
+	}
+	if (typeof indexedDB === 'undefined') return;
+	await new Promise<void>(resolve => {
+		try {
+			const request = indexedDB.deleteDatabase(LEGACY_STORAGE.dbName);
+			request.onsuccess = () => resolve();
+			request.onerror = () => resolve();
+			request.onblocked = () => resolve();
+		} catch {
+			resolve();
+		}
+	});
+}
