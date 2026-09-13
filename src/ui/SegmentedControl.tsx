@@ -67,7 +67,10 @@ export default function SegmentedControl<T extends string>({
 			role="tablist"
 			aria-label={ariaLabel}
 			className={cn(
-				'inline-flex items-center',
+				// Wrap instead of overflowing: in the compact editor the content
+				// column shrinks when the sidebar expands, and nowrap options
+				// ("Complete RGB", Calibration's 8 tabs) spilled past the panel.
+				'inline-flex max-w-full flex-wrap items-center',
 				density === 'compact' ? 'gap-px p-px' : 'gap-[2px] p-[2px]',
 				full && 'w-full',
 				className

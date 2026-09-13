@@ -1,6 +1,6 @@
 # Current System Status
 
-**As of:** `3f878231` (`main`) · App `0.3.0-alpha.1` · Store persist **v113**
+**As of:** `3f878231` (`main`) · App `0.4.0-alpha.1` · Store persist **v113**
 
 This document describes the product **as implemented in code**, not aspirational roadmaps.
 
@@ -171,7 +171,7 @@ See `docs/features/SPECTRUM_ENGINE.md` (ownership model) and
 
 | Constant                  | Value           | Location                                    |
 | ------------------------- | --------------- | ------------------------------------------- |
-| `APP_VERSION`             | `0.3.0-alpha.1` | `src/lib/version.ts`, `package.json`        |
+| `APP_VERSION`             | `0.4.0-alpha.1` | `src/lib/version.ts`, `package.json`        |
 | `STORE_PERSIST_VERSION`   | **113**         | Migrations in `wallpaperStoreMigrations.ts` |
 | `PROJECT_SCHEMA_VERSION`  | 1               |                                             |
 | `SETTINGS_SCHEMA_VERSION` | 1               |                                             |

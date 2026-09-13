@@ -15,6 +15,25 @@ the version scheme in `src/lib/version.ts`.
 
 ## [Unreleased]
 
+## [0.4.0-alpha.1] — 2026-09-12
+
+Primer corte desde `0.3.0-alpha.1` (2026-06-16): ~150 commits, store
+v98 → v113, renombrado a **Vibrix** (formato de proyecto `.vibrix`; los
+`.lwag` se siguen importando). Minor bump porque cambian el nombre, las claves
+de almacenamiento y el formato de export.
+
+### Editor: el menú expandido ya no desborda el contenido
+
+- Con el editor compacto, expandir la barra lateral (38px → ~134px) estrechaba
+  la columna de contenido y los `SegmentedControl` con muchas opciones
+  ("Complete RGB" en Lyrics, las 8 pestañas de Calibration) se salían del
+  panel y quedaban recortados. `SegmentedControl` ahora envuelve a una segunda
+  línea cuando no cabe, conservando anchos iguales cuando sí cabe.
+
+### Repo
+
+- `.pnpm-store/` quedó commiteado por error; se saca del índice y se ignora.
+
 ### Spectrum (scope): Scale agranda la figura y la rotación vuelve al radial
 
 - En la familia scope, `Scale` solo engordaba la onda (amplitud) y el anillo
