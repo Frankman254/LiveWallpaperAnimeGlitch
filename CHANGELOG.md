@@ -764,7 +764,7 @@ edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
 
 ---
 
-## [0.3.0-alpha.1]
+## [0.3.0-alpha.1] — 2026-06-16
 
 ### Scene-first model (backbone) + smooth image transition (FASE 0)
 
@@ -843,9 +843,7 @@ edges` + `shadowBlur = 0`); al añadir las opciones de LED se cambió por
 
 `STORE_PERSIST_VERSION` is at **98**; `PROJECT_SCHEMA_VERSION` and `SETTINGS_SCHEMA_VERSION` remain at **1**. `APP_VERSION` / `package.json`: **0.3.0-alpha.1**.
 
----
-
-## [0.3.0-alpha.1] — release hygiene (initial alpha tag)
+### Release hygiene (initial alpha tag)
 
 Release-hygiene pass — aligns version references for first public alpha.
 
