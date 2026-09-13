@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseLyrixaLyricsBundleEnvelope } from './lyrixaBundle';
+import {
+	parseLyrixaLyricsBundleEnvelope,
+	resolveClipCoords
+} from './lyrixaBundle';
 import {
 	buildLyricsClipIndex,
 	describeLyrixaLayers,
@@ -490,5 +493,20 @@ describe('Lyrixa contract: parser resilience', () => {
 		expect(parsed.project.layers).toEqual([]);
 		expect(parsed.project.clips).toEqual([]);
 		expect(describeLyrixaLayers(parsed)).toEqual([]);
+	});
+});
+
+describe('resolveClipCoords — Lyrixa position precedence', () => {
+	const coords = { x: 0.25, y: 0.75 };
+
+	it('uses coords when the clip has no preset or the default centre', () => {
+		expect(resolveClipCoords({ coords })).toEqual(coords);
+		expect(resolveClipCoords({ coords, position: 'center' })).toEqual(
+			coords
+		);
+	});
+
+	it('lets a non-centre preset win over coords, as Lyrixa declares', () => {
+		expect(resolveClipCoords({ coords, position: 'top' })).toBeUndefined();
 	});
 });

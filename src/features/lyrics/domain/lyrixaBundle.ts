@@ -212,6 +212,20 @@ export function hasTranslationLayer(
 const DEFAULT_TRANSLATION_OFFSET_Y = -0.15;
 
 /**
+ * Free-form `coords` a clip should render at, or `undefined` when a named
+ * position wins. Lyrixa's contract (`core/types/clip.ts`): a non-centre
+ * `position` preset takes priority over `coords`; `'center'` is the default
+ * every clip starts with, so it counts as "no preset". Both renderers go
+ * through this so editor and bundle modes agree.
+ */
+export function resolveClipCoords(
+	clip: Pick<LyrixaLyricClip, 'coords' | 'position'>
+): LyrixaLyricClip['coords'] {
+	if (clip.position && clip.position !== 'center') return undefined;
+	return clip.coords;
+}
+
+/**
  * Layer overrides to seed on import so a translation layer that carries no
  * positioning of its own doesn't render on top of the main lyrics.
  *

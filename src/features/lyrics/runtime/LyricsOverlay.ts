@@ -1,6 +1,7 @@
 import type { WallpaperState } from '@/types/wallpaper';
 import { getCachedLyricsDocument } from '@/features/lyrics/domain/cache';
 import { findActiveLyricsLineIndex } from '@/features/lyrics/domain/parser';
+import { resolveClipCoords } from '@/features/lyrics/domain/lyrixaBundle';
 import {
 	hasRenderableLyrixaBundle,
 	translationLayerIds
@@ -895,7 +896,7 @@ export function drawLyricsOverlay(
 				endTime: clip.endTime,
 				layerId: clip.layerId,
 				layer,
-				coords: clip.coords,
+				coords: resolveClipCoords(clip),
 				clipPosition: clip.position
 			});
 		}
