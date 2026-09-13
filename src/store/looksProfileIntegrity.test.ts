@@ -169,4 +169,48 @@ describe('migration to v109 + v110', () => {
 		expect(folded!.values.rgbShift).toBe(0.002);
 		expect(folded!.values.rgbShiftAudioChannel).toBe('kick');
 	});
+
+	it('v110 reuses an empty slot and never drops the look when the bank is full', async () => {
+		const { MAX_LOOKS_SLOT_COUNT } =
+			await import('@/store/featureProfiles');
+		const full = Array.from({ length: MAX_LOOKS_SLOT_COUNT }, (_, i) => ({
+			id: `slot-${i}`,
+			name: `Look ${i}`,
+			values: { rgbShift: 0.001 }
+		}));
+
+		const withGap = migrateWallpaperStore(
+			{
+				...DEFAULT_STATE,
+				looksProfileSlots: full.map((slot, i) =>
+					i === 7 ? { ...slot, values: null } : slot
+				),
+				customFilterLookSettings: { rgbShift: 0.004 }
+			},
+			109
+		) as unknown as {
+			looksProfileSlots: Array<{
+				name: string;
+				values: Record<string, unknown> | null;
+			}>;
+			customFilterLookSettings: unknown;
+		};
+		expect(withGap.looksProfileSlots).toHaveLength(MAX_LOOKS_SLOT_COUNT);
+		expect(withGap.looksProfileSlots[7]!.name).toBe('Custom Look');
+		expect(withGap.looksProfileSlots[7]!.values!.rgbShift).toBe(0.004);
+		expect(withGap.customFilterLookSettings).toBeNull();
+
+		const noRoom = migrateWallpaperStore(
+			{
+				...DEFAULT_STATE,
+				looksProfileSlots: full,
+				customFilterLookSettings: { rgbShift: 0.004 }
+			},
+			109
+		) as unknown as {
+			customFilterLookSettings: Record<string, unknown> | null;
+		};
+		// Kept in the legacy field rather than discarded.
+		expect(noRoom.customFilterLookSettings?.rgbShift).toBe(0.004);
+	});
 });
