@@ -1547,6 +1547,37 @@ export const es: Record<TranslationKey, string> = {
 	insights_section_scene: 'Escena',
 	insights_section_performance: 'Rendimiento',
 	insights_section_layers: 'Capas',
+	// Descripciones de looks de fábrica (filterLooks.ts)
+	look_factory_description_crt: 'Verde retro con scanlines y contraste alto.',
+	look_factory_description_vhs:
+		'Desenfoque suave, ruido y desalineación RGB.',
+	look_factory_description_cyber_neon:
+		'Saturación fuerte y brillos neón con offset RGB.',
+	look_factory_description_dream_bloom:
+		'Look etéreo con blur y tonos suaves.',
+	look_factory_description_monochrome_ink: 'Monocromo con contraste fuerte.',
+	look_factory_description_club_glitch:
+		'Contraste agresivo y desplazamiento RGB visible.',
+	look_factory_description_glass_mist:
+		'Suave, limpio y ligeramente difuminado.',
+	look_factory_description_infrared_pulse:
+		'Tono cálido intenso con estética térmica.',
+	look_factory_description_noir_cinema:
+		'Sombras densas, grano fino y luz contenida.',
+	look_factory_description_hologram:
+		'Cian espectral con pulsos y separación RGB precisa.',
+	look_factory_description_sunset_film:
+		'Película cálida, contraste suave y bloom dorado.',
+	look_factory_description_ice_signal:
+		'Azules fríos, detalle limpio y reacción de agudos.',
+	insights_background_images_template: '{n} imagen(es) · estática',
+	insights_background_none: 'sin imagen activa',
+	insights_scene_none: '— sin escena activa —',
+	insights_scene_slots_template: '{n} slot(s)',
+	insights_scene_applied: 'aplicada',
+	insights_scene_free: 'libre',
+	diag_grid_performance_footer:
+		'RAM usa valores reales del navegador cuando están disponibles. CPU y GPU son estimaciones de presión de runtime para ayudarte a detectar cuándo se dispara la carga.',
 	// Setlists / Colecciones
 	setlists_section_title: 'Colecciones',
 	setlists_btn_new: 'Nueva colección',
@@ -1642,6 +1673,206 @@ export const es: Record<TranslationKey, string> = {
 	calibration_view_label_slots: 'Slots',
 	calibration_range_editor_title: 'Rango',
 	calibration_range_default: 'por defecto',
+	// Calibración — grupos y parámetros (calibrationConfig.ts)
+	calibration_group_logo: 'Logo',
+	calibration_group_logo_description:
+		'Controla cuánto crece el logo con la música y qué tan rápido vuelve a su tamaño.',
+	calibration_group_bgZoom: 'Zoom del fondo',
+	calibration_group_bgZoom_description:
+		'Controla el zoom musical del fondo. Smoothing reduce jitter; attack/release definen rapidez.',
+	calibration_group_bgReactive: 'Opacidad / Blur del fondo',
+	calibration_group_bgReactive_description:
+		'Controla blur y opacidad por audio. Blur alto suaviza la imagen, pero cuesta GPU.',
+	calibration_group_glitch: 'Glitch / RGB',
+	calibration_group_glitch_description:
+		'Controla el desplazamiento RGB. Mucha sensibilidad puede generar temblor visual.',
+	calibration_group_audio: 'Audio global',
+	calibration_group_audio_description:
+		'Parámetros que aplican al analizador FFT y al routing automático de canales. El suavizado lo maneja cada subsistema (logo, BG, spectrum, partículas).',
+	calibration_group_particles: 'Partículas',
+	calibration_group_particles_description:
+		'Controla cuánto crecen o brillan las partículas con la música. Valores altos cuestan FPS.',
+	calibration_param_logoAudioSmoothing: 'Suavizado pre-envelope',
+	calibration_param_logoAudioSmoothing_hint:
+		'Suaviza la señal del canal antes del envelope. 0 = sin filtro, 0.9 = mucho.',
+	calibration_param_logoAudioSensitivity: 'Sensibilidad',
+	calibration_param_logoAudioSensitivity_hint:
+		'Ganancia bruta antes del envelope. Si lo subes mucho satura.',
+	calibration_param_logoMinScale: 'Escala mínima',
+	calibration_param_logoMinScale_hint: 'Tamaño mínimo del logo en silencio.',
+	calibration_param_logoMaxScale: 'Escala máxima',
+	calibration_param_logoMaxScale_hint: 'Tamaño máximo en pico de audio.',
+	calibration_param_logoReactiveScaleIntensity: 'Intensidad de escala',
+	calibration_param_logoReactiveScaleIntensity_hint:
+		'Cuánto del envelope se aplica al tamaño final.',
+	calibration_param_logoReactivitySpeed: 'Velocidad de respuesta',
+	calibration_param_logoReactivitySpeed_hint:
+		'Multiplica el ritmo global de attack/release.',
+	calibration_param_logoAttack: 'Attack',
+	calibration_param_logoAttack_hint: 'Velocidad de subida ante un golpe.',
+	calibration_param_logoRelease: 'Release',
+	calibration_param_logoRelease_hint: 'Velocidad de caída tras un golpe.',
+	calibration_param_logoPunch: 'Punch',
+	calibration_param_logoPunch_hint:
+		'Boost extra sobre transientes (saltos bruscos de volumen).',
+	calibration_param_logoPeakWindow: 'Ventana de pico',
+	calibration_param_logoPeakWindow_hint:
+		'Segundos que el pico se "recuerda" antes de adaptarse.',
+	calibration_param_logoPeakFloor: 'Piso de pico',
+	calibration_param_logoPeakFloor_hint:
+		'Fracción del pico que se trata como silencio.',
+	calibration_param_imageAudioSmoothing: 'Suavizado pre-envelope',
+	calibration_param_imageAudioSmoothing_hint:
+		'Suaviza la señal del canal de fondo antes del envelope.',
+	calibration_param_imageAudioReactiveDecay: 'Decay (legacy)',
+	calibration_param_imageAudioReactiveDecay_hint:
+		'Path antiguo de smoothing. 0.62 ≈ release 0.096 del envelope nuevo.',
+	calibration_param_imageBassScaleIntensity: 'Intensidad de zoom',
+	calibration_param_imageBassScaleIntensity_hint:
+		'Multiplicador del zoom final aplicado al fondo.',
+	calibration_param_imageBassAttack: 'Attack',
+	calibration_param_imageBassAttack_hint:
+		'Qué tan rápido crece el zoom cuando entra un golpe.',
+	calibration_param_imageBassRelease: 'Release',
+	calibration_param_imageBassRelease_hint:
+		'Qué tan rápido vuelve el zoom después del golpe.',
+	calibration_param_imageBassReactivitySpeed: 'Velocidad de respuesta',
+	calibration_param_imageBassReactivitySpeed_hint:
+		'Multiplica attack/release: alto = más nervioso, bajo = más suave.',
+	calibration_param_imageBassPeakWindow: 'Ventana de pico',
+	calibration_param_imageBassPeakWindow_hint:
+		'Cuánto tiempo recuerda el pico reciente para estabilizar la reacción.',
+	calibration_param_imageBassPeakFloor: 'Piso de pico',
+	calibration_param_imageBassPeakFloor_hint:
+		'Piso de energía: sube esto si el fondo se mueve aun en partes suaves.',
+	calibration_param_imageBassPunch: 'Punch',
+	calibration_param_imageBassPunch_hint:
+		'Empuje extra en golpes cortos. Alto puede verse brusco.',
+	calibration_param_imageBassReactiveScaleIntensity: 'Escala reactiva',
+	calibration_param_imageBassReactiveScaleIntensity_hint:
+		'Intensidad post-normalize (0.01–2.5).',
+	calibration_param_imageOpacityReactiveAmount: 'Cantidad de opacidad',
+	calibration_param_imageOpacityReactiveAmount_hint:
+		'Cuánto cambia la opacidad del fondo con el audio.',
+	calibration_param_imageOpacityReactiveThreshold: 'Umbral de opacidad',
+	calibration_param_imageOpacityReactiveThreshold_hint:
+		'Umbral mínimo de audio para activar el cambio de opacidad.',
+	calibration_param_imageOpacityReactiveSoftness: 'Suavidad de opacidad',
+	calibration_param_imageOpacityReactiveSoftness_hint:
+		'Suavidad de la transición alrededor del umbral.',
+	calibration_param_imageBlurReactiveAmount: 'Cantidad de blur',
+	calibration_param_imageBlurReactiveAmount_hint:
+		'Cuántos px de blur añadir en el pico.',
+	calibration_param_imageBlurReactiveThreshold: 'Umbral de blur',
+	calibration_param_imageBlurReactiveThreshold_hint:
+		'Umbral mínimo de audio para activar el blur.',
+	calibration_param_imageBlurReactiveSoftness: 'Suavidad de blur',
+	calibration_param_imageBlurReactiveSoftness_hint:
+		'Suavidad de la transición de blur.',
+	calibration_param_rgbShift: 'RGB shift base',
+	calibration_param_rgbShift_hint:
+		'Magnitud base del chromatic shift (siempre presente).',
+	calibration_param_rgbShiftAudioSensitivity: 'Sensibilidad RGB shift',
+	calibration_param_rgbShiftAudioSensitivity_hint:
+		'Magnitud del chromatic shift por unidad de canal.',
+	calibration_param_rgbShiftAudioSmoothing: 'Suavizado RGB shift',
+	calibration_param_rgbShiftAudioSmoothing_hint:
+		'Suaviza los picos del canal antes del envelope.',
+	calibration_param_rgbShiftAudioAttack: 'RGB attack',
+	calibration_param_rgbShiftAudioAttack_hint:
+		'Velocidad de subida del envelope.',
+	calibration_param_rgbShiftAudioRelease: 'RGB release',
+	calibration_param_rgbShiftAudioRelease_hint:
+		'Velocidad de caída del envelope.',
+	calibration_param_rgbShiftAudioReactivitySpeed:
+		'Velocidad de respuesta RGB',
+	calibration_param_rgbShiftAudioReactivitySpeed_hint:
+		'Multiplica attack/release.',
+	calibration_param_rgbShiftAudioPeakWindow: 'Ventana de pico RGB',
+	calibration_param_rgbShiftAudioPeakWindow_hint:
+		'Segundos que el pico se recuerda.',
+	calibration_param_rgbShiftAudioPeakFloor: 'Piso de pico RGB',
+	calibration_param_rgbShiftAudioPeakFloor_hint:
+		'Fracción del pico tratada como silencio.',
+	calibration_param_rgbShiftAudioPunch: 'RGB punch',
+	calibration_param_rgbShiftAudioPunch_hint: 'Boost extra en transientes.',
+	calibration_param_audioSmoothing: 'Suavizado FFT',
+	calibration_param_audioSmoothing_hint:
+		'Smoothing del AnalyserNode (afecta los bins crudos antes de cualquier subsistema). No es channel smoothing.',
+	calibration_param_audioAutoKickThreshold: 'Umbral de auto-kick',
+	calibration_param_audioAutoKickThreshold_hint:
+		'Umbral para detectar kicks en routing automático.',
+	calibration_param_audioAutoSwitchHoldMs: 'Retención de auto-switch (ms)',
+	calibration_param_audioAutoSwitchHoldMs_hint:
+		'Ventana mínima en ms para mantener un canal antes de cambiar.',
+	calibration_param_particleAudioSmoothing: 'Suavizado pre-envelope',
+	calibration_param_particleAudioSmoothing_hint:
+		'Suaviza el canal antes del envelope. 0 = raw, 0.9 = mucho.',
+	calibration_param_particleAudioSizeBoost: 'Boost de tamaño',
+	calibration_param_particleAudioSizeBoost_hint:
+		'Cuánto crecen las partículas por audio. Solo aplica si están audio-reactivas.',
+	calibration_param_particleAudioOpacityBoost: 'Boost de opacidad',
+	calibration_param_particleAudioOpacityBoost_hint:
+		'Cuánto aumenta la opacidad por audio. Solo si audio-reactivas.',
+	calibration_param_particleAudioAttack: 'Attack',
+	calibration_param_particleAudioAttack_hint:
+		'Velocidad de subida del envelope.',
+	calibration_param_particleAudioRelease: 'Release',
+	calibration_param_particleAudioRelease_hint:
+		'Velocidad de caída del envelope.',
+	calibration_param_particleAudioReactivitySpeed: 'Velocidad de respuesta',
+	calibration_param_particleAudioReactivitySpeed_hint:
+		'Multiplica attack/release.',
+	calibration_param_particleAudioPeakWindow: 'Ventana de pico',
+	calibration_param_particleAudioPeakWindow_hint:
+		'Segundos que el pico se recuerda.',
+	calibration_param_particleAudioPeakFloor: 'Piso de pico',
+	calibration_param_particleAudioPeakFloor_hint:
+		'Fracción del pico tratada como silencio.',
+	calibration_param_particleAudioPunch: 'Punch',
+	calibration_param_particleAudioPunch_hint: 'Boost extra en transientes.',
+	calibration_param_particleAudioDriftAngle: 'Ángulo del viento por audio',
+	calibration_param_particleAudioDriftAngle_hint:
+		'Dirección del empuje por audio.',
+	calibration_param_particleAudioDriftAmount: 'Fuerza del viento por audio',
+	calibration_param_particleAudioDriftAmount_hint:
+		'Fuerza máxima del empuje por audio.',
+	calibration_param_particleAudioDriftBase: 'Viento base',
+	calibration_param_particleAudioDriftBase_hint:
+		'Movimiento direccional constante aunque no haya pico.',
+	calibration_param_particleAudioDriftThreshold: 'Umbral de viento',
+	calibration_param_particleAudioDriftThreshold_hint:
+		'Nivel mínimo de la banda para activar el empuje.',
+	calibration_param_particleAudioDriftRelease: 'Release del viento',
+	calibration_param_particleAudioDriftRelease_hint:
+		'Qué tan rápido cae el empuje después del pico.',
+	calibration_param_particleDepthFlowAmount: 'Cantidad de profundidad',
+	calibration_param_particleDepthFlowAmount_hint:
+		'Fuerza macro del efecto Depth Flow.',
+	calibration_param_particleDepthFlowThreshold: 'Umbral de profundidad',
+	calibration_param_particleDepthFlowThreshold_hint:
+		'Nivel mínimo de la banda para activar Depth Flow.',
+	calibration_param_particleDepthFlowSensitivity:
+		'Sensibilidad de profundidad',
+	calibration_param_particleDepthFlowSensitivity_hint:
+		'Multiplica la respuesta del envelope de profundidad.',
+	calibration_param_particleDepthFlowAttack: 'Attack de profundidad',
+	calibration_param_particleDepthFlowAttack_hint:
+		'Qué tan rápido entra el burst de profundidad.',
+	calibration_param_particleDepthFlowRelease: 'Release de profundidad',
+	calibration_param_particleDepthFlowRelease_hint:
+		'Qué tan rápido cae el Depth Flow después del pico.',
+	calibration_param_particleDepthFlowSpeed: 'Velocidad de profundidad',
+	calibration_param_particleDepthFlowSpeed_hint:
+		'Velocidad radial máxima del efecto.',
+	calibration_param_particleDepthFlowSpread: 'Apertura de profundidad',
+	calibration_param_particleDepthFlowSpread_hint:
+		'Apertura del movimiento respecto al punto focal.',
+	calibration_preview_channel_template: 'canal: {channel}',
+	calibration_preview_audio_paused: 'audio pausado',
+	calibration_preview_synthetic_status: 'kick sintético @ 120 BPM',
+	calibration_preview_mode_live: 'Real',
+	calibration_preview_mode_synthetic: 'Sintético',
 	// Modos de drive del espectro (Control manual)
 	spectrum_drive_mode_audio_label: 'Solo audio',
 	spectrum_drive_mode_audio_hint:

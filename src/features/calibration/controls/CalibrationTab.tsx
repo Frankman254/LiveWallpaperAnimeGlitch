@@ -230,7 +230,7 @@ const CalibrationSliderRow = memo(function CalibrationSliderRow({
 			<div className="flex items-start gap-2">
 				<div className="min-w-0 flex-1">
 					<Slider
-						label={param.label}
+						label={t[param.labelKey]}
 						value={
 							Number.isFinite(value) ? value : effectiveRange.min
 						}
@@ -239,7 +239,7 @@ const CalibrationSliderRow = memo(function CalibrationSliderRow({
 						step={effectiveRange.step}
 						onChange={setter}
 						variant="compact"
-						hint={param.hint}
+						hint={param.hintKey ? t[param.hintKey] : undefined}
 						formatValue={v => formatValue(v, precision)}
 					/>
 				</div>
@@ -268,6 +268,7 @@ const CalibrationSliderRow = memo(function CalibrationSliderRow({
 });
 
 function GroupSection({ id }: { id: CalibrationGroupId }) {
+	const t = useT();
 	const meta = CALIBRATION_GROUPS.find(g => g.id === id);
 	const params = useMemo(
 		() => CALIBRATION_PARAMS.filter(p => p.group === id),
@@ -275,7 +276,7 @@ function GroupSection({ id }: { id: CalibrationGroupId }) {
 	);
 	if (!meta) return null;
 	return (
-		<TabSection title={meta.label} hint={meta.description}>
+		<TabSection title={t[meta.labelKey]} hint={t[meta.descriptionKey]}>
 			{id === 'logo' ? <LogoEnvelopePreviewBlock /> : null}
 			{id === 'bgZoom' ? <BgZoomEnvelopePreviewBlock /> : null}
 			{params.map(param => (
@@ -389,7 +390,7 @@ export default function CalibrationTab({ onReset }: Props) {
 	const viewOptions = [
 		...CALIBRATION_GROUPS.map(group => ({
 			value: group.id,
-			label: group.label
+			label: t[group.labelKey]
 		})),
 		{
 			value: 'ranges',
@@ -462,8 +463,12 @@ export default function CalibrationTab({ onReset }: Props) {
 				title={t.calibration_section_focus_title}
 				subtitle={
 					isCalibrationGroupView(view)
-						? (CALIBRATION_GROUPS.find(group => group.id === view)
-								?.description ?? '')
+						? (() => {
+								const group = CALIBRATION_GROUPS.find(
+									g => g.id === view
+								);
+								return group ? t[group.descriptionKey] : '';
+							})()
 						: view === 'ranges'
 							? t.calibration_subtitle_ranges
 							: t.calibration_subtitle_profiles

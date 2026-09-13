@@ -1,4 +1,5 @@
 import type { ProfileSlot, WallpaperState } from '@/types/wallpaper';
+import type { TranslationKey } from '@/lib/i18n/en';
 
 /** Persisted user look; not part of built-in FILTER_LOOK_PRESETS. */
 export const CUSTOM_FILTER_LOOK_ID = 'custom-look' as const;
@@ -90,7 +91,8 @@ export type FilterLookSettings = Pick<
 export type FilterLookPreset = {
 	id: FactoryFilterLookId;
 	name: string;
-	description: string;
+	/** i18n key — resolve with `useT()` at render time. */
+	descriptionKey: TranslationKey;
 	tags: string[];
 	settings: FilterLookSettings;
 };
@@ -186,7 +188,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'crt',
 		name: 'CRT',
-		description: 'Verde retro con scanlines y contraste alto.',
+		descriptionKey: 'look_factory_description_crt',
 		tags: ['retro', 'scanlines', 'terminal'],
 		settings: {
 			filterBrightness: 0.92,
@@ -222,7 +224,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'vhs',
 		name: 'VHS',
-		description: 'Desenfoque suave, ruido y desalineación RGB.',
+		descriptionKey: 'look_factory_description_vhs',
 		tags: ['analog', 'soft', 'nostalgia'],
 		settings: {
 			filterBrightness: 0.98,
@@ -258,7 +260,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'cyber-neon',
 		name: 'Cyber Neon',
-		description: 'Saturación fuerte y brillos neón con offset RGB.',
+		descriptionKey: 'look_factory_description_cyber_neon',
 		tags: ['neon', 'vivid', 'glow'],
 		settings: {
 			filterBrightness: 1.08,
@@ -294,7 +296,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'dream-bloom',
 		name: 'Dream Bloom',
-		description: 'Look etéreo con blur y tonos suaves.',
+		descriptionKey: 'look_factory_description_dream_bloom',
 		tags: ['dreamy', 'soft', 'pastel'],
 		settings: {
 			filterBrightness: 1.12,
@@ -330,7 +332,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'monochrome-ink',
 		name: 'Monochrome Ink',
-		description: 'Monocromo con contraste fuerte.',
+		descriptionKey: 'look_factory_description_monochrome_ink',
 		tags: ['mono', 'ink', 'high-contrast'],
 		settings: {
 			filterBrightness: 0.95,
@@ -366,7 +368,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'club-glitch',
 		name: 'Club Glitch',
-		description: 'Contraste agresivo y desplazamiento RGB visible.',
+		descriptionKey: 'look_factory_description_club_glitch',
 		tags: ['glitch', 'club', 'aggressive'],
 		settings: {
 			filterBrightness: 1.04,
@@ -402,7 +404,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'glass-mist',
 		name: 'Glass Mist',
-		description: 'Suave, limpio y ligeramente difuminado.',
+		descriptionKey: 'look_factory_description_glass_mist',
 		tags: ['glass', 'minimal', 'mist'],
 		settings: {
 			filterBrightness: 1.06,
@@ -438,7 +440,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'infrared-pulse',
 		name: 'Infrared Pulse',
-		description: 'Tono cálido intenso con estética térmica.',
+		descriptionKey: 'look_factory_description_infrared_pulse',
 		tags: ['infrared', 'warm', 'pulse'],
 		settings: {
 			filterBrightness: 1.04,
@@ -474,7 +476,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'noir-cinema',
 		name: 'Noir Cinema',
-		description: 'Sombras densas, grano fino y luz contenida.',
+		descriptionKey: 'look_factory_description_noir_cinema',
 		tags: ['cinema', 'mono', 'grain'],
 		settings: {
 			filterOpacity: 1,
@@ -510,7 +512,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'hologram',
 		name: 'Hologram',
-		description: 'Cian espectral con pulsos y separación RGB precisa.',
+		descriptionKey: 'look_factory_description_hologram',
 		tags: ['hologram', 'cyan', 'scanlines'],
 		settings: {
 			filterOpacity: 1,
@@ -546,7 +548,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'sunset-film',
 		name: 'Sunset Film',
-		description: 'Película cálida, contraste suave y bloom dorado.',
+		descriptionKey: 'look_factory_description_sunset_film',
 		tags: ['film', 'warm', 'cinematic'],
 		settings: {
 			filterOpacity: 1,
@@ -582,7 +584,7 @@ export const FILTER_LOOK_PRESETS: FilterLookPreset[] = [
 	{
 		id: 'ice-signal',
 		name: 'Ice Signal',
-		description: 'Azules fríos, detalle limpio y reacción de agudos.',
+		descriptionKey: 'look_factory_description_ice_signal',
 		tags: ['ice', 'clean', 'digital'],
 		settings: {
 			filterOpacity: 1,

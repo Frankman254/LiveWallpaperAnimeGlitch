@@ -177,8 +177,11 @@ export default function EditorOverlayInsightsPane() {
 					}}
 				>
 					{state.activeImage
-						? `${state.backgroundCount} imagen${state.backgroundCount === 1 ? '' : 'es'} · estática`
-						: 'sin imagen activa'}
+						? t.insights_background_images_template.replace(
+								'{n}',
+								String(state.backgroundCount)
+							)
+						: t.insights_background_none}
 				</div>
 			</SectionCard>
 
@@ -199,7 +202,7 @@ export default function EditorOverlayInsightsPane() {
 							className="truncate text-[13px] font-semibold"
 							style={{ color: UI_COLORS.fg }}
 						>
-							{activeScene?.name ?? '— sin escena activa —'}
+							{activeScene?.name ?? t.insights_scene_none}
 						</div>
 						<div
 							className="text-[10px] uppercase"
@@ -209,9 +212,14 @@ export default function EditorOverlayInsightsPane() {
 								letterSpacing: '0.08em'
 							}}
 						>
-							{state.sceneSlots.length} slot
-							{state.sceneSlots.length === 1 ? '' : 's'} ·{' '}
-							{activeScene ? 'aplicada' : 'libre'}
+							{t.insights_scene_slots_template.replace(
+								'{n}',
+								String(state.sceneSlots.length)
+							)}{' '}
+							·{' '}
+							{activeScene
+								? t.insights_scene_applied
+								: t.insights_scene_free}
 						</div>
 					</div>
 				</div>

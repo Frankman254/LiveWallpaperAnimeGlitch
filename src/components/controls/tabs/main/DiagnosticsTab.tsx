@@ -447,7 +447,7 @@ function DiagnosticsStateSnapshot() {
 			<DiagnosticsGrid
 				title={t.diag_grid_performance}
 				rows={performanceRows}
-				footer="RAM usa valores reales del navegador cuando están disponibles. CPU y GPU son estimaciones de presión de runtime para ayudarte a detectar cuándo se dispara la carga."
+				footer={t.diag_grid_performance_footer}
 			/>
 			<DiagnosticsGrid title={t.diag_grid_bg} rows={backgroundRows} />
 			<DiagnosticsGrid title={t.diag_grid_logo} rows={logoRows} />
